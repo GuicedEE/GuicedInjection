@@ -7,7 +7,7 @@ Currently only the Guice default binder and Guice Servlet binder are accessible,
 Has a gzip and caching filter for sites which is always nice
 
 Use like
-
+```
 public class JWebSwingSiteBinder extends GuiceSiteBinder
 public class CustomerBinderJar1 extends GuiceDefaultBinder
 {
@@ -16,7 +16,7 @@ public class CustomerBinderJar1 extends GuiceDefaultBinder
     {
     }
 }
-
+```
 Access via @Inject Injector injector or GuiceContext.Injector()
 
 
