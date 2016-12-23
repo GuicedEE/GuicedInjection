@@ -19,7 +19,6 @@ package com.armineasy.injection.filters;
 import com.google.inject.Singleton;
 import java.io.IOException;
 import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -47,7 +46,6 @@ public class CacheControlFilter implements Filter
         HttpServletResponse resp = (HttpServletResponse) response;
         resp.setHeader("Expires", "Tue, 03 Jul 2020 06:00:00 GMT");
         resp.setHeader("Cache-Control", "public, max-age=2546787");
-        HttpServletRequest req = (HttpServletRequest) request;
         chain.doFilter(request, response);
     }
 

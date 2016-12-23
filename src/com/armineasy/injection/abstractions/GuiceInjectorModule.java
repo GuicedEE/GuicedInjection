@@ -1,6 +1,7 @@
 package com.armineasy.injection.abstractions;
 
 import com.armineasy.injection.GuiceContext;
+import com.armineasy.injection.interfaces.DefaultModuleMethods;
 import com.armineasy.injection.interfaces.GuiceDefaultBinder;
 import com.google.inject.*;
 import com.google.inject.binder.*;
@@ -15,18 +16,21 @@ import org.reflections.Reflections;
 
 /**
  * Is an injector module for Guice
+ *
  * @author GedMarc
  * @since 12 Dec 2016
  *
  */
-public class GuiceInjectorModule extends AbstractModule
+public class GuiceInjectorModule extends AbstractModule implements DefaultModuleMethods
 {
+
     private static final Logger log = Logger.getLogger("GuiceInjectorModule");
 
     public GuiceInjectorModule()
     {
 
     }
+
     /**
      * Executes the linked binders to perform any custom binding
      */

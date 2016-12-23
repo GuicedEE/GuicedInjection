@@ -3,21 +3,31 @@ package com.armineasy.injection.interfaces;
 import java.util.Comparator;
 
 /**
+ * Maps URL's to Servlet classes across multiple JAR's and/or enterprise archives
  *
  * @author GedMarc
+ * @param <GuiceInjectionModule>
  * @since 12 Dec 2016
  *
  */
-public abstract class GuiceDefaultBinder<GuiceInjectionModule> implements Comparator<GuiceDefaultBinder>, DefaultBinder<GuiceInjectionModule>
+public abstract class GuiceDefaultBinder<GuiceInjectionModule>
+        implements Comparator<GuiceDefaultBinder>, DefaultBinder<GuiceInjectionModule>
 {
-
+    /**
+     * Blank constructor
+     */
     public GuiceDefaultBinder()
     {
-
+        //Nothing needed to do on constructions
     }
 
+    @Override
     public abstract void onBind(GuiceInjectionModule module);
 
+    /**
+     * The default value is 100
+     * @return 
+     */
     public Integer sortOrder()
     {
         return 100;

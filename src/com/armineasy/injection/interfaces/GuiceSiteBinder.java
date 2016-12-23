@@ -9,7 +9,7 @@ import java.util.Comparator;
  * @since 12 Dec 2016
  *
  */
-public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, Comparable<GuiceSiteBinder>, DefaultBinder<GuiceSiteInjectorModule>
+public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, DefaultBinder<GuiceSiteInjectorModule>
 {
     /**
      * Blank constructor
@@ -26,11 +26,21 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, Co
     @Override
     public abstract void onBind(GuiceSiteInjectorModule module);
 
+    /**
+     * The default sort order number is 100
+     * @return 
+     */
     public Integer sortOrder()
     {
         return 100;
     }
 
+    /**
+     * Compares the items across
+     * @param o1
+     * @param o2
+     * @return 
+     */
     @Override
     public int compare(GuiceSiteBinder o1, GuiceSiteBinder o2)
     {
@@ -40,15 +50,4 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, Co
         }
         return o1.sortOrder().compareTo(o2.sortOrder());
     }
-
-    @Override
-    public int compareTo(GuiceSiteBinder o2)
-    {
-        if (o2 == null)
-        {
-            return -1;
-        }
-        return sortOrder().compareTo(o2.sortOrder());
-    }
-
 }
