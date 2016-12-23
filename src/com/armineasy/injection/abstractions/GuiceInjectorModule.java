@@ -28,7 +28,7 @@ public class GuiceInjectorModule extends AbstractModule implements DefaultModule
 
     public GuiceInjectorModule()
     {
-
+        //Nothing Needed
     }
 
     /**

@@ -98,8 +98,23 @@ public class GuiceContext extends GuiceServletContextListener
         if (reflections == null)
         {
             List<ClassLoader> classLoadersList = new ArrayList<>();
-            classLoadersList.add(ClasspathHelper.contextClassLoader());
-            classLoadersList.add(ClasspathHelper.staticClassLoader());
+            try
+            {
+                classLoadersList.add(ClasspathHelper.contextClassLoader());
+            }
+            catch (NoClassDefFoundError classNotFound)
+            {
+                log.log(Level.SEVERE, "Can't access context class loader, probably not running in a separate jar", classNotFound);
+            }
+
+            try
+            {
+                classLoadersList.add(ClasspathHelper.staticClassLoader());
+            }
+            catch (NoClassDefFoundError classNotFound)
+            {
+                log.log(Level.SEVERE, "Can't access static class loader, probably not running in a separate jar", classNotFound);
+            }
             reflections = new Reflections(new ConfigurationBuilder()
                     .setScanners(new SubTypesScanner(false /* don't exclude Object.class */), new ResourcesScanner(), new TypeAnnotationsScanner())
                     .setUrls(ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0]))));

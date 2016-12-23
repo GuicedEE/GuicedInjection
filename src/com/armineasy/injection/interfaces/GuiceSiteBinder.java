@@ -11,6 +11,7 @@ import java.util.Comparator;
  */
 public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, DefaultBinder<GuiceSiteInjectorModule>
 {
+    private static final int DefaultSortOrder = 100;
     /**
      * Blank constructor
      */
@@ -32,7 +33,7 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
      */
     public Integer sortOrder()
     {
-        return 100;
+        return DefaultSortOrder;
     }
 
     /**

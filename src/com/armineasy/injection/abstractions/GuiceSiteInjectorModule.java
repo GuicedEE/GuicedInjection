@@ -29,7 +29,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     public GuiceSiteInjectorModule()
     {
-
+        //Nothing needed
     }
 
     /**

@@ -39,11 +39,13 @@ public class GZipServletFilter implements Filter
     @Override
     public void init(FilterConfig filterConfig) throws ServletException
     {
+        //Nothing needed
     }
 
     @Override
     public void destroy()
     {
+        //Nothing needed
     }
 
     /**
@@ -265,13 +267,13 @@ class GZipServletOutputStream extends ServletOutputStream
     }
 
     @Override
-    public void write(byte b[]) throws IOException
+    public void write(byte[] b) throws IOException
     {
         this.gzipOutputStream.write(b);
     }
 
     @Override
-    public void write(byte b[], int off, int len) throws IOException
+    public void write(byte[] b, int off, int len) throws IOException
     {
         this.gzipOutputStream.write(b, off, len);
     }

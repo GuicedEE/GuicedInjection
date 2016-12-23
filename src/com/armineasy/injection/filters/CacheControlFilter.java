@@ -58,13 +58,13 @@ public class CacheControlFilter implements Filter
     @Override
     public void init(FilterConfig fc) throws ServletException
     {
-
+        //Nothing needed
     }
 
     @Override
     public void destroy()
     {
-
+        //Nothing needed
     }
 
 }

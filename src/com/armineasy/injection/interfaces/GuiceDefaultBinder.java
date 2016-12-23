@@ -13,6 +13,7 @@ import java.util.Comparator;
 public abstract class GuiceDefaultBinder<GuiceInjectionModule>
         implements Comparator<GuiceDefaultBinder>, DefaultBinder<GuiceInjectionModule>
 {
+    private static final int DefaultSortOrder = 100;
     /**
      * Blank constructor
      */
@@ -21,16 +22,13 @@ public abstract class GuiceDefaultBinder<GuiceInjectionModule>
         //Nothing needed to do on constructions
     }
 
-    @Override
-    public abstract void onBind(GuiceInjectionModule module);
-
     /**
      * The default value is 100
      * @return 
      */
     public Integer sortOrder()
     {
-        return 100;
+        return DefaultSortOrder;
     }
 
     @Override
