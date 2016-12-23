@@ -21,13 +21,6 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
     }
 
     /**
-     * Performs the on bind
-     * @param module 
-     */
-    @Override
-    public abstract void onBind(GuiceSiteInjectorModule module);
-
-    /**
      * The default sort order number is 100
      * @return 
      */
