@@ -16,7 +16,6 @@ public class GuiceContextTest
     @Test
     public void testInjector()
     {
-        GuiceContext.Injector();
     }
     
 }
