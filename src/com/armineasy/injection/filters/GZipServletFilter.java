@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.armineasy.injection;
+package com.armineasy.injection.filters;
 
 import com.google.inject.Singleton;
 import java.io.IOException;
@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  * GZips content in and out
+ *
  * @author GedMarc
  */
 @Singleton
@@ -47,16 +48,17 @@ public class GZipServletFilter implements Filter
 
     /**
      * GZips data in and out for everything
+     *
      * @param request
      * @param response
      * @param chain
      * @throws IOException
-     * @throws ServletException 
+     * @throws ServletException
      */
     @Override
     public void doFilter(ServletRequest request,
-            ServletResponse response,
-            FilterChain chain)
+                         ServletResponse response,
+                         FilterChain chain)
             throws IOException, ServletException
     {
 
@@ -79,8 +81,9 @@ public class GZipServletFilter implements Filter
 
     /**
      * Sets the accept encoding
+     *
      * @param httpRequest
-     * @return 
+     * @return
      */
     private boolean acceptsGZipEncoding(HttpServletRequest httpRequest)
     {
@@ -94,6 +97,7 @@ public class GZipServletFilter implements Filter
 
 /**
  * A response wrapper for servlets
+ *
  * @author GedMarc
  */
 class GZipServletResponseWrapper extends HttpServletResponseWrapper
@@ -110,7 +114,8 @@ class GZipServletResponseWrapper extends HttpServletResponseWrapper
 
     /**
      * Closes the print writer stream
-     * @throws IOException 
+     *
+     * @throws IOException
      */
     public void close() throws IOException
     {
@@ -177,9 +182,10 @@ class GZipServletResponseWrapper extends HttpServletResponseWrapper
     }
 
     /**
-     * Returns an output stream of gzip
+     * Returns an output stream of GZIP
+     *
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     @Override
     public ServletOutputStream getOutputStream() throws IOException
@@ -198,9 +204,10 @@ class GZipServletResponseWrapper extends HttpServletResponseWrapper
     }
 
     /**
-     * Writes the gzip
+     * Writes the GZIP
+     *
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     @Override
     public PrintWriter getWriter() throws IOException
@@ -228,6 +235,11 @@ class GZipServletResponseWrapper extends HttpServletResponseWrapper
     }
 }
 
+/**
+ * Handles the GZIP output
+ *
+ * @author GedMarc
+ */
 class GZipServletOutputStream extends ServletOutputStream
 {
 

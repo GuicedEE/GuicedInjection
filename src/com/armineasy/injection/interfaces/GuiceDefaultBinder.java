@@ -8,7 +8,7 @@ import java.util.Comparator;
  * @since 12 Dec 2016
  *
  */
-public abstract class GuiceDefaultBinder<M> implements Comparator<GuiceDefaultBinder>, DefaultBinder<M>
+public abstract class GuiceDefaultBinder<GuiceInjectionModule> implements Comparator<GuiceDefaultBinder>, DefaultBinder<GuiceInjectionModule>
 {
 
     public GuiceDefaultBinder()
@@ -16,7 +16,7 @@ public abstract class GuiceDefaultBinder<M> implements Comparator<GuiceDefaultBi
 
     }
 
-    public abstract void onBind(M module);
+    public abstract void onBind(GuiceInjectionModule module);
 
     public Integer sortOrder()
     {

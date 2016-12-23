@@ -7,5 +7,9 @@ package com.armineasy.injection.interfaces;
  */
 public interface DefaultBinder<M>
 {
+    /**
+     * Performs the binding with the injection module that is required
+     * @param module 
+     */
     public void onBind(M module);
 }

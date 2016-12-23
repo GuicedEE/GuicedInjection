@@ -18,5 +18,11 @@
             <definitions>.\lib\nblibraries.properties</definitions>
         </libraries>
         <references xmlns="http://www.netbeans.org/ns/ant-project-references/1"/>
+        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>Guice</word>
+            <word>instantiator</word>
+            <word>Servlet</word>
+            <word>servlets</word>
+        </spellchecker-wordlist>
     </configuration>
 </project>

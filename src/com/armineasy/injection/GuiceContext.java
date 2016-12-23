@@ -25,6 +25,7 @@ import com.google.inject.servlet.GuiceServletContextListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.*;
+import javax.servlet.ServletContextEvent;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -44,37 +45,31 @@ public class GuiceContext extends GuiceServletContextListener
 {
 
     private static final Logger log = Logger.getLogger("GuiceServletContextListener");
-
+    /**
+     * The physical injector for the JVM container
+     */
     private static Injector injector;
+    /**
+     * The actual reflections object
+     */
+    private static Reflections reflections;
 
+    /**
+     * Creates a new Guice context. Should only happen once
+     */
     public GuiceContext()
     {
         log.info("Starting Up Guice Context");
-        this.classLoader = getClass().getClassLoader();
-
         log.config("Starting up reflectors");
         reflect();
         log.config("Reflector configured");
     }
 
-    private ClassLoader classLoader;
-
-    public GuiceContext(ClassLoader classLoader)
-    {
-        this();
-        this.classLoader = classLoader;
-    }
-
-    public ClassLoader getClassLoader()
-    {
-        return classLoader;
-    }
-
-    public void setClassLoader(ClassLoader classLoader)
-    {
-        this.classLoader = classLoader;
-    }
-
+    /**
+     * Maps the injector class to the injector
+     *
+     * @return
+     */
     @Provides
     @Override
     public Injector getInjector()
@@ -82,14 +77,22 @@ public class GuiceContext extends GuiceServletContextListener
         return produceInjector();
     }
 
+    /**
+     * Returns the fully populated reflections object
+     *
+     * @return
+     */
     @Provides
     public Reflections getReflections()
     {
         return reflect();
     }
 
-    private static Reflections reflections;
-
+    /**
+     * Builds a reflection object if one does not exist
+     *
+     * @return
+     */
     public static Reflections reflect()
     {
         if (reflections == null)
@@ -111,6 +114,17 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public Injector produceInjector()
     {
+        return Injector();
+    }
+
+    /**
+     * Static reference to build an injector. May miss some classes if called at the wrong time.
+     * Better to use a class instantiator
+     *
+     * @return
+     */
+    public static Injector Injector()
+    {
         if (injector == null)
         {
             log.info("Starting up Guice");
@@ -120,29 +134,22 @@ public class GuiceContext extends GuiceServletContextListener
             log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
             GuiceSiteInjectorModule siteInjection;
             siteInjection = new GuiceSiteInjectorModule();
-            siteInjection.setClassLoader(classLoader);
             injector = Guice.createInjector(defaultInjection, siteInjection);
             log.info("Finished with Guice");
         }
         return injector;
     }
 
-    public static Injector Injector()
+    /**
+     * Removes all references
+     *
+     * @param servletContextEvent
+     */
+    @Override
+    public void contextDestroyed(ServletContextEvent servletContextEvent)
     {
-
-        if (injector == null)
-        {
-            log.warning("Accessing the Injcetor statically before constructing dynamically. Classes may be missed");
-            log.info("Starting up Guice");
-            log.info("Loading All Default Binders (that extend GuiceDefaultBinder)");
-            GuiceInjectorModule defaultInjection;
-            defaultInjection = new GuiceInjectorModule();
-            log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
-            GuiceSiteInjectorModule siteInjection;
-            siteInjection = new GuiceSiteInjectorModule();
-            injector = Guice.createInjector(defaultInjection, siteInjection);
-            log.info("Finished with Guice");
-        }
-        return injector;
+        injector = null;
+        reflections = null;
+        super.contextDestroyed(servletContextEvent);
     }
 }

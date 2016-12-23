@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.armineasy.injection;
+package com.armineasy.injection.filters;
 
 import com.google.inject.Singleton;
 import java.io.IOException;
@@ -24,36 +24,38 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Caches everything until 2020
+ *
  * @author GedMarc
  */
 @Singleton
 public class CacheControlFilter implements Filter
 {
-    
+
     /**
-     * Sets the cache control headers 
+     * Sets the cache control headers
+     *
      * @param request
      * @param response
      * @param chain
      * @throws IOException
-     * @throws ServletException 
+     * @throws ServletException
      */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException
+                         FilterChain chain) throws IOException, ServletException
     {
         HttpServletResponse resp = (HttpServletResponse) response;
         resp.setHeader("Expires", "Tue, 03 Jul 2020 06:00:00 GMT");
         resp.setHeader("Cache-Control", "public, max-age=2546787");
-
         HttpServletRequest req = (HttpServletRequest) request;
         chain.doFilter(request, response);
     }
 
     /**
      * Doesn't do much, or anything
+     *
      * @param fc
-     * @throws ServletException 
+     * @throws ServletException
      */
     @Override
     public void init(FilterConfig fc) throws ServletException
@@ -61,7 +63,6 @@ public class CacheControlFilter implements Filter
 
     }
 
-    
     @Override
     public void destroy()
     {

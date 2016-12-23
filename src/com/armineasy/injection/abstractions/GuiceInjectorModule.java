@@ -14,27 +14,28 @@ import java.util.logging.Logger;
 import org.reflections.Reflections;
 
 /**
- *
+ * Is an injector module for Guice
  * @author GedMarc
  * @since 12 Dec 2016
  *
  */
 public class GuiceInjectorModule extends AbstractModule
 {
-
     private static final Logger log = Logger.getLogger("GuiceInjectorModule");
 
     public GuiceInjectorModule()
     {
 
     }
-
+    /**
+     * Executes the linked binders to perform any custom binding
+     */
     public void runBinders()
     {
-        log.log(Level.CONFIG, "Running Binders");
+        log.log(Level.CONFIG, "Running Default Injection Binders");
         Reflections reflections = GuiceContext.reflect();
         Set<Class<? extends GuiceDefaultBinder>> sets = reflections.getSubTypesOf(GuiceDefaultBinder.class);
-        log.log(Level.INFO, "Total number of default injectors " + sets.size());
+        log.log(Level.INFO, "Total number of default injectors going to call " + sets.size());
         List<GuiceDefaultBinder> objects = new ArrayList<>();
         sets.forEach(next ->
         {

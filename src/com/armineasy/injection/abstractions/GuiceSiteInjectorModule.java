@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 import org.reflections.Reflections;
 
 /**
- *
+ * Loads up all the Guice Servlet Binders
  * @author GedMarc
  * @since 12 Dec 2016
  *
@@ -25,23 +25,10 @@ public class GuiceSiteInjectorModule extends ServletModule
 
     private static final Logger log = Logger.getLogger("GuiceSiteInjectorModule");
 
-    private ClassLoader classLoader;
-
     public GuiceSiteInjectorModule()
     {
 
     }
-
-    public ClassLoader getClassLoader()
-    {
-        return classLoader;
-    }
-
-    public void setClassLoader(ClassLoader classLoader)
-    {
-        this.classLoader = classLoader;
-    }
-
     public ServletKeyBindingBuilder serveSite(String urlPattern, String... morePatterns)
     {
         return serve(urlPattern, morePatterns);
@@ -61,11 +48,12 @@ public class GuiceSiteInjectorModule extends ServletModule
     {
         return serveRegex(regexes);
     }
-
+    /**
+     * Runs the binders for the system
+     */
     public void runBinders()
     {
         Reflections reflections = GuiceContext.reflect();
-
         Set<Class<? extends GuiceSiteBinder>> siteBinders = reflections.getSubTypesOf(GuiceSiteBinder.class);
         log.log(Level.CONFIG, "Total number of site injectors - {0}", siteBinders.size());
         List<GuiceSiteBinder> objects = new ArrayList<>();
@@ -91,7 +79,9 @@ public class GuiceSiteInjectorModule extends ServletModule
             });
         }
     }
-
+    /**
+     * Runs the binders
+     */
     @Override
     protected void configureServlets()
     {
