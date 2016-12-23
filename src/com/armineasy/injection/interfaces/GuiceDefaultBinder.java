@@ -10,8 +10,8 @@ import java.util.Comparator;
  * @since 12 Dec 2016
  *
  */
-public abstract class GuiceDefaultBinder<GuiceInjectionModule>
-        implements Comparator<GuiceDefaultBinder>, DefaultBinder<GuiceInjectionModule>
+public abstract class GuiceDefaultBinder
+        implements Comparator<GuiceDefaultBinder>, DefaultBinder<com.armineasy.injection.abstractions.GuiceInjectorModule>
 {
     private static final int DefaultSortOrder = 100;
     /**
