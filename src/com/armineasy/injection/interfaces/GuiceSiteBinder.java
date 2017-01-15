@@ -11,7 +11,7 @@ import java.util.Comparator;
  */
 public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, DefaultBinder<GuiceSiteInjectorModule>
 {
-    private static final int DefaultSortOrder = 100;
+    private int DefaultSortOrder = 100;
     /**
      * Blank constructor
      */
@@ -29,6 +29,13 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
         return DefaultSortOrder;
     }
 
+    public void setDefaultSortOrder(int DefaultSortOrder)
+    {
+        this.DefaultSortOrder = DefaultSortOrder;
+    }
+
+    
+    
     /**
      * Compares the items across
      * @param o1

@@ -22,7 +22,9 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.servlet.GuiceServletContextListener;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.*;
 import javax.servlet.ServletContextEvent;
@@ -115,9 +117,18 @@ public class GuiceContext extends GuiceServletContextListener
             {
                 log.log(Level.SEVERE, "Can't access static class loader, probably not running in a separate jar", classNotFound);
             }
+            Collection<URL> urls = new ArrayList<>();
+            try
+            {
+                urls = ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0]));
+            }
+            catch (NoClassDefFoundError classNotFound)
+            {
+                log.log(Level.SEVERE, "Can't access static class loader, probably not running in a separate jar", classNotFound);
+            }
             reflections = new Reflections(new ConfigurationBuilder()
                     .setScanners(new SubTypesScanner(false /* don't exclude Object.class */), new ResourcesScanner(), new TypeAnnotationsScanner())
-                    .setUrls(ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0]))));
+                    .setUrls(urls));
         }
         return reflections;
     }

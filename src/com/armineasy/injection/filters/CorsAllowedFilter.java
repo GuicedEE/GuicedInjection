@@ -19,7 +19,6 @@ package com.armineasy.injection.filters;
 import com.google.inject.Singleton;
 import java.io.IOException;
 import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -28,9 +27,9 @@ import javax.servlet.http.HttpServletResponse;
  * @author GedMarc
  */
 @Singleton
-public class CacheControlFilter implements Filter
+public class CorsAllowedFilter implements Filter
 {
-
+    public static String allowedLocations = "*";
     /**
      * Sets the cache control headers
      *
@@ -46,16 +45,13 @@ public class CacheControlFilter implements Filter
             FilterChain chain) throws IOException, ServletException
     {
         HttpServletResponse resp = (HttpServletResponse) response;
-        String path = ((HttpServletRequest) request).getRequestURI();
-        if (path.toLowerCase().endsWith(".js") || path.toLowerCase().endsWith(".css"))
-        {
-            resp.setHeader("Expires", "Tue, 03 Jul 2020 06:00:00 GMT");
-            resp.setHeader("Cache-Control", "public, max-age=2546787");
-        }
-        else
-        {
-            resp.setHeader("Cache-Control", "private, max-age=0");
-        }
+      /*  resp.setHeader("Expires", "Tue, 03 Jul 2020 06:00:00 GMT");
+        resp.setHeader("Cache-Control", "public, max-age=2546787");*/
+
+        resp.setHeader("Access-Control-Allow-Origin", "*");
+        resp.setHeader("Access-Control-Allow-Credentials", "true");
+        resp.setHeader("Access-Control-Allow-Methods", "GET, POST");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
 
         chain.doFilter(request, response);
     }

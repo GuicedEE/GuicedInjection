@@ -1,16 +1,24 @@
 package com.armineasy.injection.abstractions;
 
 import com.armineasy.injection.GuiceContext;
+import com.armineasy.injection.filters.CorsAllowedFilter;
 import com.armineasy.injection.interfaces.DefaultModuleMethods;
 import com.armineasy.injection.interfaces.GuiceSiteBinder;
-import com.google.inject.*;
-import com.google.inject.binder.*;
+import com.google.inject.Binding;
+import com.google.inject.Key;
+import com.google.inject.Scope;
+import com.google.inject.TypeLiteral;
+import com.google.inject.binder.AnnotatedBindingBuilder;
+import com.google.inject.binder.AnnotatedConstantBindingBuilder;
+import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.servlet.ServletModule;
 import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.TypeListener;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.reflections.Reflections;
@@ -80,6 +88,9 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      */
     public void runBinders()
     {
+        //defaults
+        filter("/*").through(CorsAllowedFilter.class);
+        
         Reflections reflections = GuiceContext.reflect();
         Set<Class<? extends GuiceSiteBinder>> siteBinders = reflections.getSubTypesOf(GuiceSiteBinder.class);
         log.log(Level.CONFIG, "Total number of site injectors - {0}", siteBinders.size());
