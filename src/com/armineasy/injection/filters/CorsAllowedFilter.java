@@ -29,7 +29,12 @@ import javax.servlet.http.HttpServletResponse;
 @Singleton
 public class CorsAllowedFilter implements Filter
 {
+
+    /**
+     * The allowed locations for origin that get sent through
+     */
     public static String allowedLocations = "*";
+
     /**
      * Sets the cache control headers
      *
@@ -45,10 +50,7 @@ public class CorsAllowedFilter implements Filter
             FilterChain chain) throws IOException, ServletException
     {
         HttpServletResponse resp = (HttpServletResponse) response;
-      /*  resp.setHeader("Expires", "Tue, 03 Jul 2020 06:00:00 GMT");
-        resp.setHeader("Cache-Control", "public, max-age=2546787");*/
-
-        resp.setHeader("Access-Control-Allow-Origin", "*");
+        resp.setHeader("Access-Control-Allow-Origin", allowedLocations);
         resp.setHeader("Access-Control-Allow-Credentials", "true");
         resp.setHeader("Access-Control-Allow-Methods", "GET, POST");
         resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
