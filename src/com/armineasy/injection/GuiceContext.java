@@ -26,12 +26,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletContextEvent;
 import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
@@ -127,8 +126,10 @@ public class GuiceContext extends GuiceServletContextListener
                 log.log(Level.SEVERE, "Can't access static class loader, probably not running in a separate jar", classNotFound);
             }
             reflections = new Reflections(new ConfigurationBuilder()
-                    .setScanners(new SubTypesScanner(false /* don't exclude Object.class */), new ResourcesScanner(), new TypeAnnotationsScanner())
-                    .setUrls(urls));
+                    .setScanners(new SubTypesScanner(false /*
+                     * don't exclude Object.class
+                     */)//, new ResourcesScanner(), new TypeAnnotationsScanner())
+                    ).setUrls(urls));
         }
         return reflections;
     }
@@ -140,8 +141,10 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public Injector produceInjector()
     {
-        return Injector();
+        return inject();
     }
+
+    private static boolean buildingInjector = false;
 
     /**
      * Static reference to build an injector. May miss some classes if called at the wrong time.
@@ -149,19 +152,27 @@ public class GuiceContext extends GuiceServletContextListener
      *
      * @return
      */
-    public static Injector Injector()
+    public static Injector inject()
     {
         if (injector == null)
         {
-            log.info("Starting up Guice");
-            log.info("Loading All Default Binders (that extend GuiceDefaultBinder)");
-            GuiceInjectorModule defaultInjection;
-            defaultInjection = new GuiceInjectorModule();
-            log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
-            GuiceSiteInjectorModule siteInjection;
-            siteInjection = new GuiceSiteInjectorModule();
-            injector = Guice.createInjector(defaultInjection, siteInjection);
-            log.info("Finished with Guice");
+            if (buildingInjector == false)
+            {
+                buildingInjector = true;
+                log.info("Starting up Guice");
+                log.info("Loading All Default Binders (that extend GuiceDefaultBinder)");
+                GuiceInjectorModule defaultInjection;
+                defaultInjection = new GuiceInjectorModule();
+                log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
+                GuiceSiteInjectorModule siteInjection;
+                siteInjection = new GuiceSiteInjectorModule();
+                injector = Guice.createInjector(defaultInjection, siteInjection);
+                log.info("Finished with Guice");
+            }
+            else
+            {
+                log.info("Premature call to GuiceContext.inject. Injector is still currently building, are you calling guice context from a constructor? consider using init() or preconfigure()");
+            }
         }
         return injector;
     }

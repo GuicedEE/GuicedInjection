@@ -3,9 +3,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group name="Activity Master"/>
-        <group name="JWebSwing">
-            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/GuiceContext.java</file>
-            <file>file:/C:/AESoft/Programs/GuiceInjection/src/META-INF/web-fragment.xml</file>
-        </group>
+        <group name="JWebSwing"/>
+        <group name="JWebSwingStaticPage"/>
+        <group name="JWebswing Static"/>
     </open-files>
 </project-private>

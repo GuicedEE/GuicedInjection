@@ -52,9 +52,7 @@ public class CorsAllowedFilter implements Filter
         HttpServletResponse resp = (HttpServletResponse) response;
         resp.setHeader("Access-Control-Allow-Origin", allowedLocations);
         resp.setHeader("Access-Control-Allow-Credentials", "true");
-        resp.setHeader("Access-Control-Allow-Methods", "GET, POST");
         resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
-
         chain.doFilter(request, response);
     }
 
