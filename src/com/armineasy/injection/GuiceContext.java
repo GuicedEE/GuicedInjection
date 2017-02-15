@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License
  *
  * Copyright 2017 Marc Magon.
@@ -37,7 +37,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContextEvent;
 import org.reflections.Reflections;
+import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
@@ -52,7 +54,7 @@ import org.reflections.util.ConfigurationBuilder;
 public class GuiceContext extends GuiceServletContextListener
 {
 
-    private static final Logger log = Logger.getLogger("GuiceServletContextListener");
+    private static final Logger log = Logger.getLogger("GuiceContext");
     /**
      * The physical injector for the JVM container
      */
@@ -60,7 +62,44 @@ public class GuiceContext extends GuiceServletContextListener
     /**
      * The actual reflections object
      */
-    private static Reflections reflections;
+    private static final Reflections reflections;
+
+    static
+    {
+        List<ClassLoader> classLoadersList = new ArrayList<>();
+        try
+        {
+            classLoadersList.add(ClasspathHelper.contextClassLoader());
+        }
+        catch (NoClassDefFoundError classNotFound)
+        {
+            log.log(Level.SEVERE, "Can't access context class loader, probably not running in a separate jar", classNotFound);
+        }
+
+        try
+        {
+            classLoadersList.add(ClasspathHelper.staticClassLoader());
+        }
+        catch (NoClassDefFoundError classNotFound)
+        {
+            log.log(Level.SEVERE, "Can't access static class loader, probably not running in a separate jar", classNotFound);
+        }
+        Collection<URL> urls = new ArrayList<>();
+        try
+        {
+            urls = ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0]));
+        }
+        catch (NoClassDefFoundError classNotFound)
+        {
+            log.log(Level.SEVERE, "Can't access static class loader, probably not running in a separate jar", classNotFound);
+        }
+        reflections = new Reflections(new ConfigurationBuilder()
+                .setScanners(new SubTypesScanner(false /*
+                     * don't exclude Object.class
+                 */), new ResourcesScanner(), new TypeAnnotationsScanner()
+                ).setUrls(urls)
+        );
+    }
 
     /**
      * Creates a new Guice context. Should only happen once
@@ -103,41 +142,6 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public static Reflections reflect()
     {
-        if (reflections == null)
-        {
-            List<ClassLoader> classLoadersList = new ArrayList<>();
-            try
-            {
-                classLoadersList.add(ClasspathHelper.contextClassLoader());
-            }
-            catch (NoClassDefFoundError classNotFound)
-            {
-                log.log(Level.SEVERE, "Can't access context class loader, probably not running in a separate jar", classNotFound);
-            }
-
-            try
-            {
-                classLoadersList.add(ClasspathHelper.staticClassLoader());
-            }
-            catch (NoClassDefFoundError classNotFound)
-            {
-                log.log(Level.SEVERE, "Can't access static class loader, probably not running in a separate jar", classNotFound);
-            }
-            Collection<URL> urls = new ArrayList<>();
-            try
-            {
-                urls = ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0]));
-            }
-            catch (NoClassDefFoundError classNotFound)
-            {
-                log.log(Level.SEVERE, "Can't access static class loader, probably not running in a separate jar", classNotFound);
-            }
-            reflections = new Reflections(new ConfigurationBuilder()
-                    .setScanners(new SubTypesScanner(false /*
-                     * don't exclude Object.class
-                     */)//, new ResourcesScanner(), new TypeAnnotationsScanner())
-                    ).setUrls(urls));
-        }
         return reflections;
     }
 
@@ -154,8 +158,7 @@ public class GuiceContext extends GuiceServletContextListener
     private static boolean buildingInjector = false;
 
     /**
-     * Static reference to build an injector. May miss some classes if called at the wrong time.
-     * Better to use a class instantiator
+     * Static reference to build an injector. May miss some classes if called at the wrong time. Better to use a class instantiator
      *
      * @return
      */
@@ -184,6 +187,16 @@ public class GuiceContext extends GuiceServletContextListener
         return injector;
     }
 
+    public static boolean isBuildingInjector()
+    {
+        return buildingInjector;
+    }
+
+    public static void setBuildingInjector(boolean buildingInjector)
+    {
+        GuiceContext.buildingInjector = buildingInjector;
+    }
+
     /**
      * Removes all references
      *
@@ -193,7 +206,6 @@ public class GuiceContext extends GuiceServletContextListener
     public void contextDestroyed(ServletContextEvent servletContextEvent)
     {
         injector = null;
-        reflections = null;
         super.contextDestroyed(servletContextEvent);
     }
 }

@@ -8,7 +8,7 @@ import org.junit.Test;
  */
 public class GuiceContextTest
 {
-    
+
     public GuiceContextTest()
     {
     }
@@ -17,5 +17,10 @@ public class GuiceContextTest
     public void testInjector()
     {
     }
-    
+
+    @Test
+    public void testReflect()
+    {
+        GuiceContext.reflect();
+    }
 }
