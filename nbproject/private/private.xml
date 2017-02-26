@@ -5,8 +5,6 @@
         <group name="Activity Master"/>
         <group name="JWebSwingStaticPage"/>
         <group name="JWebswing Static"/>
-        <group name="JWebSwing">
-            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/GuiceContext.java</file>
-        </group>
+        <group name="JWebSwing"/>
     </open-files>
 </project-private>

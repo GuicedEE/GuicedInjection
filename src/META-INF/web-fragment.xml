@@ -33,16 +33,18 @@ THE SOFTWARE.
         <filter-name>SetCacheControl</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    <filter>
+    
+    
+    <!--<filter>
         <filter-name>CorsAllowedFilter</filter-name>
         <filter-class>com.armineasy.injection.filters.CorsAllowedFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>CorsAllowedFilter</filter-name>
         <url-pattern>/*</url-pattern>
-    </filter-mapping>
+    </filter-mapping>-->
 
-
+<!--
     <filter>
         <filter-name>GzipFilter</filter-name>
         <filter-class>com.planetj.servlet.filter.compression.CompressingFilter</filter-class>
@@ -50,6 +52,6 @@ THE SOFTWARE.
     <filter-mapping>
         <filter-name>GzipFilter</filter-name>
         <url-pattern>/*</url-pattern>
-    </filter-mapping>
+    </filter-mapping>-->
 
 </web-fragment>
