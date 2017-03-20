@@ -25,13 +25,16 @@ package com.armineasy.injection;
 
 import com.armineasy.injection.abstractions.GuiceInjectorModule;
 import com.armineasy.injection.abstractions.GuiceSiteInjectorModule;
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.servlet.GuiceServletContextListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -176,6 +179,29 @@ public class GuiceContext extends GuiceServletContextListener
                 log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
                 GuiceSiteInjectorModule siteInjection;
                 siteInjection = new GuiceSiteInjectorModule();
+
+                log.info("Loading any custom modules");
+                int customModuleSize = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).size();
+                ArrayList<Module> customModules = new ArrayList<>();
+                for (Iterator<Class<?>> iterator = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).iterator(); iterator.hasNext();)
+                {
+                    try
+                    {
+                        Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) iterator.next();
+                        Module instance = next.newInstance();
+                        customModules.add(instance);
+                    }
+                    catch (InstantiationException ex)
+                    {
+                        Logger.getLogger(GuiceContext.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    catch (IllegalAccessException ex)
+                    {
+                        Logger.getLogger(GuiceContext.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                customModules.add(defaultInjection);
+                customModules.add(siteInjection);
                 injector = Guice.createInjector(defaultInjection, siteInjection);
                 log.info("Finished with Guice");
             }

@@ -25,33 +25,4 @@ THE SOFTWARE.
 
 <web-fragment version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd">
     <name>JWebSwingCore</name>
-    <filter>
-        <filter-name>SetCacheControl</filter-name>
-        <filter-class>com.armineasy.injection.filters.CacheControlFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>SetCacheControl</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    
-    
-    <!--<filter>
-        <filter-name>CorsAllowedFilter</filter-name>
-        <filter-class>com.armineasy.injection.filters.CorsAllowedFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>CorsAllowedFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>-->
-
-<!--
-    <filter>
-        <filter-name>GzipFilter</filter-name>
-        <filter-class>com.planetj.servlet.filter.compression.CompressingFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>GzipFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>-->
-
 </web-fragment>

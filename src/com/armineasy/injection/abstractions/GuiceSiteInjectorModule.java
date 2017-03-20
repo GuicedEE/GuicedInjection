@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License
  *
  * Copyright 2017 Marc Magon.
@@ -24,7 +24,6 @@
 package com.armineasy.injection.abstractions;
 
 import com.armineasy.injection.GuiceContext;
-import com.armineasy.injection.filters.CorsAllowedFilter;
 import com.armineasy.injection.interfaces.DefaultModuleMethods;
 import com.armineasy.injection.interfaces.GuiceSiteBinder;
 import com.google.inject.Binding;
@@ -39,6 +38,7 @@ import com.google.inject.servlet.ServletModule;
 import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.TypeListener;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -77,8 +77,9 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
      * @param urlPatterns
-     * @return 
+     * @return
      */
     public ServletKeyBindingBuilder serveSite(Iterable<String> urlPatterns)
     {
@@ -87,9 +88,10 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * regexes - Any Java-style regular expressions. Since: 4.1
+     *
      * @param regex
      * @param regexes
-     * @return 
+     * @return
      */
     public ServletKeyBindingBuilder serveSiteRegex(String regex, String... regexes)
     {
@@ -98,8 +100,9 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * regexes - Any Java-style regular expressions. Since: 4.1
+     *
      * @param regexes
-     * @return 
+     * @return
      */
     public ServletKeyBindingBuilder serveSiteRegex(Iterable<String> regexes)
     {
@@ -112,8 +115,8 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
     public void runBinders()
     {
         //defaults
-        filter("/*").through(CorsAllowedFilter.class);
-        
+        //filter("/*").through(CorsAllowedFilter.class);
+
         Reflections reflections = GuiceContext.reflect();
         Set<Class<? extends GuiceSiteBinder>> siteBinders = reflections.getSubTypesOf(GuiceSiteBinder.class);
         log.log(Level.CONFIG, "Total number of site injectors - {0}", siteBinders.size());
@@ -194,8 +197,9 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
      * @param urlPatterns
-     * @return 
+     * @return
      */
     public FilterKeyBindingBuilder filter$(Iterable<String> urlPatterns)
     {
@@ -204,9 +208,10 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * regexes - Any Java-style regular expressions. Since: 4.1
+     *
      * @param regex
      * @param regexes
-     * @return 
+     * @return
      */
     public FilterKeyBindingBuilder filterRegex$(String regex, String... regexes)
     {
@@ -215,8 +220,9 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
      * @param regexes
-     * @return 
+     * @return
      */
     public FilterKeyBindingBuilder filterRegex$(Iterable<String> regexes)
     {
@@ -225,9 +231,10 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
      * @param urlPattern
      * @param morePatterns
-     * @return 
+     * @return
      */
     public ServletKeyBindingBuilder serve$(String urlPattern, String... morePatterns)
     {
@@ -236,8 +243,9 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
      * @param urlPatterns
-     * @return 
+     * @return
      */
     public ServletKeyBindingBuilder serve$(Iterable<String> urlPatterns)
     {
@@ -246,9 +254,10 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
      * @param regex
      * @param regexes
-     * @return 
+     * @return
      */
     public ServletKeyBindingBuilder serveRegex$(String regex, String... regexes)
     {
@@ -257,8 +266,9 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * regexes - Any Java-style regular expressions. Since: 4.1
+     *
      * @param regexes
-     * @return 
+     * @return
      */
     public ServletKeyBindingBuilder serveRegex$(Iterable<String> regexes)
     {
@@ -267,7 +277,8 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * This method only works if you are using the GuiceServletContextListener to create your injector. Otherwise, it returns null.
-     * @return 
+     *
+     * @return
      */
     public javax.servlet.ServletContext getServletContext$()
     {
@@ -276,13 +287,19 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     /**
      * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
      * @param urlPattern
      * @param morePatterns
-     * @return 
+     * @return
      */
     public FilterKeyBindingBuilder filter$(String urlPattern, String... morePatterns)
     {
         return super.filter(urlPattern, morePatterns);
+    }
+
+    public void bindInterceptor$(Matcher<? super Class<?>> classMatcher, Matcher<? super Method> methodMatcher, org.aopalliance.intercept.MethodInterceptor... interceptors)
+    {
+        super.bindInterceptor(classMatcher, methodMatcher, interceptors);
     }
 
 }
