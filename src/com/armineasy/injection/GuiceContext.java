@@ -25,16 +25,13 @@ package com.armineasy.injection;
 
 import com.armineasy.injection.abstractions.GuiceInjectorModule;
 import com.armineasy.injection.abstractions.GuiceSiteInjectorModule;
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.servlet.GuiceServletContextListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -180,9 +177,9 @@ public class GuiceContext extends GuiceServletContextListener
                 GuiceSiteInjectorModule siteInjection;
                 siteInjection = new GuiceSiteInjectorModule();
 
-                log.info("Loading any custom modules");
-                int customModuleSize = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).size();
-                ArrayList<Module> customModules = new ArrayList<>();
+                //log.info("Loading any custom modules");
+                //int customModuleSize = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).size();
+                /*ArrayList<Module> customModules = new ArrayList<>();
                 for (Iterator<Class<?>> iterator = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).iterator(); iterator.hasNext();)
                 {
                     try
@@ -201,15 +198,17 @@ public class GuiceContext extends GuiceServletContextListener
                     }
                 }
                 customModules.add(defaultInjection);
-                customModules.add(siteInjection);
+                customModules.add(siteInjection);*/
                 injector = Guice.createInjector(defaultInjection, siteInjection);
                 log.info("Finished with Guice");
+                buildingInjector = false;
             }
             else
             {
                 log.info("Premature call to GuiceContext.inject. Injector is still currently building, are you calling guice context from a constructor? consider using init() or preconfigure()");
             }
         }
+        buildingInjector = false;
         return injector;
     }
 
