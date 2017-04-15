@@ -25,13 +25,17 @@ package com.armineasy.injection;
 
 import com.armineasy.injection.abstractions.GuiceInjectorModule;
 import com.armineasy.injection.abstractions.GuiceSiteInjectorModule;
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.servlet.GuiceServletContextListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,14 +59,15 @@ public class GuiceContext extends GuiceServletContextListener
 {
 
     private static final Logger log = Logger.getLogger("GuiceContext");
+    private static boolean buildingInjector = false;
     /**
      * The physical injector for the JVM container
      */
-    private static Injector injector;
+    private static transient Injector injector;
     /**
      * The actual reflections object
      */
-    private static final Reflections reflections;
+    private static transient Reflections reflections;
 
     static
     {
@@ -106,10 +111,7 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public GuiceContext()
     {
-        log.info("Starting Up Guice Context");
-        log.config("Starting up reflectors");
         reflect();
-        log.config("Reflector configured");
     }
 
     /**
@@ -155,8 +157,6 @@ public class GuiceContext extends GuiceServletContextListener
         return inject();
     }
 
-    private static boolean buildingInjector = false;
-
     /**
      * Static reference to build an injector. May miss some classes if called at the wrong time. Better to use a class instantiator
      *
@@ -177,14 +177,16 @@ public class GuiceContext extends GuiceServletContextListener
                 GuiceSiteInjectorModule siteInjection;
                 siteInjection = new GuiceSiteInjectorModule();
 
-                //log.info("Loading any custom modules");
-                //int customModuleSize = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).size();
-                /*ArrayList<Module> customModules = new ArrayList<>();
+                int customModuleSize = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).size();
+                log.log(Level.INFO, "Loading Custom Modules [{0}]", customModuleSize);
+                ArrayList<Module> customModules = new ArrayList<>();
+                Module[] cModules;
                 for (Iterator<Class<?>> iterator = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).iterator(); iterator.hasNext();)
                 {
                     try
                     {
                         Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) iterator.next();
+                        log.log(Level.INFO, "Adding Module [{0}]", next.getCanonicalName());
                         Module instance = next.newInstance();
                         customModules.add(instance);
                     }
@@ -197,9 +199,11 @@ public class GuiceContext extends GuiceServletContextListener
                         Logger.getLogger(GuiceContext.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                customModules.add(defaultInjection);
-                customModules.add(siteInjection);*/
-                injector = Guice.createInjector(defaultInjection, siteInjection);
+                customModules.add(0, siteInjection);
+                customModules.add(0, defaultInjection);
+                cModules = new Module[customModules.size()];
+                cModules = (Module[]) customModules.toArray(cModules);
+                injector = Guice.createInjector(cModules);
                 log.info("Finished with Guice");
                 buildingInjector = false;
             }
@@ -232,5 +236,20 @@ public class GuiceContext extends GuiceServletContextListener
     {
         injector = null;
         super.contextDestroyed(servletContextEvent);
+    }
+
+    public static void setReflections(Reflections reflections)
+    {
+        GuiceContext.reflections = reflections;
+    }
+
+    public static <T> T getInstance(Class<T> type)
+    {
+        return inject().getInstance(type);
+    }
+
+    public static <T> T getInstance(Key<T> type)
+    {
+        return inject().getInstance(type);
     }
 }

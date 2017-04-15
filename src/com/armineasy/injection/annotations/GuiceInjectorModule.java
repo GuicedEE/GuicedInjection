@@ -23,11 +23,23 @@
  */
 package com.armineasy.injection.annotations;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  *
  * @author Marc Magon
  * @since 19 Mar 2017
  */
+@Target(
+        {
+            ElementType.FIELD, ElementType.TYPE, ElementType.LOCAL_VARIABLE, ElementType.PACKAGE, ElementType.METHOD, ElementType.TYPE_PARAMETER, ElementType.TYPE_USE
+        })
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
 public @interface GuiceInjectorModule
 {
 

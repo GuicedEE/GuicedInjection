@@ -6,8 +6,6 @@
         <group name="JWebSwingStaticPage"/>
         <group name="JWebswing Static"/>
         <group name="JWebSwing"/>
-        <group name="JWebSwing Plugins">
-            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/abstractions/GuiceInjectorModule.java</file>
-        </group>
+        <group name="JWebSwing Plugins"/>
     </open-files>
 </project-private>
