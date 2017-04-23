@@ -41,6 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContextEvent;
 import org.reflections.Reflections;
+import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -101,7 +102,15 @@ public class GuiceContext extends GuiceServletContextListener
         reflections = new Reflections(new ConfigurationBuilder()
                 .setScanners(new SubTypesScanner(false /*
                      * don't exclude Object.class
-                 */), new ResourcesScanner(), new TypeAnnotationsScanner()
+                 */), new ResourcesScanner(),
+                             new TypeAnnotationsScanner(),
+                             new FieldAnnotationsScanner()
+                //  ,new MethodAnnotationsScanner(),
+                //  new MemberUsageScanner(),
+                //  new TypeAnnotationsScanner(),
+                //  new MethodParameterNamesScanner(),
+                //   new MethodParameterScanner(),
+                //    new TypeElementsScanner()
                 ).setUrls(urls)
         );
     }
@@ -251,5 +260,10 @@ public class GuiceContext extends GuiceServletContextListener
     public static <T> T getInstance(Key<T> type)
     {
         return inject().getInstance(type);
+    }
+
+    public static void destroy()
+    {
+        reflections = null;
     }
 }
