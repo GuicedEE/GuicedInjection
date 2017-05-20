@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License
  *
  * Copyright 2017 Marc Magon.
@@ -61,6 +61,7 @@ public class GZipServletFilter implements Filter
      * @param request
      * @param response
      * @param chain
+     *
      * @throws IOException
      * @throws ServletException
      */
@@ -92,6 +93,7 @@ public class GZipServletFilter implements Filter
      * Sets the accept encoding
      *
      * @param httpRequest
+     *
      * @return
      */
     private boolean acceptsGZipEncoding(HttpServletRequest httpRequest)
@@ -194,6 +196,7 @@ class GZipServletResponseWrapper extends HttpServletResponseWrapper
      * Returns an output stream of GZIP
      *
      * @return
+     *
      * @throws IOException
      */
     @Override
@@ -216,6 +219,7 @@ class GZipServletResponseWrapper extends HttpServletResponseWrapper
      * Writes the GZIP
      *
      * @return
+     *
      * @throws IOException
      */
     @Override
@@ -290,4 +294,19 @@ class GZipServletOutputStream extends ServletOutputStream
     {
         this.gzipOutputStream.write(b);
     }
+
+    //@Override
+    @SuppressWarnings("override")
+    public boolean isReady()
+    {
+        return true;
+    }
+
+    //@Override
+    @SuppressWarnings("override")
+    public void setWriteListener(WriteListener writeListener)
+    {
+
+    }
+
 }

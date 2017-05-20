@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License
  *
  * Copyright 2017 Marc Magon.
@@ -36,8 +36,13 @@ import java.util.Comparator;
 public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, DefaultBinder<GuiceSiteInjectorModule>
 {
 
+    /**
+     * A default regex to identify query parameters
+     */
     protected static String QueryParametersRegex = "(\\?.*)?";
-
+    /**
+     * Default order 100
+     */
     private int DefaultSortOrder = 100;
 
     /**
@@ -58,6 +63,11 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
         return DefaultSortOrder;
     }
 
+    /**
+     * Sets the default sort order
+     *
+     * @param DefaultSortOrder
+     */
     public void setDefaultSortOrder(int DefaultSortOrder)
     {
         this.DefaultSortOrder = DefaultSortOrder;

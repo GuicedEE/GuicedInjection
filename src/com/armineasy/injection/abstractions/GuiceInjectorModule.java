@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License
  *
  * Copyright 2017 Marc Magon.
@@ -27,18 +27,23 @@ import com.armineasy.injection.GuiceContext;
 import com.armineasy.injection.interfaces.DefaultModuleMethods;
 import com.armineasy.injection.interfaces.GuiceDefaultBinder;
 import com.google.inject.*;
-import com.google.inject.binder.*;
+import com.google.inject.binder.AnnotatedBindingBuilder;
+import com.google.inject.binder.AnnotatedConstantBindingBuilder;
+import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.TypeListener;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.reflections.Reflections;
 
 /**
- * Is an injector module for Guice
+ * Is a default injector module for Guice
  *
  * @author GedMarc
  * @since 12 Dec 2016
@@ -49,6 +54,9 @@ public class GuiceInjectorModule extends AbstractModule implements DefaultModule
 
     private static final Logger log = Logger.getLogger("GuiceInjectorModule");
 
+    /**
+     * Constructs a new instance of the module
+     */
     public GuiceInjectorModule()
     {
         //Nothing Needed
@@ -62,7 +70,7 @@ public class GuiceInjectorModule extends AbstractModule implements DefaultModule
         log.log(Level.CONFIG, "Running Default Injection Binders");
         Reflections reflections = GuiceContext.reflect();
         Set<Class<? extends GuiceDefaultBinder>> sets = reflections.getSubTypesOf(GuiceDefaultBinder.class);
-        log.log(Level.INFO, "Total number of default injectors going to call " + sets.size());
+        log.log(Level.INFO, "Total number of default injectors going to call {0}", sets.size());
         List<GuiceDefaultBinder> objects = new ArrayList<>();
         sets.forEach(next ->
         {

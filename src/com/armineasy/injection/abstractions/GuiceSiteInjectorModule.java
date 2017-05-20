@@ -68,6 +68,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      *
      * @param urlPattern
      * @param morePatterns
+     *
      * @return
      */
     public ServletKeyBindingBuilder serveSite(String urlPattern, String... morePatterns)
@@ -79,6 +80,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
      *
      * @param urlPatterns
+     *
      * @return
      */
     public ServletKeyBindingBuilder serveSite(Iterable<String> urlPatterns)
@@ -91,6 +93,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      *
      * @param regex
      * @param regexes
+     *
      * @return
      */
     public ServletKeyBindingBuilder serveSiteRegex(String regex, String... regexes)
@@ -102,6 +105,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      * regexes - Any Java-style regular expressions. Since: 4.1
      *
      * @param regexes
+     *
      * @return
      */
     public ServletKeyBindingBuilder serveSiteRegex(Iterable<String> regexes)
@@ -199,6 +203,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
      *
      * @param urlPatterns
+     *
      * @return
      */
     public FilterKeyBindingBuilder filter$(Iterable<String> urlPatterns)
@@ -211,6 +216,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      *
      * @param regex
      * @param regexes
+     *
      * @return
      */
     public FilterKeyBindingBuilder filterRegex$(String regex, String... regexes)
@@ -222,6 +228,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
      *
      * @param regexes
+     *
      * @return
      */
     public FilterKeyBindingBuilder filterRegex$(Iterable<String> regexes)
@@ -234,6 +241,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      *
      * @param urlPattern
      * @param morePatterns
+     *
      * @return
      */
     public ServletKeyBindingBuilder serve$(String urlPattern, String... morePatterns)
@@ -245,6 +253,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
      *
      * @param urlPatterns
+     *
      * @return
      */
     public ServletKeyBindingBuilder serve$(Iterable<String> urlPatterns)
@@ -257,6 +266,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      *
      * @param regex
      * @param regexes
+     *
      * @return
      */
     public ServletKeyBindingBuilder serveRegex$(String regex, String... regexes)
@@ -268,6 +278,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      * regexes - Any Java-style regular expressions. Since: 4.1
      *
      * @param regexes
+     *
      * @return
      */
     public ServletKeyBindingBuilder serveRegex$(Iterable<String> regexes)
@@ -290,6 +301,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      *
      * @param urlPattern
      * @param morePatterns
+     *
      * @return
      */
     public FilterKeyBindingBuilder filter$(String urlPattern, String... morePatterns)
@@ -297,6 +309,13 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
         return super.filter(urlPattern, morePatterns);
     }
 
+    /**
+     * Binds a method intercepter
+     *
+     * @param classMatcher
+     * @param methodMatcher
+     * @param interceptors
+     */
     public void bindInterceptor$(Matcher<? super Class<?>> classMatcher, Matcher<? super Method> methodMatcher, org.aopalliance.intercept.MethodInterceptor... interceptors)
     {
         super.bindInterceptor(classMatcher, methodMatcher, interceptors);

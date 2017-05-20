@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License
  *
  * Copyright 2017 Marc Magon.
@@ -29,14 +29,15 @@ import java.util.Comparator;
  * Maps URL's to Servlet classes across multiple JAR's and/or enterprise archives
  *
  * @author GedMarc
- * @param <GuiceInjectionModule>
  * @since 12 Dec 2016
  *
  */
 public abstract class GuiceDefaultBinder
         implements Comparator<GuiceDefaultBinder>, DefaultBinder<com.armineasy.injection.abstractions.GuiceInjectorModule>
 {
+
     private static final int DefaultSortOrder = 100;
+
     /**
      * Blank constructor
      */
@@ -47,7 +48,8 @@ public abstract class GuiceDefaultBinder
 
     /**
      * The default value is 100
-     * @return 
+     *
+     * @return
      */
     public Integer sortOrder()
     {
