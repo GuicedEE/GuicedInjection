@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2017 Marc Magon
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,10 +19,7 @@ package com.armineasy.injection.abstractions;
 import com.armineasy.injection.GuiceContext;
 import com.armineasy.injection.interfaces.DefaultModuleMethods;
 import com.armineasy.injection.interfaces.GuiceSiteBinder;
-import com.google.inject.Binding;
-import com.google.inject.Key;
-import com.google.inject.Scope;
-import com.google.inject.TypeLiteral;
+import com.google.inject.*;
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.AnnotatedConstantBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
@@ -51,9 +48,42 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 
     private static final Logger log = Logger.getLogger("GuiceSiteInjectorModule");
 
+    private int sortOrder = 100;
+
     public GuiceSiteInjectorModule()
     {
         //Nothing needed
+    }
+
+    /**
+     * Gets the current sort order, default 100
+     *
+     * @return
+     */
+    public int getSortOrder()
+    {
+        return sortOrder;
+    }
+
+    /**
+     * Sets the current sort order default 100
+     *
+     * @param sortOrder
+     */
+    public void setSortOrder(int sortOrder)
+    {
+        this.sortOrder = sortOrder;
+    }
+
+    /**
+     * Installs a given module
+     *
+     * @param module
+     */
+    @Override
+    public void install(Module module)
+    {
+        super.install(module);
     }
 
     /**
@@ -145,47 +175,94 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
      * Runs the binders
      */
     @Override
-    protected void configureServlets()
+    public void configureServlets()
     {
         runBinders();
     }
 
+    /**
+     * Binds to a given class
+     *
+     * @param <T>
+     * @param clazz
+     *
+     * @return
+     */
     @Override
     public <T> AnnotatedBindingBuilder<T> bind(Class<T> clazz)
     {
         return super.bind(clazz);
     }
 
+    /**
+     * Binds to a given guice key
+     *
+     * @param <T>
+     * @param key
+     *
+     * @return
+     */
     @Override
     public <T> LinkedBindingBuilder<T> bind(Key<T> key)
     {
         return super.bind(key);
     }
 
+    /**
+     * Binds to a given type literal
+     *
+     * @param <T>
+     * @param typeLiteral
+     *
+     * @return
+     */
     @Override
     public <T> AnnotatedBindingBuilder<T> bind(TypeLiteral<T> typeLiteral)
     {
         return super.bind(typeLiteral);
     }
 
+    /**
+     * Binds to a given constant
+     *
+     * @return
+     */
     @Override
     public AnnotatedConstantBindingBuilder bindConstant()
     {
         return super.bindConstant();
     }
 
+    /**
+     * Bind listener
+     *
+     * @param bindingMatcher
+     * @param listener
+     */
     @Override
     public void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener)
     {
         super.bindListener(bindingMatcher, listener);
     }
 
+    /**
+     * Bind listener
+     *
+     * @param typeMatcher
+     * @param listener
+     */
     @Override
     public void bindListener(Matcher<? super TypeLiteral<?>> typeMatcher, TypeListener listener)
     {
         super.bindListener(typeMatcher, listener);
     }
 
+    /**
+     * Binds to a given scope
+     *
+     * @param scopeAnnotation
+     * @param scope
+     */
     @Override
     public void bindScope(Class<? extends Annotation> scopeAnnotation, Scope scope)
     {

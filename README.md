@@ -1,14 +1,21 @@
 # GuiceInjection
-Finally inject across multiple JARS inside of EAR's and WAR's
-A java Guice Assistant that allows you to perform binding in multiple JAR's using org.reflections.
+
+Guice Injection allows you to access multiple Guice Binders and Modules across separate archives. Allowing you to configure your applications with injection from multiple dependencies.
 
 
-Currently only the Guice default binder and Guice Servlet binder are accessible,
-Has a gzip and caching filter for sites which is always nice
+Servlets, EJB's, and Stand-Alone is supported. Requires JDK 8.
+Tested on TomEE, Tomcat8, Glassfish4, Payara, JBoss5, WildFly.
 
-Use like
+Current development includes support for MicroProfile Services cross spectrum.
+
+Finally inject across multiple JARS inside of EAR's and WAR's.
+Separate your service finder for simple testing, with the full power of Guice on your fingertips!
+
+A java Guice Assistant that allows you to perform multiple and dynamic binding, using org.reflections.
+
+Most Basic Usage Example
 ```
-public class JWebSwingSiteBinder extends GuiceSiteBinder
+
 public class CustomerBinderJar1 extends GuiceDefaultBinder
 {
     @Override
@@ -19,5 +26,7 @@ public class CustomerBinderJar1 extends GuiceDefaultBinder
 ```
 Access via @Inject Injector injector or GuiceContext.Injector()
 
+
+public class JWebSwingSiteBinder extends GuiceSiteBinder
 
 

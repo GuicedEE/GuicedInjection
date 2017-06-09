@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2017 Marc Magon
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,9 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContextEvent;
 import org.reflections.Reflections;
 import org.reflections.scanners.AbstractScanner;
+import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
@@ -46,6 +48,9 @@ public class GuiceContext extends GuiceServletContextListener
 
     private static final Logger log = Logger.getLogger("GuiceContext");
 
+    /**
+     * The building injector
+     */
     private static boolean buildingInjector = false;
     /**
      * The physical injector for the JVM container
@@ -56,14 +61,29 @@ public class GuiceContext extends GuiceServletContextListener
      */
     private static transient Reflections reflections;
 
+    /**
+     * Include Sub Type Scanning
+     */
     public static boolean includeSubTypesScanner = true;
+    /**
+     * Include Scan Resource Files
+     */
     public static boolean includeResourcesScanner = true;
+    /**
+     * Include Scan Type Annotations
+     */
     public static boolean includeTypeAnnotationsScanner = true;
+    /**
+     * Include Field Annotations Scanner
+     */
     public static boolean includeFieldAnnotationScanner = true;
+    /**
+     * Include Method Annotation Scanner
+     */
     public static boolean includeMethodAnnotationScanner = false;
 
     /**
-     * Creates a new Guice context. Should only happen once
+     * Creates a new Guice context. Not necessary
      */
     public GuiceContext()
     {
@@ -79,21 +99,13 @@ public class GuiceContext extends GuiceServletContextListener
     public void contextInitialized(ServletContextEvent servletContextEvent)
     {
         log.info("Context Initialized... ");
-
         log.info("Starting Up Servlet Context");
         Date startDate = new Date();
         reflect(servletContextEvent);
         Date endDate = new Date();
-        log.log(Level.INFO, "Reflections loaded successfully. [{0}]", endDate.getTime() - startDate.getTime());
-        reflect();
-        try
-        {
-            super.contextInitialized(servletContextEvent);
-        }
-        catch (NullPointerException npe)
-        {
-            log.warning("Null Pointer Exception For Servlet Context Event");
-        }
+        log.log(Level.INFO, "Reflections loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
+        inject();
+        log.log(Level.INFO, "Guice loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
     }
 
     /**
@@ -126,103 +138,116 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public static Reflections reflect(ServletContextEvent... events)
     {
-        List<ClassLoader> classLoadersList = new ArrayList<>();
-        try
+        if (reflections == null)
         {
-            classLoadersList.add(ClasspathHelper.contextClassLoader());
-        }
-        catch (NoClassDefFoundError classNotFound)
-        {
-            log.log(Level.SEVERE, "Can't access context class loader, probably not running in a separate jar", classNotFound);
-        }
-
-        Collection<URL> urls = new ArrayList<>();
-        try
-        {
-            urls.addAll(ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0])));
-        }
-        catch (NoClassDefFoundError classNotFound)
-        {
-            log.log(Level.SEVERE, "Can't access static class loader, probably not running in a separate jar", classNotFound);
-        }
-
-        if (events != null && events.length > 0)
-        {
+            log.info("Starting up reflections");
+            List<ClassLoader> classLoadersList = new ArrayList<>();
             try
             {
-                for (ServletContextEvent servletContextEvent : events)
-                {
-                    if (servletContextEvent != null)
-                    {
-                        for (URL url : ClasspathHelper.forWebInfLib(servletContextEvent.getServletContext()))
-                        {
-                            if (url == null)
-                            {
-                                continue;
-                            }
-                            if (!urls.contains(url))
-                            {
-                                urls.add(url);
-                            }
-                        }
-                        urls.add(ClasspathHelper.forWebInfClasses(servletContextEvent.getServletContext()));
-                    }
-                }
-
+                classLoadersList.add(ClasspathHelper.contextClassLoader());
             }
-            catch (Exception e)
+            catch (NoClassDefFoundError classNotFound)
             {
-                log.log(Level.SEVERE, "Can't access Java Class Path, probably not running in a separate jar", e);
+                log.log(Level.SEVERE, "Can't access context class loader, probably not running in a separate jar", classNotFound);
             }
-        }
-        //;
-        //ClasspathHelper.forWebInfClasses(servletContextEvent.getServletContext());
-        List<AbstractScanner> scanners = new ArrayList<>();
-        if (includeSubTypesScanner)
-        {
-            scanners.add(new SubTypesScanner(false));
-        }
-        if (includeResourcesScanner)
-        {
-            scanners.add(new SubTypesScanner(false));
-        }
+            Collection<URL> urls = new ArrayList<>();
+            if (events != null && events.length > 0)
+            {
+                log.config("Reflections found servlet context event. Building on WEB-INF");
+                try
+                {
+                    for (ServletContextEvent servletContextEvent : events)
+                    {
+                        if (servletContextEvent != null)
+                        {
+                            for (URL url : ClasspathHelper.forWebInfLib(servletContextEvent.getServletContext()))
+                            {
+                                if (url == null)
+                                {
+                                    continue;
+                                }
+                                if (!urls.contains(url))
+                                {
+                                    urls.add(url);
+                                }
+                            }
+                            urls.add(ClasspathHelper.forWebInfClasses(servletContextEvent.getServletContext()));
+                        }
+                    }
 
-        if (includeTypeAnnotationsScanner)
-        {
-            scanners.add(new SubTypesScanner(false));
-        }
+                }
+                catch (Exception e)
+                {
+                    log.log(Level.SEVERE, "Can't access Java Class Path, probably not running in a separate jar", e);
+                }
+            }
 
-        if (includeFieldAnnotationScanner)
-        {
-            scanners.add(new SubTypesScanner(false));
-        }
+            if (urls.isEmpty())
+            {
+                log.config("Reflections is swallowing the class path, no servlet context event supplied");
+                try
+                {
+                    urls.addAll(ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0])));
+                }
+                catch (NoClassDefFoundError classNotFound)
+                {
+                    log.log(Level.SEVERE, "Can't access static class loader, probably not running in a separate jar", classNotFound);
+                }
+            }
 
-        if (includeMethodAnnotationScanner)
-        {
-            scanners.add(new SubTypesScanner(false));
-        }
-        //  new MemberUsageScanner(),
-        //  new TypeAnnotationsScanner(),
-        //  new MethodParameterNamesScanner(),
-        //   new MethodParameterScanner(),
-        //    new TypeElementsScanner()
+            //;
+            //ClasspathHelper.forWebInfClasses(servletContextEvent.getServletContext());
+            List<AbstractScanner> scanners = new ArrayList<>();
+            if (includeSubTypesScanner)
+            {
+                scanners.add(new SubTypesScanner(false));
+            }
+            if (includeResourcesScanner)
+            {
+                scanners.add(new ResourcesScanner());
+            }
+            if (includeTypeAnnotationsScanner)
+            {
+                scanners.add(new TypeAnnotationsScanner());
+            }
+            /*
+             *
+             *
+             * if (includeFieldAnnotationScanner)
+             * {
+             * scanners.add(new FieldAnnotationsScanner());
+             * }
+             *
+             * if (includeMethodAnnotationScanner)
+             * {
+             * scanners.add(new MethodAnnotationsScanner());
+             * }
+             */
+            //  new MemberUsageScanner(),
+            //  new TypeAnnotationsScanner(),
+            //  new MethodParameterNamesScanner(),
+            //   new MethodParameterScanner(),
+            //    new TypeElementsScanner()
 
-        AbstractScanner[] scanArrays = new AbstractScanner[scanners.size()];
-        scanArrays = scanners.toArray(scanArrays);
-        reflections = new Reflections(new ConfigurationBuilder()
-                .setScanners(scanArrays
-                ).setUrls(urls));
+            AbstractScanner[] scanArrays = new AbstractScanner[scanners.size()];
+            scanArrays = scanners.toArray(scanArrays);
+            log.fine("Reflections building in-memory grid..");
+            reflections = new Reflections(new ConfigurationBuilder()
+                    .setScanners(scanArrays
+                    ).setUrls(urls));
+            log.info("Completed loading up reflections");
+        }
         return reflections;
     }
 
     /**
-     * Static reference to build an injector. May miss some classes if called at
-     * the wrong time. Better to use a class instantiator
+     * Reference the Injector Directly
      *
      * @return
      */
     public static Injector inject()
     {
+
         if (injector == null)
         {
             if (buildingInjector == false)
@@ -232,36 +257,28 @@ public class GuiceContext extends GuiceServletContextListener
                 log.config("Startup Executions....");
                 Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
                 List<GuicePreStartup> startups = new ArrayList<>();
-                for (Class<? extends GuicePreStartup> pre : pres)
+                pres.stream().map(pre -> GuiceContext.getInstance(pre)).forEachOrdered(happen ->
                 {
-                    GuicePreStartup happen = GuiceContext.getInstance(pre);
                     startups.add(happen);
-                }
-
-                Collections.sort(startups, new Comparator<GuicePreStartup>()
-                {
-                    @Override
-                    public int compare(GuicePreStartup o1, GuicePreStartup o2)
-                    {
-                        return o1.sortOrder().compareTo(o2.sortOrder());
-                    }
                 });
+                Collections.sort(startups, (GuicePreStartup o1, GuicePreStartup o2) -> o1.sortOrder().compareTo(o2.sortOrder()));
                 log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
-                for (GuicePreStartup startup : startups)
+                startups.forEach(startup ->
                 {
                     startup.onStartup();
-                }
+                });
                 log.info("Finished Startup Execution");
-
                 log.config("Loading All Default Binders (that extend GuiceDefaultBinder)");
+
                 GuiceInjectorModule defaultInjection;
                 defaultInjection = new GuiceInjectorModule();
                 log.config("Loading All Site Binders (that extend GuiceSiteBinder)");
+
                 GuiceSiteInjectorModule siteInjection;
                 siteInjection = new GuiceSiteInjectorModule();
 
                 int customModuleSize = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).size();
-                log.log(Level.CONFIG, "Loading Custom Modules [{0}]", customModuleSize);
+                log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
                 ArrayList<Module> customModules = new ArrayList<>();
                 Module[] cModules;
                 for (Iterator<Class<?>> iterator = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).iterator(); iterator.hasNext();)
@@ -280,35 +297,29 @@ public class GuiceContext extends GuiceServletContextListener
                 }
                 customModules.add(0, siteInjection);
                 customModules.add(0, defaultInjection);
+
                 cModules = new Module[customModules.size()];
                 cModules = (Module[]) customModules.toArray(cModules);
-                injector = Guice.createInjector(cModules);
 
+                injector = Guice.createInjector(cModules);
+                buildingInjector = false;
                 log.config("Post Startup Executions....");
                 Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
                 List<GuicePostStartup> postStartups = new ArrayList<>();
-                for (Class<? extends GuicePostStartup> pre : closingPres)
+                closingPres.stream().map(pre -> GuiceContext.getInstance(pre)).forEachOrdered(happen ->
                 {
-                    GuicePostStartup happen = GuiceContext.getInstance(pre);
                     postStartups.add(happen);
-                }
-                Collections.sort(postStartups, new Comparator<GuicePostStartup>()
-                {
-                    @Override
-                    public int compare(GuicePostStartup o1, GuicePostStartup o2)
-                    {
-                        return o1.sortOrder().compareTo(o2.sortOrder());
-                    }
                 });
+                Collections.sort(postStartups, (GuicePostStartup o1, GuicePostStartup o2) -> o1.sortOrder().compareTo(o2.sortOrder()));
                 log.log(Level.FINE, "Total of [{0}] startup modules.", postStartups.size());
-                for (GuicePostStartup startup : postStartups)
+                postStartups.stream().forEach(startup ->
                 {
+                    log.log(Level.FINE, "Starting up [{0}]", postStartups.getClass().getCanonicalName());
                     startup.postLoad();
-                }
+                });
                 log.config("Finished Post Startup Execution");
-
                 log.info("Finished with Guice");
-                buildingInjector = false;
+
             }
             else
             {
