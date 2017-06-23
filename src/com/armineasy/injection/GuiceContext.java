@@ -28,15 +28,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContextEvent;
 import org.reflections.Reflections;
-import org.reflections.scanners.AbstractScanner;
-import org.reflections.scanners.ResourcesScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.scanners.*;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
 /**
- * Allows injection of the session, request and response
+ * Provides an interface for reflection and injection in one.
+ * <p>
+ * Use reflect() to access the class library, or inject() to get the injector for any instance
  *
  * @author GedMarc
  * @since Nov 14, 2016
@@ -64,23 +63,123 @@ public class GuiceContext extends GuiceServletContextListener
     /**
      * Include Sub Type Scanning
      */
-    public static boolean includeSubTypesScanner = true;
+    private static boolean includeSubTypesScanner = true;
     /**
      * Include Scan Resource Files
      */
-    public static boolean includeResourcesScanner = true;
+    private static boolean includeResourcesScanner = true;
     /**
      * Include Scan Type Annotations
      */
-    public static boolean includeTypeAnnotationsScanner = true;
+    private static boolean includeTypeAnnotationsScanner = true;
     /**
      * Include Field Annotations Scanner
      */
-    public static boolean includeFieldAnnotationScanner = true;
+    private static boolean includeFieldAnnotationScanner = true;
     /**
      * Include Method Annotation Scanner
      */
-    public static boolean includeMethodAnnotationScanner = false;
+    private static boolean includeMethodAnnotationScanner = false;
+
+    /**
+     * If the field annotation scanner must be included
+     *
+     * @return
+     */
+    public static boolean isIncludeFieldAnnotationScanner()
+    {
+        return includeFieldAnnotationScanner;
+    }
+
+    /**
+     * If the field annotation scanner must be enabled
+     *
+     * @param includeFieldAnnotationScanner
+     */
+    public static void setIncludeFieldAnnotationScanner(boolean includeFieldAnnotationScanner)
+    {
+        GuiceContext.includeFieldAnnotationScanner = includeFieldAnnotationScanner;
+    }
+
+    /**
+     * If the method annotation scanner must be enabled
+     *
+     * @return
+     */
+    public static boolean isIncludeMethodAnnotationScanner()
+    {
+        return includeMethodAnnotationScanner;
+    }
+
+    /**
+     * If the method annotation scanner must be enabled
+     *
+     * @param includeMethodAnnotationScanner
+     */
+    public static void setIncludeMethodAnnotationScanner(boolean includeMethodAnnotationScanner)
+    {
+        GuiceContext.includeMethodAnnotationScanner = includeMethodAnnotationScanner;
+    }
+
+    /**
+     * If the resources scanner should be enabled
+     *
+     * @return
+     */
+    public static boolean isIncludeResourcesScanner()
+    {
+        return includeResourcesScanner;
+    }
+
+    /**
+     * If the resources scanner should be enabled
+     *
+     * @param includeResourcesScanner
+     */
+    public static void setIncludeResourcesScanner(boolean includeResourcesScanner)
+    {
+        GuiceContext.includeResourcesScanner = includeResourcesScanner;
+    }
+
+    /**
+     * If the include sub types scanner should be included
+     *
+     * @return
+     */
+    public static boolean isIncludeSubTypesScanner()
+    {
+        return includeSubTypesScanner;
+    }
+
+    /**
+     * If the include sub types scanner should be included
+     *
+     * @param includeSubTypesScanner
+     */
+    public static void setIncludeSubTypesScanner(boolean includeSubTypesScanner)
+    {
+        GuiceContext.includeSubTypesScanner = includeSubTypesScanner;
+    }
+
+    /**
+     * If the type annotations scanner should be included
+     *
+     * @return
+     */
+    public static boolean isIncludeTypeAnnotationsScanner()
+    {
+        return includeTypeAnnotationsScanner;
+    }
+
+    /**
+     * If the include sub types scanner should be included
+     *
+     * @param includeTypeAnnotationsScanner
+     */
+    public static void setIncludeTypeAnnotationsScanner(boolean includeTypeAnnotationsScanner)
+    {
+        GuiceContext.includeTypeAnnotationsScanner = includeTypeAnnotationsScanner;
+    }
 
     /**
      * Creates a new Guice context. Not necessary
@@ -210,25 +309,16 @@ public class GuiceContext extends GuiceServletContextListener
             {
                 scanners.add(new TypeAnnotationsScanner());
             }
-            /*
-             *
-             *
-             * if (includeFieldAnnotationScanner)
-             * {
-             * scanners.add(new FieldAnnotationsScanner());
-             * }
-             *
-             * if (includeMethodAnnotationScanner)
-             * {
-             * scanners.add(new MethodAnnotationsScanner());
-             * }
-             */
-            //  new MemberUsageScanner(),
-            //  new TypeAnnotationsScanner(),
-            //  new MethodParameterNamesScanner(),
-            //   new MethodParameterScanner(),
-            //    new TypeElementsScanner()
 
+            if (includeFieldAnnotationScanner)
+            {
+                scanners.add(new FieldAnnotationsScanner());
+            }
+
+            if (includeMethodAnnotationScanner)
+            {
+                scanners.add(new MethodAnnotationsScanner());
+            }
             AbstractScanner[] scanArrays = new AbstractScanner[scanners.size()];
             scanArrays = scanners.toArray(scanArrays);
             log.fine("Reflections building in-memory grid..");
@@ -371,7 +461,15 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public static <T> T getInstance(Class<T> type)
     {
-        return inject().getInstance(type);
+        try
+        {
+            return inject().getInstance(type);
+        }
+        catch (NullPointerException npe)
+        {
+            log.log(Level.SEVERE, "Unable to return an injector", npe);
+            return null;
+        }
     }
 
     /**
@@ -384,7 +482,15 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public static <T> T getInstance(Key<T> type)
     {
-        return inject().getInstance(type);
+        try
+        {
+            return inject().getInstance(type);
+        }
+        catch (NullPointerException npe)
+        {
+            log.log(Level.SEVERE, "Unable to return an injector", npe);
+            return null;
+        }
     }
 
     /**
@@ -394,4 +500,5 @@ public class GuiceContext extends GuiceServletContextListener
     {
         reflections = null;
     }
+
 }
