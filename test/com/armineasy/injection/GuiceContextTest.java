@@ -46,7 +46,8 @@ public class GuiceContextTest extends GuiceDefaultBinder
 
     public static void main(String[] args)
     {
-
+        System.out.println("Main");
+        GuiceContext.isBuilt();
         GuiceContext.inject();
 
         GuiceContext.reflect().getSubTypesOf(GuiceDefaultBinder.class);

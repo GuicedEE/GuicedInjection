@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2017 Marc Magon
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,7 @@
 package com.armineasy.injection.abstractions;
 
 import com.armineasy.injection.GuiceContext;
+import com.armineasy.injection.Reflections;
 import com.armineasy.injection.interfaces.DefaultModuleMethods;
 import com.armineasy.injection.interfaces.GuiceDefaultBinder;
 import com.google.inject.*;
@@ -33,7 +34,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.reflections.Reflections;
 
 /**
  * Is a default injector module for Guice

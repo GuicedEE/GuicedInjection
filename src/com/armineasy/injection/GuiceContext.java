@@ -22,15 +22,13 @@ import com.armineasy.injection.annotations.GuicePostStartup;
 import com.armineasy.injection.annotations.GuicePreStartup;
 import com.google.inject.*;
 import com.google.inject.servlet.GuiceServletContextListener;
-import java.net.URL;
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContextEvent;
-import org.reflections.Reflections;
-import org.reflections.scanners.*;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
 /**
  * Provides an interface for reflection and injection in one.
@@ -47,146 +45,97 @@ public class GuiceContext extends GuiceServletContextListener
 
     private static final Logger log = Logger.getLogger("GuiceContext");
 
+    private static final GuiceContext instance = new GuiceContext();
+
     /**
      * The building injector
      */
     private static boolean buildingInjector = false;
     /**
+     * If the references are built or not
+     */
+    private static boolean built = false;
+    /**
      * The physical injector for the JVM container
      */
     private static transient Injector injector;
-    /**
-     * The actual reflections object
-     */
-    private static transient Reflections reflections;
+
+    private static FastClasspathScanner scanner;
+
+    protected static ScanResult scanResult;
 
     /**
-     * Include Sub Type Scanning
+     * Facade layer for backwards compatibility
      */
-    private static boolean includeSubTypesScanner = true;
-    /**
-     * Include Scan Resource Files
-     */
-    private static boolean includeResourcesScanner = true;
-    /**
-     * Include Scan Type Annotations
-     */
-    private static boolean includeTypeAnnotationsScanner = true;
-    /**
-     * Include Field Annotations Scanner
-     */
-    private static boolean includeFieldAnnotationScanner = true;
-    /**
-     * Include Method Annotation Scanner
-     */
-    private static boolean includeMethodAnnotationScanner = false;
+    private static Reflections reflections;
 
-    /**
-     * If the field annotation scanner must be included
-     *
-     * @return
-     */
-    public static boolean isIncludeFieldAnnotationScanner()
-    {
-        return includeFieldAnnotationScanner;
-    }
-
-    /**
-     * If the field annotation scanner must be enabled
-     *
-     * @param includeFieldAnnotationScanner
-     */
-    public static void setIncludeFieldAnnotationScanner(boolean includeFieldAnnotationScanner)
-    {
-        GuiceContext.includeFieldAnnotationScanner = includeFieldAnnotationScanner;
-    }
-
-    /**
-     * If the method annotation scanner must be enabled
-     *
-     * @return
-     */
-    public static boolean isIncludeMethodAnnotationScanner()
-    {
-        return includeMethodAnnotationScanner;
-    }
-
-    /**
-     * If the method annotation scanner must be enabled
-     *
-     * @param includeMethodAnnotationScanner
-     */
-    public static void setIncludeMethodAnnotationScanner(boolean includeMethodAnnotationScanner)
-    {
-        GuiceContext.includeMethodAnnotationScanner = includeMethodAnnotationScanner;
-    }
-
-    /**
-     * If the resources scanner should be enabled
-     *
-     * @return
-     */
-    public static boolean isIncludeResourcesScanner()
-    {
-        return includeResourcesScanner;
-    }
-
-    /**
-     * If the resources scanner should be enabled
-     *
-     * @param includeResourcesScanner
-     */
-    public static void setIncludeResourcesScanner(boolean includeResourcesScanner)
-    {
-        GuiceContext.includeResourcesScanner = includeResourcesScanner;
-    }
-
-    /**
-     * If the include sub types scanner should be included
-     *
-     * @return
-     */
-    public static boolean isIncludeSubTypesScanner()
-    {
-        return includeSubTypesScanner;
-    }
-
-    /**
-     * If the include sub types scanner should be included
-     *
-     * @param includeSubTypesScanner
-     */
-    public static void setIncludeSubTypesScanner(boolean includeSubTypesScanner)
-    {
-        GuiceContext.includeSubTypesScanner = includeSubTypesScanner;
-    }
-
-    /**
-     * If the type annotations scanner should be included
-     *
-     * @return
-     */
-    public static boolean isIncludeTypeAnnotationsScanner()
-    {
-        return includeTypeAnnotationsScanner;
-    }
-
-    /**
-     * If the include sub types scanner should be included
-     *
-     * @param includeTypeAnnotationsScanner
-     */
-    public static void setIncludeTypeAnnotationsScanner(boolean includeTypeAnnotationsScanner)
-    {
-        GuiceContext.includeTypeAnnotationsScanner = includeTypeAnnotationsScanner;
-    }
+    private static List<String> excludeJarsFromScan;
 
     /**
      * Creates a new Guice context. Not necessary
      */
-    public GuiceContext()
+    private GuiceContext()
     {
-        log.info("Context Constructed... ");
+        log.info("Starting up classpath scanner with 15 threads");
+        StringBuilder sb = new StringBuilder();
+        if (excludeJarsFromScan == null)
+        {
+            excludeJarsFromScan = new CopyOnWriteArrayList<>();
+            excludeJarsFromScan.add("fast-classpath-scanner*.jar");
+            excludeJarsFromScan.add("guava-*.jar");
+            excludeJarsFromScan.add("guice-*.jar");
+            excludeJarsFromScan.add("jackson-*.jar");
+            excludeJarsFromScan.add("javassist-*.jar");
+            excludeJarsFromScan.add("jsr305-*.jar");
+            excludeJarsFromScan.add("jsr311-*.jar");
+            excludeJarsFromScan.add("animal-sniffer-*.jar");
+            excludeJarsFromScan.add("annotations-*.jar");
+            excludeJarsFromScan.add("aopalliance-*.jar");
+            excludeJarsFromScan.add("aspectjrt-*.jar");
+            excludeJarsFromScan.add("error_prone_annotations-*.jar");
+            excludeJarsFromScan.add("j2odbc-*.jar");
+            excludeJarsFromScan.add("javax.inject-*.jar");
+            excludeJarsFromScan.add("jcabi-*.jar");
+            excludeJarsFromScan.add("sl4j-*.jar");
+            excludeJarsFromScan.add("validation-api-*.jar");
+        }
+        for (String excludedJar : excludeJarsFromScan)
+        {
+            sb.append("-jar:").append(excludedJar).append(",");
+        }
+        scanner = new FastClasspathScanner();
+        excludeJarsFromScan = new CopyOnWriteArrayList<>();
+        scanner.enableFieldInfo();
+        scanner.enableFieldAnnotationIndexing();
+        scanner.enableFieldTypeIndexing();
+        scanner.enableMethodAnnotationIndexing();
+        scanner.enableMethodInfo();
+        scanner.ignoreFieldVisibility();
+        scanner.ignoreMethodVisibility();
+        scanResult = scanner.scan(15);
+        scanResult.getNamesOfAllStandardClasses().forEach(log::finer);
+        log.info("Classpath Scanner Completed");
+        reflections = new Reflections();
+    }
+
+    /**
+     * If the context is built
+     *
+     * @return
+     */
+    public static boolean isBuilt()
+    {
+        return built;
+    }
+
+    /**
+     * If the context is built
+     *
+     * @param built
+     */
+    public static void setBuilt(boolean built)
+    {
+        GuiceContext.built = built;
     }
 
     /**
@@ -202,7 +151,7 @@ public class GuiceContext extends GuiceServletContextListener
         Date startDate = new Date();
         reflect(servletContextEvent);
         Date endDate = new Date();
-        log.log(Level.INFO, "Reflections loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
+        log.log(Level.FINER, "Reflections loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
         inject();
         log.log(Level.INFO, "Guice loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
     }
@@ -237,96 +186,6 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public static Reflections reflect(ServletContextEvent... events)
     {
-        if (reflections == null)
-        {
-            log.info("Starting up reflections");
-            List<ClassLoader> classLoadersList = new ArrayList<>();
-            try
-            {
-                classLoadersList.add(ClasspathHelper.contextClassLoader());
-            }
-            catch (NoClassDefFoundError classNotFound)
-            {
-                log.log(Level.SEVERE, "Can't access context class loader, probably not running in a separate jar", classNotFound);
-            }
-            Collection<URL> urls = new ArrayList<>();
-            if (events != null && events.length > 0)
-            {
-                log.config("Reflections found servlet context event. Building on WEB-INF");
-                try
-                {
-                    for (ServletContextEvent servletContextEvent : events)
-                    {
-                        if (servletContextEvent != null)
-                        {
-                            for (URL url : ClasspathHelper.forWebInfLib(servletContextEvent.getServletContext()))
-                            {
-                                if (url == null)
-                                {
-                                    continue;
-                                }
-                                if (!urls.contains(url))
-                                {
-                                    urls.add(url);
-                                }
-                            }
-                            urls.add(ClasspathHelper.forWebInfClasses(servletContextEvent.getServletContext()));
-                        }
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    log.log(Level.SEVERE, "Can't access Java Class Path, probably not running in a separate jar", e);
-                }
-            }
-
-            if (urls.isEmpty())
-            {
-                log.config("Reflections is swallowing the class path, no servlet context event supplied");
-                try
-                {
-                    urls.addAll(ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0])));
-                }
-                catch (NoClassDefFoundError classNotFound)
-                {
-                    log.log(Level.SEVERE, "Can't access static class loader, probably not running in a separate jar", classNotFound);
-                }
-            }
-
-            //;
-            //ClasspathHelper.forWebInfClasses(servletContextEvent.getServletContext());
-            List<AbstractScanner> scanners = new ArrayList<>();
-            if (includeSubTypesScanner)
-            {
-                scanners.add(new SubTypesScanner(false));
-            }
-            if (includeResourcesScanner)
-            {
-                scanners.add(new ResourcesScanner());
-            }
-            if (includeTypeAnnotationsScanner)
-            {
-                scanners.add(new TypeAnnotationsScanner());
-            }
-
-            if (includeFieldAnnotationScanner)
-            {
-                scanners.add(new FieldAnnotationsScanner());
-            }
-
-            if (includeMethodAnnotationScanner)
-            {
-                scanners.add(new MethodAnnotationsScanner());
-            }
-            AbstractScanner[] scanArrays = new AbstractScanner[scanners.size()];
-            scanArrays = scanners.toArray(scanArrays);
-            log.fine("Reflections building in-memory grid..");
-            reflections = new Reflections(new ConfigurationBuilder()
-                    .setScanners(scanArrays
-                    ).setUrls(urls));
-            log.info("Completed loading up reflections");
-        }
         return reflections;
     }
 
@@ -343,7 +202,7 @@ public class GuiceContext extends GuiceServletContextListener
             if (buildingInjector == false)
             {
                 buildingInjector = true;
-                log.info("Starting up Guice");
+                log.info("Starting up Injections");
                 log.config("Startup Executions....");
                 Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
                 List<GuicePreStartup> startups = new ArrayList<>();
@@ -377,8 +236,8 @@ public class GuiceContext extends GuiceServletContextListener
                     {
                         Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) iterator.next();
                         log.log(Level.FINE, "Adding Module [{0}]", next.getCanonicalName());
-                        Module instance = next.newInstance();
-                        customModules.add(instance);
+                        Module moduleInstance = next.newInstance();
+                        customModules.add(moduleInstance);
                     }
                     catch (InstantiationException | IllegalAccessException ex)
                     {
@@ -409,7 +268,7 @@ public class GuiceContext extends GuiceServletContextListener
                 });
                 log.config("Finished Post Startup Execution");
                 log.info("Finished with Guice");
-
+                built = true;
             }
             else
             {
@@ -498,7 +357,17 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public static void destroy()
     {
-        reflections = null;
+        System.out.println("Destroyed");
+    }
+
+    /**
+     * If context can be used
+     *
+     * @return
+     */
+    public static boolean isReady()
+    {
+        return isBuilt() && isBuildingInjector();
     }
 
 }

@@ -17,6 +17,7 @@
 package com.armineasy.injection.abstractions;
 
 import com.armineasy.injection.GuiceContext;
+import com.armineasy.injection.Reflections;
 import com.armineasy.injection.interfaces.DefaultModuleMethods;
 import com.armineasy.injection.interfaces.GuiceSiteBinder;
 import com.google.inject.*;
@@ -34,7 +35,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.reflections.Reflections;
 
 /**
  * Loads up all the Guice Servlet Binders
