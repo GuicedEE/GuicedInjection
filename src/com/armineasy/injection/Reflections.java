@@ -46,8 +46,13 @@ public class Reflections
     public <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type)
     {
         Set<Class<? extends T>> returnable = new HashSet<>();
-        List<String> subtypes = type.isInterface() ? GuiceContext.scanResult.getNamesOfSuperinterfacesOf(type) : GuiceContext.scanResult.getNamesOfSubclassesOf(type);
-        subtypes.stream().map(subtype -> (Class<T>) GuiceContext.scanResult.classNameToClassRef(subtype)).forEach(clazz ->
+        List<String> allClasses = GuiceContext.context().scanResult.getNamesOfAllClasses();
+        if (!allClasses.contains("com.armineasy.lsm.LSMSiderBar"))
+        {
+            System.out.println("No this is there!");
+        }
+        List<String> subtypes = type.isInterface() ? GuiceContext.context().scanResult.getNamesOfClassesImplementing(type) : GuiceContext.context().scanResult.getNamesOfSubclassesOf(type);
+        subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().scanResult.classNameToClassRef(subtype)).forEach(clazz ->
         {
             returnable.add(clazz);
         });
@@ -57,8 +62,8 @@ public class Reflections
     public <T> Set<Class<? extends T>> getTypesAnnotatedWith(final Class<? extends Annotation> annotation)
     {
         Set<Class<? extends T>> returnable = new HashSet<>();
-        List<String> subtypes = GuiceContext.scanResult.getNamesOfClassesWithAnnotation(annotation);
-        subtypes.stream().map(subtype -> (Class<T>) GuiceContext.scanResult.classNameToClassRef(subtype)).forEach(clazz ->
+        List<String> subtypes = GuiceContext.context().scanResult.getNamesOfClassesWithAnnotation(annotation);
+        subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().scanResult.classNameToClassRef(subtype)).forEach(clazz ->
         {
             returnable.add(clazz);
         });

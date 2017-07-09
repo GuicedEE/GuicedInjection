@@ -25,7 +25,6 @@ import com.google.inject.servlet.GuiceServletContextListener;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContextEvent;
@@ -45,7 +44,7 @@ public class GuiceContext extends GuiceServletContextListener
 
     private static final Logger log = Logger.getLogger("GuiceContext");
 
-    private static final GuiceContext instance = new GuiceContext();
+    private static GuiceContext instance;
 
     /**
      * The building injector
@@ -58,53 +57,126 @@ public class GuiceContext extends GuiceServletContextListener
     /**
      * The physical injector for the JVM container
      */
-    private static transient Injector injector;
+    private transient Injector injector;
 
-    private static FastClasspathScanner scanner;
-
-    protected static ScanResult scanResult;
+    /**
+     * The actual scanner
+     */
+    private transient FastClasspathScanner scanner;
+    /**
+     * The scan result built from everything - the core scanner.
+     */
+    protected transient ScanResult scanResult;
 
     /**
      * Facade layer for backwards compatibility
      */
-    private static Reflections reflections;
+    private transient Reflections reflections;
 
-    private static List<String> excludeJarsFromScan;
+    /**
+     * A list of jars to exclude from the scan file for the application
+     */
+    private transient List<String> excludeJarsFromScan;
+
+    /**
+     * Returns the current scan result
+     *
+     * @return
+     */
+    public ScanResult getScanResult()
+    {
+        return scanResult;
+    }
+
+    /**
+     * Sets the current scan result
+     *
+     * @param scanResult
+     */
+    public void setScanResult(ScanResult scanResult)
+    {
+        GuiceContext.context().scanResult = scanResult;
+    }
+
+    public static GuiceContext context()
+    {
+        if (instance == null)
+        {
+            instance = new GuiceContext();
+        }
+        return instance;
+    }
+
+    /**
+     * Returns the current classpath scanner
+     *
+     * @return
+     */
+    public FastClasspathScanner getScanner()
+    {
+        return scanner;
+    }
+
+    /**
+     * Sets the classpath scanner
+     *
+     * @param scanner
+     */
+    public static void setScanner(FastClasspathScanner scanner)
+    {
+        context().scanner = scanner;
+    }
 
     /**
      * Creates a new Guice context. Not necessary
      */
     private GuiceContext()
     {
-        log.info("Starting up classpath scanner with 15 threads");
+        if (instance == null)
+        {
+            instance = this;
+            //GuiceStartup();
+        }
+    }
+
+    private void GuiceStartup()
+    {
+        log.info("Starting up classpath scanner");
         StringBuilder sb = new StringBuilder();
-        if (excludeJarsFromScan == null)
+        if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
         {
-            excludeJarsFromScan = new CopyOnWriteArrayList<>();
-            excludeJarsFromScan.add("fast-classpath-scanner*.jar");
-            excludeJarsFromScan.add("guava-*.jar");
-            excludeJarsFromScan.add("guice-*.jar");
-            excludeJarsFromScan.add("jackson-*.jar");
-            excludeJarsFromScan.add("javassist-*.jar");
-            excludeJarsFromScan.add("jsr305-*.jar");
-            excludeJarsFromScan.add("jsr311-*.jar");
-            excludeJarsFromScan.add("animal-sniffer-*.jar");
-            excludeJarsFromScan.add("annotations-*.jar");
-            excludeJarsFromScan.add("aopalliance-*.jar");
-            excludeJarsFromScan.add("aspectjrt-*.jar");
-            excludeJarsFromScan.add("error_prone_annotations-*.jar");
-            excludeJarsFromScan.add("j2odbc-*.jar");
-            excludeJarsFromScan.add("javax.inject-*.jar");
-            excludeJarsFromScan.add("jcabi-*.jar");
-            excludeJarsFromScan.add("sl4j-*.jar");
-            excludeJarsFromScan.add("validation-api-*.jar");
+            excludeJarsFromScan = new ArrayList<>();
+            excludeJarsFromScan.add("-com.fasterxml.jackson");
+            excludeJarsFromScan.add("-com.google.common");
+            excludeJarsFromScan.add("-com.google.inject");
+            excludeJarsFromScan.add("-com.microsoft.sqlserver");
+            excludeJarsFromScan.add("-com.sun.enterprise.glassfish");
+            excludeJarsFromScan.add("-com.sun.enterprise.module");
+            excludeJarsFromScan.add("-com.sun.jdi");
+            excludeJarsFromScan.add("-edu.umd.cs.findbugs");
+            excludeJarsFromScan.add("-io.github.lukehutch.fastclasspathscanner");
+            excludeJarsFromScan.add("-javassist");
+            excludeJarsFromScan.add("-net.sf.qualitycheck");
+            excludeJarsFromScan.add("-net.sf.uadetector");
+            excludeJarsFromScan.add("-org.aopalliance");
+            excludeJarsFromScan.add("-org.apache.catalina");
+            excludeJarsFromScan.add("-org.apache.commons");
+            excludeJarsFromScan.add("-org.apache.derby");
+            excludeJarsFromScan.add("-org.glassfish");
+
+            //glassfish jar defaultsglassfish.jar
+            excludeJarsFromScan.add("-org.ietf");
+            excludeJarsFromScan.add("-org.jboss");
+            excludeJarsFromScan.add("-org.jvnet");
+            excludeJarsFromScan.add("-org.slf4j");
+            excludeJarsFromScan.add("-org.w3c");
+            excludeJarsFromScan.add("-org.xml.sax");
+
         }
-        for (String excludedJar : excludeJarsFromScan)
-        {
-            sb.append("-jar:").append(excludedJar).append(",");
-        }
-        scanner = new FastClasspathScanner();
-        excludeJarsFromScan = new CopyOnWriteArrayList<>();
+        String[] exclusions = new String[excludeJarsFromScan.size()];
+        exclusions = excludeJarsFromScan.toArray(exclusions);
+
+        scanner = new FastClasspathScanner(exclusions);
         scanner.enableFieldInfo();
         scanner.enableFieldAnnotationIndexing();
         scanner.enableFieldTypeIndexing();
@@ -112,10 +184,10 @@ public class GuiceContext extends GuiceServletContextListener
         scanner.enableMethodInfo();
         scanner.ignoreFieldVisibility();
         scanner.ignoreMethodVisibility();
-        scanResult = scanner.scan(15);
+        scanResult = scanner.scan(5);
         scanResult.getNamesOfAllStandardClasses().forEach(log::finer);
+
         log.info("Classpath Scanner Completed");
-        reflections = new Reflections();
     }
 
     /**
@@ -146,10 +218,10 @@ public class GuiceContext extends GuiceServletContextListener
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent)
     {
-        log.info("Context Initialized... ");
+        log.info("Context Found, Reloading class path ");
         log.info("Starting Up Servlet Context");
         Date startDate = new Date();
-        reflect(servletContextEvent);
+        GuiceStartup();
         Date endDate = new Date();
         log.log(Level.FINER, "Reflections loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
         inject();
@@ -180,13 +252,15 @@ public class GuiceContext extends GuiceServletContextListener
     /**
      * Builds a reflection object if one does not exist
      *
-     * @param events
-     *
      * @return
      */
-    public static Reflections reflect(ServletContextEvent... events)
+    public static Reflections reflect()
     {
-        return reflections;
+        if (context().reflections == null)
+        {
+            context().reflections = new Reflections();
+        }
+        return context().reflections;
     }
 
     /**
@@ -194,10 +268,10 @@ public class GuiceContext extends GuiceServletContextListener
      *
      * @return
      */
-    public static Injector inject()
+    public static synchronized Injector inject()
     {
 
-        if (injector == null)
+        if (context().injector == null)
         {
             if (buildingInjector == false)
             {
@@ -250,7 +324,7 @@ public class GuiceContext extends GuiceServletContextListener
                 cModules = new Module[customModules.size()];
                 cModules = (Module[]) customModules.toArray(cModules);
 
-                injector = Guice.createInjector(cModules);
+                context().injector = Guice.createInjector(cModules);
                 buildingInjector = false;
                 log.config("Post Startup Executions....");
                 Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
@@ -276,7 +350,7 @@ public class GuiceContext extends GuiceServletContextListener
             }
         }
         buildingInjector = false;
-        return injector;
+        return context().injector;
     }
 
     /**
@@ -307,7 +381,7 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public static void setReflections(Reflections reflections)
     {
-        GuiceContext.reflections = reflections;
+        GuiceContext.context().reflections = reflections;
     }
 
     /**
@@ -357,7 +431,13 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public static void destroy()
     {
-        System.out.println("Destroyed");
+        System.out.println("Destroying Context");
+        context().reflections = null;
+        context().scanResult = null;
+        context().scanner = null;
+        context().injector = null;
+        context().instance = null;
+        System.out.println("Finalized Destroy");
     }
 
     /**
