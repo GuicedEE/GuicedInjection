@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2017 Marc Magon
  *
  * This program is free software: you can redistribute it and/or modify
@@ -60,8 +60,8 @@ public class GZipServletFilter implements Filter
      */
     @Override
     public void doFilter(ServletRequest request,
-            ServletResponse response,
-            FilterChain chain)
+                         ServletResponse response,
+                         FilterChain chain)
             throws IOException, ServletException
     {
 
@@ -288,15 +288,13 @@ class GZipServletOutputStream extends ServletOutputStream
         this.gzipOutputStream.write(b);
     }
 
-    //@Override
-    @SuppressWarnings("override")
+    @SuppressWarnings("")
     public boolean isReady()
     {
         return true;
     }
 
-    //@Override
-    @SuppressWarnings("override")
+    @SuppressWarnings("")
     public void setWriteListener(WriteListener writeListener)
     {
 

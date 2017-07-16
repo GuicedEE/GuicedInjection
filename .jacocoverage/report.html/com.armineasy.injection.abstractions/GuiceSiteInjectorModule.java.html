@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>GuiceSiteInjectorModule.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;GuiceInjection&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">com.armineasy.injection.abstractions</a> &gt; <span class="el_source">GuiceSiteInjectorModule.java</span></div><h1>GuiceSiteInjectorModule.java</h1><pre class="source lang-java linenums">/*
+ * Copyright (C) 2017 Marc Magon
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+package com.armineasy.injection.abstractions;
+
+import com.armineasy.injection.GuiceContext;
+import com.armineasy.injection.Reflections;
+import com.armineasy.injection.interfaces.DefaultModuleMethods;
+import com.armineasy.injection.interfaces.GuiceSiteBinder;
+import com.google.inject.*;
+import com.google.inject.binder.AnnotatedBindingBuilder;
+import com.google.inject.binder.AnnotatedConstantBindingBuilder;
+import com.google.inject.binder.LinkedBindingBuilder;
+import com.google.inject.matcher.Matcher;
+import com.google.inject.servlet.ServletModule;
+import com.google.inject.spi.ProvisionListener;
+import com.google.inject.spi.TypeListener;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Loads up all the Guice Servlet Binders
+ *
+ * @author GedMarc
+ * @since 12 Dec 2016
+ *
+ */
+public class GuiceSiteInjectorModule extends ServletModule implements DefaultModuleMethods
+{
+
+<span class="fc" id="L49">    private static final Logger log = Logger.getLogger(&quot;GuiceSiteInjectorModule&quot;);</span>
+
+<span class="fc" id="L51">    private int sortOrder = 100;</span>
+
+    public GuiceSiteInjectorModule()
+<span class="fc" id="L54">    {</span>
+        //Nothing needed
+<span class="fc" id="L56">    }</span>
+
+    /**
+     * Gets the current sort order, default 100
+     *
+     * @return
+     */
+    public int getSortOrder()
+    {
+<span class="nc" id="L65">        return sortOrder;</span>
+    }
+
+    /**
+     * Sets the current sort order default 100
+     *
+     * @param sortOrder
+     */
+    public void setSortOrder(int sortOrder)
+    {
+<span class="nc" id="L75">        this.sortOrder = sortOrder;</span>
+<span class="nc" id="L76">    }</span>
+
+    /**
+     * Installs a given module
+     *
+     * @param module
+     */
+    @Override
+    public void install(Module module)
+    {
+<span class="nc" id="L86">        super.install(module);</span>
+<span class="nc" id="L87">    }</span>
+
+    /**
+     * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
+     * @param urlPattern
+     * @param morePatterns
+     *
+     * @return
+     */
+    public ServletKeyBindingBuilder serveSite(String urlPattern, String... morePatterns)
+    {
+<span class="nc" id="L99">        return serve(urlPattern, morePatterns);</span>
+    }
+
+    /**
+     * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
+     * @param urlPatterns
+     *
+     * @return
+     */
+    public ServletKeyBindingBuilder serveSite(Iterable&lt;String&gt; urlPatterns)
+    {
+<span class="nc" id="L111">        return serve(urlPatterns);</span>
+    }
+
+    /**
+     * regexes - Any Java-style regular expressions. Since: 4.1
+     *
+     * @param regex
+     * @param regexes
+     *
+     * @return
+     */
+    public ServletKeyBindingBuilder serveSiteRegex(String regex, String... regexes)
+    {
+<span class="nc" id="L124">        return serveRegex(regex, regexes);</span>
+    }
+
+    /**
+     * regexes - Any Java-style regular expressions. Since: 4.1
+     *
+     * @param regexes
+     *
+     * @return
+     */
+    public ServletKeyBindingBuilder serveSiteRegex(Iterable&lt;String&gt; regexes)
+    {
+<span class="nc" id="L136">        return serveRegex(regexes);</span>
+    }
+
+    /**
+     * Runs the binders for the system
+     */
+    public void runBinders()
+    {
+        //defaults
+        //filter(&quot;/*&quot;).through(CorsAllowedFilter.class);
+
+<span class="nc" id="L147">        Reflections reflections = GuiceContext.reflect();</span>
+<span class="nc" id="L148">        Set&lt;Class&lt;? extends GuiceSiteBinder&gt;&gt; siteBinders = reflections.getSubTypesOf(GuiceSiteBinder.class);</span>
+<span class="nc" id="L149">        log.log(Level.CONFIG, &quot;Total number of site injectors - {0}&quot;, siteBinders.size());</span>
+<span class="nc" id="L150">        List&lt;GuiceSiteBinder&gt; objects = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L151">        siteBinders.forEach(next -&gt;</span>
+        {
+            try
+            {
+<span class="nc" id="L155">                GuiceSiteBinder obj = next.newInstance();</span>
+<span class="nc" id="L156">                objects.add(obj);</span>
+            }
+<span class="nc" id="L158">            catch (InstantiationException | IllegalAccessException ex)</span>
+            {
+<span class="nc" id="L160">                log.log(Level.SEVERE, &quot;Couldn;t load module from sets&quot; + siteBinders.toString(), ex);</span>
+<span class="nc" id="L161">            }</span>
+<span class="nc" id="L162">        });</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (!objects.isEmpty())</span>
+        {
+<span class="nc" id="L165">            objects.stream().forEachOrdered(obj -&gt;</span>
+            {
+<span class="nc" id="L167">                log.log(Level.CONFIG, &quot;Loading Guice Servlet Configuration {0}&quot;, obj.getClass().getSimpleName());</span>
+<span class="nc" id="L168">                obj.onBind(this);</span>
+<span class="nc" id="L169">                log.log(Level.CONFIG, &quot;Loaded Guice Servlet Configuration {0}&quot;, obj.getClass().getSimpleName());</span>
+<span class="nc" id="L170">            });</span>
+        }
+<span class="nc" id="L172">    }</span>
+
+    /**
+     * Runs the binders
+     */
+    @Override
+    public void configureServlets()
+    {
+<span class="nc" id="L180">        runBinders();</span>
+<span class="nc" id="L181">    }</span>
+
+    /**
+     * Binds to a given class
+     *
+     * @param &lt;T&gt;
+     * @param clazz
+     *
+     * @return
+     */
+    @Override
+    public &lt;T&gt; AnnotatedBindingBuilder&lt;T&gt; bind(Class&lt;T&gt; clazz)
+    {
+<span class="nc" id="L194">        return super.bind(clazz);</span>
+    }
+
+    /**
+     * Binds to a given guice key
+     *
+     * @param &lt;T&gt;
+     * @param key
+     *
+     * @return
+     */
+    @Override
+    public &lt;T&gt; LinkedBindingBuilder&lt;T&gt; bind(Key&lt;T&gt; key)
+    {
+<span class="nc" id="L208">        return super.bind(key);</span>
+    }
+
+    /**
+     * Binds to a given type literal
+     *
+     * @param &lt;T&gt;
+     * @param typeLiteral
+     *
+     * @return
+     */
+    @Override
+    public &lt;T&gt; AnnotatedBindingBuilder&lt;T&gt; bind(TypeLiteral&lt;T&gt; typeLiteral)
+    {
+<span class="nc" id="L222">        return super.bind(typeLiteral);</span>
+    }
+
+    /**
+     * Binds to a given constant
+     *
+     * @return
+     */
+    @Override
+    public AnnotatedConstantBindingBuilder bindConstant()
+    {
+<span class="nc" id="L233">        return super.bindConstant();</span>
+    }
+
+    /**
+     * Bind listener
+     *
+     * @param bindingMatcher
+     * @param listener
+     */
+    @Override
+    public void bindListener(Matcher&lt;? super Binding&lt;?&gt;&gt; bindingMatcher, ProvisionListener... listener)
+    {
+<span class="nc" id="L245">        super.bindListener(bindingMatcher, listener);</span>
+<span class="nc" id="L246">    }</span>
+
+    /**
+     * Bind listener
+     *
+     * @param typeMatcher
+     * @param listener
+     */
+    @Override
+    public void bindListener(Matcher&lt;? super TypeLiteral&lt;?&gt;&gt; typeMatcher, TypeListener listener)
+    {
+<span class="nc" id="L257">        super.bindListener(typeMatcher, listener);</span>
+<span class="nc" id="L258">    }</span>
+
+    /**
+     * Binds to a given scope
+     *
+     * @param scopeAnnotation
+     * @param scope
+     */
+    @Override
+    public void bindScope(Class&lt;? extends Annotation&gt; scopeAnnotation, Scope scope)
+    {
+<span class="nc" id="L269">        super.bindScope(scopeAnnotation, scope);</span>
+<span class="nc" id="L270">    }</span>
+
+    /**
+     * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
+     * @param urlPatterns
+     *
+     * @return
+     */
+    public FilterKeyBindingBuilder filter$(Iterable&lt;String&gt; urlPatterns)
+    {
+<span class="nc" id="L281">        return super.filter(urlPatterns);</span>
+    }
+
+    /**
+     * regexes - Any Java-style regular expressions. Since: 4.1
+     *
+     * @param regex
+     * @param regexes
+     *
+     * @return
+     */
+    public FilterKeyBindingBuilder filterRegex$(String regex, String... regexes)
+    {
+<span class="nc" id="L294">        return super.filterRegex(regex, regexes);</span>
+    }
+
+    /**
+     * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
+     * @param regexes
+     *
+     * @return
+     */
+    public FilterKeyBindingBuilder filterRegex$(Iterable&lt;String&gt; regexes)
+    {
+<span class="nc" id="L306">        return super.filterRegex(regexes);</span>
+    }
+
+    /**
+     * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
+     * @param urlPattern
+     * @param morePatterns
+     *
+     * @return
+     */
+    public ServletKeyBindingBuilder serve$(String urlPattern, String... morePatterns)
+    {
+<span class="nc" id="L319">        return super.serve(urlPattern, morePatterns);</span>
+    }
+
+    /**
+     * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
+     * @param urlPatterns
+     *
+     * @return
+     */
+    public ServletKeyBindingBuilder serve$(Iterable&lt;String&gt; urlPatterns)
+    {
+<span class="nc" id="L331">        return super.serve(urlPatterns);</span>
+    }
+
+    /**
+     * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
+     * @param regex
+     * @param regexes
+     *
+     * @return
+     */
+    public ServletKeyBindingBuilder serveRegex$(String regex, String... regexes)
+    {
+<span class="nc" id="L344">        return super.serveRegex(regex, regexes);</span>
+    }
+
+    /**
+     * regexes - Any Java-style regular expressions. Since: 4.1
+     *
+     * @param regexes
+     *
+     * @return
+     */
+    public ServletKeyBindingBuilder serveRegex$(Iterable&lt;String&gt; regexes)
+    {
+<span class="nc" id="L356">        return super.serveRegex(regexes);</span>
+    }
+
+    /**
+     * This method only works if you are using the GuiceServletContextListener to create your injector. Otherwise, it returns null.
+     *
+     * @return
+     */
+    public javax.servlet.ServletContext getServletContext$()
+    {
+<span class="nc" id="L366">        return super.getServletContext();</span>
+    }
+
+    /**
+     * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
+     *
+     * @param urlPattern
+     * @param morePatterns
+     *
+     * @return
+     */
+    public FilterKeyBindingBuilder filter$(String urlPattern, String... morePatterns)
+    {
+<span class="nc" id="L379">        return super.filter(urlPattern, morePatterns);</span>
+    }
+
+    /**
+     * Binds a method intercepter
+     *
+     * @param classMatcher
+     * @param methodMatcher
+     * @param interceptors
+     */
+    public void bindInterceptor$(Matcher&lt;? super Class&lt;?&gt;&gt; classMatcher, Matcher&lt;? super Method&gt; methodMatcher, org.aopalliance.intercept.MethodInterceptor... interceptors)
+    {
+<span class="nc" id="L391">        super.bindInterceptor(classMatcher, methodMatcher, interceptors);</span>
+<span class="nc" id="L392">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

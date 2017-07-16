@@ -10,18 +10,25 @@
         <group name="Dance Culture Complete">
             <file>file:/C:/AESoft/Programs/GuiceInjection/test/com/armineasy/injection/GuiceContextTest.java</file>
         </group>
+        <group name="Learning Software Model">
+            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/Reflections.java</file>
+            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/GuiceContext.java</file>
+            <file>file:/C:/AESoft/Programs/GuiceInjection/pom.xml</file>
+            <file>file:/C:/AESoft/Programs/GuiceInjection/test/com/armineasy/injection/GuiceContextTest.java</file>
+        </group>
         <group name="LSM">
+            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/annotations/GuicePostStartup.java</file>
+            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/filters/CorsAllowedFilter.java</file>
+            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/interfaces/DefaultModuleMethods.java</file>
+            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/Reflections.java</file>
             <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/GuiceDefaultBinding.java</file>
             <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/interfaces/DefaultBinder.java</file>
             <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/annotations/GuicePreStartup.java</file>
-            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/annotations/GuicePostStartup.java</file>
             <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/GuiceContext.java</file>
-            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/interfaces/GuiceDefaultBinder.java</file>
-            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/interfaces/DefaultModuleMethods.java</file>
             <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/abstractions/GuiceSiteInjectorModule.java</file>
             <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/abstractions/GuiceInjectorModule.java</file>
-            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/Reflections.java</file>
-            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/Globals.java</file>
+            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/filters/CacheControlFilter.java</file>
+            <file>file:/C:/AESoft/Programs/GuiceInjection/src/com/armineasy/injection/filters/GZipServletFilter.java</file>
             <file>file:/C:/AESoft/Programs/GuiceInjection/test/com/armineasy/injection/GuiceContextTest.java</file>
         </group>
     </open-files>

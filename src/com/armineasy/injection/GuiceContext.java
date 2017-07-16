@@ -20,7 +20,10 @@ import com.armineasy.injection.abstractions.GuiceInjectorModule;
 import com.armineasy.injection.abstractions.GuiceSiteInjectorModule;
 import com.armineasy.injection.annotations.GuicePostStartup;
 import com.armineasy.injection.annotations.GuicePreStartup;
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
 import com.google.inject.servlet.GuiceServletContextListener;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
@@ -57,7 +60,7 @@ public class GuiceContext extends GuiceServletContextListener
     /**
      * The physical injector for the JVM container
      */
-    private transient Injector injector;
+    private Injector injector;
 
     /**
      * The actual scanner
@@ -66,7 +69,7 @@ public class GuiceContext extends GuiceServletContextListener
     /**
      * The scan result built from everything - the core scanner.
      */
-    protected transient ScanResult scanResult;
+    private transient ScanResult scanResult;
 
     /**
      * Facade layer for backwards compatibility
@@ -76,7 +79,7 @@ public class GuiceContext extends GuiceServletContextListener
     /**
      * A list of jars to exclude from the scan file for the application
      */
-    private transient List<String> excludeJarsFromScan;
+    private List<String> excludeJarsFromScan;
 
     /**
      * Returns the current scan result
@@ -85,6 +88,10 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public ScanResult getScanResult()
     {
+        if (scanResult == null)
+        {
+            GuiceStartup();
+        }
         return scanResult;
     }
 
@@ -98,6 +105,11 @@ public class GuiceContext extends GuiceServletContextListener
         GuiceContext.context().scanResult = scanResult;
     }
 
+    /**
+     * Returns the actual context instance, provides access to methods existing a bit deeper
+     *
+     * @return
+     */
     public static GuiceContext context()
     {
         if (instance == null)
@@ -135,7 +147,6 @@ public class GuiceContext extends GuiceServletContextListener
         if (instance == null)
         {
             instance = this;
-            //GuiceStartup();
         }
     }
 
@@ -221,7 +232,6 @@ public class GuiceContext extends GuiceServletContextListener
         log.info("Context Found, Reloading class path ");
         log.info("Starting Up Servlet Context");
         Date startDate = new Date();
-        GuiceStartup();
         Date endDate = new Date();
         log.log(Level.FINER, "Reflections loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
         inject();
@@ -270,26 +280,19 @@ public class GuiceContext extends GuiceServletContextListener
      */
     public static synchronized Injector inject()
     {
-
         if (context().injector == null)
         {
-            if (buildingInjector == false)
+            if (!buildingInjector)
             {
                 buildingInjector = true;
                 log.info("Starting up Injections");
                 log.config("Startup Executions....");
                 Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
                 List<GuicePreStartup> startups = new ArrayList<>();
-                pres.stream().map(pre -> GuiceContext.getInstance(pre)).forEachOrdered(happen ->
-                {
-                    startups.add(happen);
-                });
+                pres.stream().map(pre -> GuiceContext.getInstance(pre)).forEachOrdered(startups::add);
                 Collections.sort(startups, (GuicePreStartup o1, GuicePreStartup o2) -> o1.sortOrder().compareTo(o2.sortOrder()));
                 log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
-                startups.forEach(startup ->
-                {
-                    startup.onStartup();
-                });
+                startups.forEach(GuicePreStartup::onStartup);
                 log.info("Finished Startup Execution");
                 log.config("Loading All Default Binders (that extend GuiceDefaultBinder)");
 
@@ -322,24 +325,17 @@ public class GuiceContext extends GuiceServletContextListener
                 customModules.add(0, defaultInjection);
 
                 cModules = new Module[customModules.size()];
-                cModules = (Module[]) customModules.toArray(cModules);
+                cModules = customModules.toArray(cModules);
 
-                context().injector = Guice.createInjector(cModules);
+                //  context().injector = Guice.createInjector(cModules);
                 buildingInjector = false;
                 log.config("Post Startup Executions....");
                 Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
                 List<GuicePostStartup> postStartups = new ArrayList<>();
-                closingPres.stream().map(pre -> GuiceContext.getInstance(pre)).forEachOrdered(happen ->
-                {
-                    postStartups.add(happen);
-                });
+                closingPres.stream().map(pre -> GuiceContext.getInstance(pre)).forEachOrdered(postStartups::add);
                 Collections.sort(postStartups, (GuicePostStartup o1, GuicePostStartup o2) -> o1.sortOrder().compareTo(o2.sortOrder()));
                 log.log(Level.FINE, "Total of [{0}] startup modules.", postStartups.size());
-                postStartups.stream().forEach(startup ->
-                {
-                    log.log(Level.FINE, "Starting up [{0}]", postStartups.getClass().getCanonicalName());
-                    startup.postLoad();
-                });
+                postStartups.stream().forEach(GuicePostStartup::postLoad);
                 log.config("Finished Post Startup Execution");
                 log.info("Finished with Guice");
                 built = true;
@@ -372,16 +368,6 @@ public class GuiceContext extends GuiceServletContextListener
     public void contextDestroyed(ServletContextEvent servletContextEvent)
     {
         super.contextDestroyed(servletContextEvent);
-    }
-
-    /**
-     * Sets the referenced reflections library to the attached
-     *
-     * @param reflections
-     */
-    public static void setReflections(Reflections reflections)
-    {
-        GuiceContext.context().reflections = reflections;
     }
 
     /**
@@ -449,5 +435,4 @@ public class GuiceContext extends GuiceServletContextListener
     {
         return isBuilt() && isBuildingInjector();
     }
-
 }

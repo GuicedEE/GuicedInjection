@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2017 Marc Magon
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ public abstract class GuiceDefaultBinder
         implements Comparator<GuiceDefaultBinder>, DefaultBinder<com.armineasy.injection.abstractions.GuiceInjectorModule>
 {
 
-    private static final int DefaultSortOrder = 100;
+    private int DefaultSortOrder = 100;
 
     /**
      * Blank constructor
@@ -37,6 +37,11 @@ public abstract class GuiceDefaultBinder
     public GuiceDefaultBinder()
     {
         //Nothing needed to do on constructions
+    }
+
+    public void setDefaultSortOrder(int DefaultSortOrder)
+    {
+        this.DefaultSortOrder = DefaultSortOrder;
     }
 
     /**

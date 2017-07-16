@@ -43,64 +43,113 @@ public class Reflections
         //Nothing needed
     }
 
+    /**
+     * Returns all the subtypes (interface or abstract) of a given class type
+     *
+     * @param <T>  The type to check
+     * @param type variable
+     * @return A set of classes matching
+     */
     public <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type)
     {
         Set<Class<? extends T>> returnable = new HashSet<>();
-        List<String> allClasses = GuiceContext.context().scanResult.getNamesOfAllClasses();
-        if (!allClasses.contains("com.armineasy.lsm.LSMSiderBar"))
-        {
-            System.out.println("No this is there!");
-        }
-        List<String> subtypes = type.isInterface() ? GuiceContext.context().scanResult.getNamesOfClassesImplementing(type) : GuiceContext.context().scanResult.getNamesOfSubclassesOf(type);
-        subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().scanResult.classNameToClassRef(subtype)).forEach(clazz ->
-        {
-            returnable.add(clazz);
-        });
+        List<String> allClasses = GuiceContext.context().getScanResult().getNamesOfAllClasses();
+        List<String> subtypes = type.isInterface() ? GuiceContext.context().getScanResult().getNamesOfClassesImplementing(type) : GuiceContext.context().getScanResult().getNamesOfSubclassesOf(type);
+        subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype)).forEach(returnable::add);
         return returnable;
     }
 
+    /**
+     * Returns all the class types annotated with an annotation
+     *
+     * @param <T>
+     * @param annotation
+     * @return
+     */
     public <T> Set<Class<? extends T>> getTypesAnnotatedWith(final Class<? extends Annotation> annotation)
     {
         Set<Class<? extends T>> returnable = new HashSet<>();
-        List<String> subtypes = GuiceContext.context().scanResult.getNamesOfClassesWithAnnotation(annotation);
-        subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().scanResult.classNameToClassRef(subtype)).forEach(clazz ->
-        {
-            returnable.add(clazz);
-        });
+        List<String> subtypes = GuiceContext.context().getScanResult().getNamesOfClassesWithAnnotation(annotation);
+        subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype)).forEach(returnable::add);
         return returnable;
     }
 
+    /**
+     * Returns all the methods annotated with an annotation
+     *
+     * @param annotation
+     * @return
+     */
     public Set<Method> getMethodsAnnotatedWith(final Class<? extends Annotation> annotation)
     {
 
         return null;
     }
 
+    /**
+     * Gets any methods with a parameter associated on it
+     *
+     * @param annotation
+     * @return
+     */
     public Set<Method> getMethodsWithAnyParamAnnotated(Class<? extends Annotation> annotation)
     {
         return null;
     }
 
+    /**
+     * Gets any methods with the annotation attached
+     *
+     * @param annotation
+     * @return
+     */
     public Set<Method> getMethodsWithAnyParamAnnotated(Annotation annotation)
     {
         return null;
     }
 
+    /**
+     * Gets all the fields annotated with an annotation
+     *
+     * @param <T>
+     * @param annotation
+     * @return
+     */
     public <T> Set<Field> getFieldsAnnotatedWith(final Class<? extends Annotation> annotation)
     {
         return null;
     }
 
+    /**
+     * Gets all the resources with a given name predicate.
+     * Operates in its own scanner, may be a little slower
+     *
+     * @param namePredicate
+     * @return
+     */
     public Set<String> getResources(final Predicate<String> namePredicate)
     {
         return null;
     }
 
+    /**
+     * Gets all the resources with a given pattern
+     * * Operates in its own scanner, may be a little slower
+     *
+     * @param pattern
+     * @return
+     */
     public Set<String> getResources(final Pattern pattern)
     {
         return null;
     }
 
+    /**
+     * Returns all the members that access a particular field
+     *
+     * @param field
+     * @return
+     */
     public Set<Member> getFieldUsage(Field field)
     {
         return null;

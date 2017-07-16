@@ -43,8 +43,8 @@ public class Globals implements Serializable
     private static final long serialVersionUID = 1L;
     private final Map<String, Map<Serializable, Serializable>> globalProperties;
 
-    /*
-    * Constructs a new Globals
+    /**
+     * Constructs a new Globals
      */
     public Globals()
     {
