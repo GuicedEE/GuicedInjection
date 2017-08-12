@@ -25,15 +25,15 @@ package com.armineasy.injection.annotations;
 public interface GuicePreStartup
 {
 
-    /**
-     * Runs on startup
-     */
-    public void onStartup();
+	/**
+	 * Runs on startup
+	 */
+	public void onStartup();
 
-    /**
-     * Sort order for startup, Default 100.
-     *
-     * @return
-     */
-    public Integer sortOrder();
+	/**
+	 * Sort order for startup, Default 100.
+	 *
+	 * @return
+	 */
+	public Integer sortOrder();
 }

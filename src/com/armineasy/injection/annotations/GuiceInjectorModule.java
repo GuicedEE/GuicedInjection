@@ -25,9 +25,9 @@ import java.lang.annotation.*;
  * @since 19 Mar 2017
  */
 @Target(
-        {
-            ElementType.FIELD, ElementType.TYPE, ElementType.LOCAL_VARIABLE, ElementType.PACKAGE, ElementType.METHOD, ElementType.TYPE_PARAMETER, ElementType.TYPE_USE
-        })
+		{
+				ElementType.FIELD, ElementType.TYPE, ElementType.LOCAL_VARIABLE, ElementType.PACKAGE, ElementType.METHOD, ElementType.TYPE_PARAMETER, ElementType.TYPE_USE
+		})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface GuiceInjectorModule

@@ -17,9 +17,10 @@
 package com.armineasy.injection.filters;
 
 import com.google.inject.Singleton;
-import java.io.IOException;
+
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Caches everything until 2020
@@ -30,49 +31,49 @@ import javax.servlet.http.HttpServletResponse;
 public class CorsAllowedFilter implements Filter
 {
 
-    /**
-     * The allowed locations for origin that get sent through
-     */
-    public static String allowedLocations = "*";
+	/**
+	 * The allowed locations for origin that get sent through
+	 */
+	public static String allowedLocations = "*";
 
-    /**
-     * Sets the cache control headers
-     *
-     * @param request
-     * @param response
-     * @param chain
-     *
-     * @throws IOException
-     * @throws ServletException
-     */
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException
-    {
-        HttpServletResponse resp = (HttpServletResponse) response;
-        resp.setHeader("Access-Control-Allow-Origin", allowedLocations);
-        resp.setHeader("Access-Control-Allow-Credentials", "true");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
-        chain.doFilter(request, response);
-    }
+	/**
+	 * Sets the cache control headers
+	 *
+	 * @param request
+	 * @param response
+	 * @param chain
+	 *
+	 * @throws IOException
+	 * @throws ServletException
+	 */
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response,
+	                     FilterChain chain) throws IOException, ServletException
+	{
+		HttpServletResponse resp = (HttpServletResponse) response;
+		resp.setHeader("Access-Control-Allow-Origin", allowedLocations);
+		resp.setHeader("Access-Control-Allow-Credentials", "true");
+		resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+		chain.doFilter(request, response);
+	}
 
-    /**
-     * Doesn't do much, or anything
-     *
-     * @param fc
-     *
-     * @throws ServletException
-     */
-    @Override
-    public void init(FilterConfig fc) throws ServletException
-    {
-        //Nothing needed
-    }
+	/**
+	 * Doesn't do much, or anything
+	 *
+	 * @param fc
+	 *
+	 * @throws ServletException
+	 */
+	@Override
+	public void init(FilterConfig fc) throws ServletException
+	{
+		//Nothing needed
+	}
 
-    @Override
-    public void destroy()
-    {
-        //Nothing needed
-    }
+	@Override
+	public void destroy()
+	{
+		//Nothing needed
+	}
 
 }

@@ -48,10 +48,10 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 -->
 
 
-<project name="Build Native Packages" default="build-native" xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" 
-         xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:fx="javafx:com.sun.javafx.tools.ant">
+<project xmlns:fx="javafx:com.sun.javafx.tools.ant" name="Build Native Packages"
+         default="build-native">
     <description>Native Packager Ant calls based on SE support in JavaFX packager</description>
-    
+
     <!-- Check system and JDK version -->
 
     <target name="-check-operating-system">
@@ -67,7 +67,7 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <echo message="running.on.mac = ${running.on.mac}" level="verbose"/>
         <echo message="running.on.unix = ${running.on.unix}" level="verbose"/>
         <echo message="running.on.windows = ${running.on.windows}" level="verbose"/>
-     </target>
+    </target>
 
 
     <!-- Check availability of JavaFX SDK deployment support (ant-javafx.jar) -->
@@ -81,7 +81,8 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
                 </not>
             </and>
         </condition>
-        <echo message="endorsed-javafx-ant-classpath-available = ${endorsed-javafx-ant-classpath-available}" level="verbose"/>
+        <echo message="endorsed-javafx-ant-classpath-available = ${endorsed-javafx-ant-classpath-available}"
+              level="verbose"/>
     </target>
 
     <target name="-check-property-javafx.sdk">
@@ -89,19 +90,27 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <condition property="javafx.sdk.defined">
             <and>
                 <isset property="javafx.sdk"/>
-                <not><contains string="${javafx.sdk}" substring="$${platform" casesensitive="false"/></not>
+                <not>
+                    <contains string="${javafx.sdk}" substring="$${platform" casesensitive="false"/>
+                </not>
             </and>
         </condition>
         <condition property="javafx.sdk.missing+default">
             <and>
                 <equals arg1="${platform.active}" arg2="Default_JavaFX_Platform" trim="true"/>
-                <not><isset property="javafx.sdk.defined"/></not>
+                <not>
+                    <isset property="javafx.sdk.defined"/>
+                </not>
             </and>
         </condition>
         <condition property="javafx.sdk.missing-default">
             <and>
-                <not><equals arg1="${platform.active}" arg2="Default_JavaFX_Platform" trim="true"/></not>
-                <not><isset property="javafx.sdk.defined"/></not>
+                <not>
+                    <equals arg1="${platform.active}" arg2="Default_JavaFX_Platform" trim="true"/>
+                </not>
+                <not>
+                    <isset property="javafx.sdk.defined"/>
+                </not>
             </and>
         </condition>
         <echo message="javafx.sdk.defined = ${javafx.sdk.defined}" level="verbose"/>
@@ -112,126 +121,176 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
     <target name="-check-ant-javafx-in-fxsdk-lib" depends="-check-property-javafx.sdk" if="javafx.sdk.defined">
         <condition property="do.set.ant-javafx.in.fxsdk.lib">
             <and>
-                <not><isset property="ant-javafx.jar.location"/></not>
+                <not>
+                    <isset property="ant-javafx.jar.location"/>
+                </not>
                 <available file="${javafx.sdk}${file.separator}lib${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
     </target>
-    <target name="-set-ant-javafx-in-fxsdk-lib" depends="-check-ant-javafx-in-fxsdk-lib" if="do.set.ant-javafx.in.fxsdk.lib">
-        <property name="ant-javafx.jar.location" value="${javafx.sdk}${file.separator}lib${file.separator}ant-javafx.jar"/>
+    <target name="-set-ant-javafx-in-fxsdk-lib" depends="-check-ant-javafx-in-fxsdk-lib"
+            if="do.set.ant-javafx.in.fxsdk.lib">
+        <property name="ant-javafx.jar.location"
+                  value="${javafx.sdk}${file.separator}lib${file.separator}ant-javafx.jar"/>
     </target>
     <target name="-check-ant-javafx-in-fxsdk-tools" depends="-check-property-javafx.sdk" if="javafx.sdk.defined">
         <condition property="do.set.ant-javafx.in.fxsdk.tools">
             <and>
-                <not><isset property="ant-javafx.jar.location"/></not>
+                <not>
+                    <isset property="ant-javafx.jar.location"/>
+                </not>
                 <available file="${javafx.sdk}${file.separator}tools${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
     </target>
-    <target name="-set-ant-javafx-in-fxsdk-tools" depends="-set-ant-javafx-in-fxsdk-lib,-check-ant-javafx-in-fxsdk-tools" if="do.set.ant-javafx.in.fxsdk.tools">
-        <property name="ant-javafx.jar.location" value="${javafx.sdk}${file.separator}tools${file.separator}ant-javafx.jar"/>
+    <target name="-set-ant-javafx-in-fxsdk-tools"
+            depends="-set-ant-javafx-in-fxsdk-lib,-check-ant-javafx-in-fxsdk-tools"
+            if="do.set.ant-javafx.in.fxsdk.tools">
+        <property name="ant-javafx.jar.location"
+                  value="${javafx.sdk}${file.separator}tools${file.separator}ant-javafx.jar"/>
     </target>
     <target name="-check-ant-javafx-in-platform-home-lib" if="platform.home">
         <condition property="do.set.ant-javafx.in.platform.home.lib">
             <and>
-                <not><isset property="ant-javafx.jar.location"/></not>
+                <not>
+                    <isset property="ant-javafx.jar.location"/>
+                </not>
                 <available file="${platform.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
     </target>
-    <target name="-set-ant-javafx-in-platform-home-lib" depends="-set-ant-javafx-in-fxsdk-tools,-check-ant-javafx-in-platform-home-lib" if="do.set.ant-javafx.in.platform.home.lib">
-        <property name="ant-javafx.jar.location" value="${platform.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
+    <target name="-set-ant-javafx-in-platform-home-lib"
+            depends="-set-ant-javafx-in-fxsdk-tools,-check-ant-javafx-in-platform-home-lib"
+            if="do.set.ant-javafx.in.platform.home.lib">
+        <property name="ant-javafx.jar.location"
+                  value="${platform.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
     </target>
     <target name="-check-ant-javafx-in-platform-home-tools" if="platform.home">
         <condition property="do.set.ant-javafx.in.platform.home.tools">
             <and>
-                <not><isset property="ant-javafx.jar.location"/></not>
+                <not>
+                    <isset property="ant-javafx.jar.location"/>
+                </not>
                 <available file="${platform.home}${file.separator}tools${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
     </target>
-    <target name="-set-ant-javafx-in-platform-home-tools" depends="-set-ant-javafx-in-platform-home-lib,-check-ant-javafx-in-platform-home-tools" if="do.set.ant-javafx.in.platform.home.tools">
-        <property name="ant-javafx.jar.location" value="${platform.home}${file.separator}tools${file.separator}ant-javafx.jar"/>
+    <target name="-set-ant-javafx-in-platform-home-tools"
+            depends="-set-ant-javafx-in-platform-home-lib,-check-ant-javafx-in-platform-home-tools"
+            if="do.set.ant-javafx.in.platform.home.tools">
+        <property name="ant-javafx.jar.location"
+                  value="${platform.home}${file.separator}tools${file.separator}ant-javafx.jar"/>
     </target>
     <target name="-check-ant-javafx-in-probjdk-lib" unless="ant-javafx.jar.location">
         <condition property="do.set.ant-javafx.in.probjdk.lib">
             <and>
-                <not><isset property="ant-javafx.jar.location"/></not>
+                <not>
+                    <isset property="ant-javafx.jar.location"/>
+                </not>
                 <available file="${java.home}${file.separator}..${file.separator}lib${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
     </target>
-    <target name="-set-ant-javafx-in-probjdk-lib" depends="-set-ant-javafx-in-platform-home-tools,-check-ant-javafx-in-probjdk-lib" if="do.set.ant-javafx.in.probjdk.lib">
-        <property name="ant-javafx.jar.location" value="${java.home}${file.separator}..${file.separator}lib${file.separator}ant-javafx.jar"/>
+    <target name="-set-ant-javafx-in-probjdk-lib"
+            depends="-set-ant-javafx-in-platform-home-tools,-check-ant-javafx-in-probjdk-lib"
+            if="do.set.ant-javafx.in.probjdk.lib">
+        <property name="ant-javafx.jar.location"
+                  value="${java.home}${file.separator}..${file.separator}lib${file.separator}ant-javafx.jar"/>
     </target>
     <target name="-check-ant-javafx-in-probjdk-tools" unless="ant-javafx.jar.location">
         <condition property="do.set.ant-javafx.in.probjdk.tools">
             <and>
-                <not><isset property="ant-javafx.jar.location"/></not>
+                <not>
+                    <isset property="ant-javafx.jar.location"/>
+                </not>
                 <available file="${java.home}${file.separator}..${file.separator}tools${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
     </target>
-    <target name="-set-ant-javafx-in-probjdk-tools" depends="-set-ant-javafx-in-probjdk-lib,-check-ant-javafx-in-probjdk-tools" if="do.set.ant-javafx.in.probjdk.tools">
-        <property name="ant-javafx.jar.location" value="${java.home}${file.separator}..${file.separator}tools${file.separator}ant-javafx.jar"/>
+    <target name="-set-ant-javafx-in-probjdk-tools"
+            depends="-set-ant-javafx-in-probjdk-lib,-check-ant-javafx-in-probjdk-tools"
+            if="do.set.ant-javafx.in.probjdk.tools">
+        <property name="ant-javafx.jar.location"
+                  value="${java.home}${file.separator}..${file.separator}tools${file.separator}ant-javafx.jar"/>
     </target>
     <target name="-check-ant-javafx-in-macjdk-lib" unless="ant-javafx.jar.location">
         <condition property="do.set.ant-javafx.in.macjdk.lib">
             <and>
-                <not><isset property="ant-javafx.jar.location"/></not>
+                <not>
+                    <isset property="ant-javafx.jar.location"/>
+                </not>
                 <available file="${java.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
     </target>
-    <target name="-set-ant-javafx-in-macjdk-lib" depends="-set-ant-javafx-in-probjdk-tools,-check-ant-javafx-in-macjdk-lib" if="do.set.ant-javafx.in.macjdk.lib">
-        <property name="ant-javafx.jar.location" value="${java.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
+    <target name="-set-ant-javafx-in-macjdk-lib"
+            depends="-set-ant-javafx-in-probjdk-tools,-check-ant-javafx-in-macjdk-lib"
+            if="do.set.ant-javafx.in.macjdk.lib">
+        <property name="ant-javafx.jar.location"
+                  value="${java.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
     </target>
     <target name="-check-ant-javafx-in-envjdk-lib" unless="ant-javafx.jar.location">
         <property environment="env"/>
         <condition property="do.set.ant-javafx.in.envjdk.lib">
             <and>
-                <not><isset property="ant-javafx.jar.location"/></not>
+                <not>
+                    <isset property="ant-javafx.jar.location"/>
+                </not>
                 <available file="${env.JAVA_HOME}${file.separator}lib${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
     </target>
-    <target name="-set-ant-javafx-in-envjdk-lib" depends="-set-ant-javafx-in-macjdk-lib,-check-ant-javafx-in-envjdk-lib" if="do.set.ant-javafx.in.envjdk.lib">
-        <property name="ant-javafx.jar.location" value="${env.JAVA_HOME}${file.separator}lib${file.separator}ant-javafx.jar"/>
+    <target name="-set-ant-javafx-in-envjdk-lib" depends="-set-ant-javafx-in-macjdk-lib,-check-ant-javafx-in-envjdk-lib"
+            if="do.set.ant-javafx.in.envjdk.lib">
+        <property name="ant-javafx.jar.location"
+                  value="${env.JAVA_HOME}${file.separator}lib${file.separator}ant-javafx.jar"/>
     </target>
     <target name="-check-ant-javafx-in-envjdk-tools" unless="ant-javafx.jar.location">
         <property environment="env"/>
         <condition property="do.set.ant-javafx.in.envjdk.tools">
             <and>
-                <not><isset property="ant-javafx.jar.location"/></not>
+                <not>
+                    <isset property="ant-javafx.jar.location"/>
+                </not>
                 <available file="${env.JAVA_HOME}${file.separator}tools${file.separator}ant-javafx.jar"/>
             </and>
         </condition>
     </target>
-    <target name="-set-ant-javafx-in-envjdk-tools" depends="-set-ant-javafx-in-envjdk-lib,-check-ant-javafx-in-envjdk-tools" if="do.set.ant-javafx.in.envjdk.tools">
-        <property name="ant-javafx.jar.location" value="${env.JAVA_HOME}${file.separator}tools${file.separator}ant-javafx.jar"/>
+    <target name="-set-ant-javafx-in-envjdk-tools"
+            depends="-set-ant-javafx-in-envjdk-lib,-check-ant-javafx-in-envjdk-tools"
+            if="do.set.ant-javafx.in.envjdk.tools">
+        <property name="ant-javafx.jar.location"
+                  value="${env.JAVA_HOME}${file.separator}tools${file.separator}ant-javafx.jar"/>
     </target>
-    <target name="-pre-check-ant-javafx-version" depends="-set-ant-javafx-in-envjdk-tools" unless="ant-javafx-version-already-checked-in-jfximpl">
+    <target name="-pre-check-ant-javafx-version" depends="-set-ant-javafx-in-envjdk-tools"
+            unless="ant-javafx-version-already-checked-in-jfximpl">
         <condition property="do.check.ant-javafx.version">
             <and>
                 <isset property="ant-javafx.jar.location"/>
-                <not><isset property="ant-javafx-version-already-checked-in-jfximpl"/></not>
+                <not>
+                    <isset property="ant-javafx-version-already-checked-in-jfximpl"/>
+                </not>
             </and>
         </condition>
     </target>
-    <target name="-set-endorsed-javafx-ant-classpath" depends="-check-endorsed-javafx-ant-classpath,-pre-check-ant-javafx-version" if="endorsed-javafx-ant-classpath-available">
+    <target name="-set-endorsed-javafx-ant-classpath"
+            depends="-check-endorsed-javafx-ant-classpath,-pre-check-ant-javafx-version"
+            if="endorsed-javafx-ant-classpath-available">
         <property name="javafx.ant.classpath" value="${endorsed.javafx.ant.classpath}:${ant-javafx.jar.location}"/>
     </target>
-    <target name="-set-javafx-ant-classpath" depends="-check-endorsed-javafx-ant-classpath,-pre-check-ant-javafx-version" unless="endorsed-javafx-ant-classpath-available">
+    <target name="-set-javafx-ant-classpath"
+            depends="-check-endorsed-javafx-ant-classpath,-pre-check-ant-javafx-version"
+            unless="endorsed-javafx-ant-classpath-available">
         <property name="javafx.ant.classpath" value="${ant-javafx.jar.location}"/>
     </target>
-    
+
     <target name="-check-ant-javafx-version" depends="-pre-check-ant-javafx-version,
             -set-endorsed-javafx-ant-classpath,-set-javafx-ant-classpath" if="do.check.ant-javafx.version">
         <echo message="ant-javafx.jar.location = ${ant-javafx.jar.location}" level="verbose"/>
         <echo message="javafx.ant.classpath = ${javafx.ant.classpath}" level="verbose"/>
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
-            uri="javafx:com.sun.javafx.tools.ant"
-            classpath="${javafx.ant.classpath}"/>
+                 uri="javafx:com.sun.javafx.tools.ant"
+                 classpath="${javafx.ant.classpath}"/>
         <condition property="have-fx-ant-init">
             <typefound name="javafx:com.sun.javafx.tools.ant:init-ant"/>
         </condition>
@@ -252,8 +311,9 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
             <matches pattern="1.[2-9]" string="${javafx.ant.version}"/>
         </condition>
     </target>
-    
-    <target name="-check-jfx-sdk-version" depends="-check-jfx-sdk-version-old, -check-jfx-sdk-version-new" unless="jfx.sdk.version.checked">
+
+    <target name="-check-jfx-sdk-version" depends="-check-jfx-sdk-version-old, -check-jfx-sdk-version-new"
+            unless="jfx.sdk.version.checked">
         <echo message="Detected JavaFX Ant API version ${javafx.ant.version}" level="info"/>
         <echo message="have-fx-ant-api-1.1 = ${have-fx-ant-api-1.1}" level="verbose"/>
         <echo message="have-fx-ant-api-1.2 = ${have-fx-ant-api-1.2}" level="verbose"/>
@@ -288,10 +348,11 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <echo message="have-ant-jre-pre7u6 = ${have-ant-jre-pre7u6}" level="verbose"/>
     </target>
 
-        
-    <!-- Native Packaging main target -->    
-    
-    <target name="build-native" depends="-set-do-build-native-package, -check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, -fx-jar-impl, -build-native-impl, -post-build-native-cleanup"/>
+
+    <!-- Native Packaging main target -->
+
+    <target name="build-native"
+            depends="-set-do-build-native-package, -check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, -fx-jar-impl, -build-native-impl, -post-build-native-cleanup"/>
 
     <target name="build-native-noscript">
         <fail message="Java Application Native Packager requires JDK JavaScript support but has not found any."/>
@@ -310,10 +371,12 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <property name="do.build.native.package" value="true"/>
         <echo message="do.build.native.package = ${do.build.native.package}" level="verbose"/>
     </target>
-    <target name="-check-ant-jre-supports-native-packaging" depends="-check-jfx-sdk-version, -check-ant-javafx-version, -check-ant-jre-version">
-        <fail message="Error:${line.separator}JavaFX native packager requires NetBeans to run on JDK 1.7u6 or later !" if="have-ant-jre-pre7u6"/>
+    <target name="-check-ant-jre-supports-native-packaging"
+            depends="-check-jfx-sdk-version, -check-ant-javafx-version, -check-ant-jre-version">
+        <fail message="Error:${line.separator}JavaFX native packager requires NetBeans to run on JDK 1.7u6 or later !"
+              if="have-ant-jre-pre7u6"/>
     </target>
-    
+
     <target name="-check-native-bundling-type" depends="-check-operating-system" if="do.build.native.package">
         <condition property="need.Inno.presence">
             <and>
@@ -364,25 +427,37 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <local name="exec-output"/>
         <local name="exec-error"/>
         <local name="exec-result"/>
-        <exec executable="iscc" outputproperty="exec-output" failifexecutionfails="false" errorproperty="exec-error" resultproperty="exec-result"/>
+        <exec executable="iscc" outputproperty="exec-output" failifexecutionfails="false" errorproperty="exec-error"
+              resultproperty="exec-result"/>
         <echo message="exec-output:${exec-output}" level="verbose"/>
         <echo message="exec-error:${exec-error}" level="verbose"/>
         <echo message="exec-result:${exec-result}" level="verbose"/>
         <condition property="missing.Inno">
-            <not><and>
-                <contains string="${exec-output}" substring="Inno Setup"/>
-                <not><contains string="${exec-output}" substring="Inno Setup 1"/></not>
-                <not><contains string="${exec-output}" substring="Inno Setup 2"/></not>
-                <not><contains string="${exec-output}" substring="Inno Setup 3"/></not>
-                <not><contains string="${exec-output}" substring="Inno Setup 4"/></not>
-            </and></not>
+            <not>
+                <and>
+                    <contains string="${exec-output}" substring="Inno Setup"/>
+                    <not>
+                        <contains string="${exec-output}" substring="Inno Setup 1"/>
+                    </not>
+                    <not>
+                        <contains string="${exec-output}" substring="Inno Setup 2"/>
+                    </not>
+                    <not>
+                        <contains string="${exec-output}" substring="Inno Setup 3"/>
+                    </not>
+                    <not>
+                        <contains string="${exec-output}" substring="Inno Setup 4"/>
+                    </not>
+                </and>
+            </not>
         </condition>
     </target>
     <target name="-check-WiX-presence" depends="-check-native-bundling-type" if="need.WiX.presence">
         <local name="exec-output"/>
         <local name="exec-error"/>
         <local name="exec-result"/>
-        <exec executable="candle" outputproperty="exec-output" failifexecutionfails="false" errorproperty="exec-error" resultproperty="exec-result">
+        <exec executable="candle" outputproperty="exec-output" failifexecutionfails="false" errorproperty="exec-error"
+              resultproperty="exec-result">
             <arg value="-?"/>
         </exec>
         <echo message="exec-output:${exec-output}" level="verbose"/>
@@ -390,52 +465,70 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <echo message="exec-result:${exec-result}" level="verbose"/>
         <condition property="missing.WiX">
             <not>
-                <matches string="${exec-output}" pattern="windows\s+installer\s+xml\s+(toolset\s+)?compiler\s+version\s+3.*" casesensitive="false"/>
+                <matches string="${exec-output}"
+                         pattern="windows\s+installer\s+xml\s+(toolset\s+)?compiler\s+version\s+3.*"
+                         casesensitive="false"/>
             </not>
         </condition>
     </target>
     <target name="-check-dpkg-presence" depends="-check-native-bundling-type" if="need.dpkg.presence">
         <local name="exec.which.dpkg.result"/>
         <local name="exec.which.dpkg.output"/>
-        <exec executable="command" failifexecutionfails="false" failonerror="false" resultproperty="exec.which.dpkg.result" outputproperty="exec.which.dpkg.output">
+        <exec executable="command" failifexecutionfails="false" failonerror="false"
+              resultproperty="exec.which.dpkg.result" outputproperty="exec.which.dpkg.output">
             <arg line="-v dpkg"/>
         </exec>
         <condition property="missing.dpkg">
-            <not><and>
-                <isset property="exec.which.dpkg.result"/>
-                <equals arg1="${exec.which.dpkg.result}" arg2="0"/>
-                <isset property="exec.which.dpkg.output"/>
-                <not><equals arg1="${exec.which.dpkg.output}" arg2=""/></not>
-            </and></not>
+            <not>
+                <and>
+                    <isset property="exec.which.dpkg.result"/>
+                    <equals arg1="${exec.which.dpkg.result}" arg2="0"/>
+                    <isset property="exec.which.dpkg.output"/>
+                    <not>
+                        <equals arg1="${exec.which.dpkg.output}" arg2=""/>
+                    </not>
+                </and>
+            </not>
         </condition>
     </target>
     <target name="-check-rpmbuild-presence" depends="-check-native-bundling-type" if="need.rpmbuild.presence">
         <local name="exec.which.rpmbuild.result"/>
         <local name="exec.which.rpmbuild.output"/>
-        <exec executable="command" failifexecutionfails="false" failonerror="false" resultproperty="exec.which.rpmbuild.result" outputproperty="exec.which.rpmbuild.output">
+        <exec executable="command" failifexecutionfails="false" failonerror="false"
+              resultproperty="exec.which.rpmbuild.result" outputproperty="exec.which.rpmbuild.output">
             <arg line="-v rpmbuild"/>
         </exec>
         <condition property="missing.rpmbuild">
-            <not><and>
-                <isset property="exec.which.rpmbuild.result"/>
-                <equals arg1="${exec.which.rpmbuild.result}" arg2="0"/>
-                <isset property="exec.which.rpmbuild.output"/>
-                <not><equals arg1="${exec.which.rpmbuild.output}" arg2=""/></not>
-            </and></not>
+            <not>
+                <and>
+                    <isset property="exec.which.rpmbuild.result"/>
+                    <equals arg1="${exec.which.rpmbuild.result}" arg2="0"/>
+                    <isset property="exec.which.rpmbuild.output"/>
+                    <not>
+                        <equals arg1="${exec.which.rpmbuild.output}" arg2=""/>
+                    </not>
+                </and>
+            </not>
         </condition>
     </target>
-    <target name="-check-native-packager-external-tools" depends="-check-Inno-presence, -check-WiX-presence, -check-dpkg-presence, -check-rpmbuild-presence">
-        <property name="missing.Inno.message" value="JavaFX native packager requires external Inno Setup 5+ tools installed and included on PATH to create EXE installer. See http://www.jrsoftware.org/"/>
-        <property name="missing.WiX.message" value="JavaFX native packager requires external WiX 3.0+ tools installed and included on PATH to create MSI installer. See http://wix.sourceforge.net/"/>
-        <property name="missing.dpkg.message" value="JavaFX native packager requires Debian Packager tools to create DEB package, but dpkg could not be found."/>
-        <property name="missing.rpmbuild.message" value="JavaFX native packager requires RPMBuild to create RPM package, but rpmbuild could not be found."/>
+    <target name="-check-native-packager-external-tools"
+            depends="-check-Inno-presence, -check-WiX-presence, -check-dpkg-presence, -check-rpmbuild-presence">
+        <property name="missing.Inno.message"
+                  value="JavaFX native packager requires external Inno Setup 5+ tools installed and included on PATH to create EXE installer. See http://www.jrsoftware.org/"/>
+        <property name="missing.WiX.message"
+                  value="JavaFX native packager requires external WiX 3.0+ tools installed and included on PATH to create MSI installer. See http://wix.sourceforge.net/"/>
+        <property name="missing.dpkg.message"
+                  value="JavaFX native packager requires Debian Packager tools to create DEB package, but dpkg could not be found."/>
+        <property name="missing.rpmbuild.message"
+                  value="JavaFX native packager requires RPMBuild to create RPM package, but rpmbuild could not be found."/>
         <condition property="missing.Inno.WiX">
             <and>
                 <isset property="missing.Inno"/>
                 <isset property="missing.WiX"/>
             </and>
         </condition>
-        <fail message="Error:${line.separator}${missing.Inno.message}${line.separator}${missing.WiX.message}" if="missing.Inno.WiX"/>
+        <fail message="Error:${line.separator}${missing.Inno.message}${line.separator}${missing.WiX.message}"
+              if="missing.Inno.WiX"/>
         <fail message="Error:${line.separator}${missing.Inno.message}" if="missing.Inno"/>
         <fail message="Error:${line.separator}${missing.WiX.message}" if="missing.WiX"/>
         <fail message="Error:${line.separator}${missing.dpkg.message}" if="missing.dpkg"/>
@@ -445,7 +538,8 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 
     <!-- Copy dependent libraries -->
 
-    <target name="-jfx-copylibs" depends="init,compile,-pre-pre-jar,-pre-jar,-jfx-copylibs-warning" unless="fallback.no.javascript">
+    <target name="-jfx-copylibs" depends="init,compile,-pre-pre-jar,-pre-jar,-jfx-copylibs-warning"
+            unless="fallback.no.javascript">
         <jfx-copylibs-js-impl/>
     </target>
     <target name="-jfx-copylibs-warning" if="fallback.no.javascript">
@@ -460,11 +554,11 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
                 <map from="${basedir}${file.separator}${dist.jar}" to=""/>
                 <scriptmapper language="javascript">
                     self.addMappedName(
-                        (source.indexOf("jfxrt.jar") >= 0) ||
-                        (source.indexOf("deploy.jar") >= 0) ||
-                        (source.indexOf("javaws.jar") >= 0) ||
-                        (source.indexOf("plugin.jar") >= 0)
-                        ? "" : source
+                    (source.indexOf("jfxrt.jar") >= 0) ||
+                    (source.indexOf("deploy.jar") >= 0) ||
+                    (source.indexOf("javaws.jar") >= 0) ||
+                    (source.indexOf("plugin.jar") >= 0)
+                    ? "" : source
                     );
                 </scriptmapper>
             </pathconvert>
@@ -535,7 +629,8 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 
     <!-- <fx:jar> replacing standard jar, because native packager up to JDK7u21 refuses to package standard jars -->
 
-    <target name="-fx-jar-impl" depends="-check-jfx-sdk-version, -check-ant-javafx-version, -check-ant-jre-version, clean, compile, -jfx-copylibs">
+    <target name="-fx-jar-impl"
+            depends="-check-jfx-sdk-version, -check-ant-javafx-version, -check-ant-jre-version, clean, compile, -jfx-copylibs">
         <echo message="javafx.ant.classpath = ${javafx.ant.classpath}" level="verbose"/>
         <typedef name="fx_jar" classname="com.sun.javafx.tools.ant.FXJar" classpath="${javafx.ant.classpath}"/>
         <echo message="Launching &lt;fx:jar&gt; task from ${ant-javafx.jar.location}" level="info"/>
@@ -715,14 +810,16 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         </script>
     </target>
 
-    
-    <!-- Native Packaging main implementation -->    
-    
-    <target name="-build-native-impl" depends="-check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, -fx-jar-impl">
+
+    <!-- Native Packaging main implementation -->
+
+    <target name="-build-native-impl"
+            depends="-check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, -fx-jar-impl">
 
         <!--<property name="runtime.jre.home" value="${platform.home}"/>-->
         <echo message="javafx.ant.classpath = ${javafx.ant.classpath}" level="verbose"/>
-        <typedef name="fx_deploy" classname="com.sun.javafx.tools.ant.DeployFXTask" classpath="${javafx.ant.classpath}"/>
+        <typedef name="fx_deploy" classname="com.sun.javafx.tools.ant.DeployFXTask"
+                 classpath="${javafx.ant.classpath}"/>
         <echo message="Launching &lt;fx:deploy&gt; task from ${ant-javafx.jar.location}" level="info"/>
         <property name="deployment.dir" location="${dist.dir}"/>
         <property name="pp_deploy_fs2" value="lib${file.separator}*.jar"/>
@@ -961,7 +1058,7 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
             ]]>
         </script>
     </target>
-    
+
     <target name="-post-build-native-cleanup">
         <delete file="${dist.dir}/${application.title}.html" quiet="true"/>
         <delete file="${dist.dir}/${application.title}.jnlp" quiet="true"/>

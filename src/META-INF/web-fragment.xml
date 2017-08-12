@@ -16,7 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
-<web-fragment version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd">
+<web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.0"
+              xmlns="http://java.sun.com/xml/ns/javaee"
+              xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd">
     <name>GuiceInjection</name>
     <display-name>guice-injection</display-name>
     <description>Allows for dynamic reflection and injection</description>

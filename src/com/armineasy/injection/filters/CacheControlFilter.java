@@ -17,10 +17,11 @@
 package com.armineasy.injection.filters;
 
 import com.google.inject.Singleton;
-import java.io.IOException;
+
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Caches everything until 2020
@@ -31,52 +32,52 @@ import javax.servlet.http.HttpServletResponse;
 public class CacheControlFilter implements Filter
 {
 
-    /**
-     * Sets the cache control headers
-     *
-     * @param request
-     * @param response
-     * @param chain
-     *
-     * @throws IOException
-     * @throws ServletException
-     */
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response,
-            FilterChain chain) throws IOException, ServletException
-    {
-        HttpServletResponse resp = (HttpServletResponse) response;
-        String path = ((HttpServletRequest) request).getRequestURI();
-        if (path.toLowerCase().endsWith(".js") || path.toLowerCase().endsWith(".css"))
-        {
-            resp.setHeader("Expires", "Tue, 03 Jul 2020 06:00:00 GMT");
-            resp.setHeader("Cache-Control", "public, max-age=2546787");
-        }
-        else
-        {
-            resp.setHeader("Cache-Control", "private, max-age=0");
-        }
+	/**
+	 * Sets the cache control headers
+	 *
+	 * @param request
+	 * @param response
+	 * @param chain
+	 *
+	 * @throws IOException
+	 * @throws ServletException
+	 */
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response,
+	                     FilterChain chain) throws IOException, ServletException
+	{
+		HttpServletResponse resp = (HttpServletResponse) response;
+		String path = ((HttpServletRequest) request).getRequestURI();
+		if (path.toLowerCase().endsWith(".js") || path.toLowerCase().endsWith(".css"))
+		{
+			resp.setHeader("Expires", "Tue, 03 Jul 2020 06:00:00 GMT");
+			resp.setHeader("Cache-Control", "public, max-age=2546787");
+		}
+		else
+		{
+			resp.setHeader("Cache-Control", "private, max-age=0");
+		}
 
-        chain.doFilter(request, response);
-    }
+		chain.doFilter(request, response);
+	}
 
-    /**
-     * Doesn't do much, or anything
-     *
-     * @param fc
-     *
-     * @throws ServletException
-     */
-    @Override
-    public void init(FilterConfig fc) throws ServletException
-    {
-        //Nothing needed
-    }
+	/**
+	 * Doesn't do much, or anything
+	 *
+	 * @param fc
+	 *
+	 * @throws ServletException
+	 */
+	@Override
+	public void init(FilterConfig fc) throws ServletException
+	{
+		//Nothing needed
+	}
 
-    @Override
-    public void destroy()
-    {
-        //Nothing needed
-    }
+	@Override
+	public void destroy()
+	{
+		//Nothing needed
+	}
 
 }

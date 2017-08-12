@@ -1,35 +1,30 @@
 /*
- * The MIT License
+ * Copyright (C) 2017 Marc Magon
  *
- * Copyright 2017 Marc Magon.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.armineasy.injection;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * A pretty class for containing EAR or Container level global properties
  *
  * @author Marc Magon
  * @since 08 Jul 2017
@@ -40,95 +35,97 @@ import java.util.Map;
 public class Globals implements Serializable
 {
 
-    private static final long serialVersionUID = 1L;
-    private final Map<String, Map<Serializable, Serializable>> globalProperties;
+	private static final long serialVersionUID = 1L;
+	private final Map<String, Map<Serializable, Serializable>> globalProperties;
 
-    /**
-     * Constructs a new Globals
-     */
-    public Globals()
-    {
-        globalProperties = new HashMap<>();
-    }
+	/**
+	 * Constructs a new Globals
+	 */
+	public Globals()
+	{
+		globalProperties = new HashMap<>();
+	}
 
-    /**
-     * Adds a key to the global application library
-     *
-     * @param key
-     * @param properties
-     */
-    public void addKey(String key, Map<Serializable, Serializable> properties)
-    {
-        globalProperties.put(key, properties);
-    }
+	/**
+	 * Adds a key to the global application library
+	 *
+	 * @param key
+	 * @param properties
+	 */
+	public void addKey(String key, Map<Serializable, Serializable> properties)
+	{
+		globalProperties.put(key, properties);
+	}
 
-    /**
-     * Adds a normal string string property to the library
-     *
-     * @param key
-     * @param property
-     * @param value
-     */
-    public void addProperty(String key, String property, String value)
-    {
-        if (!globalProperties.containsKey(key))
-        {
-            globalProperties.put(key, new HashMap<>());
-        }
-        globalProperties.get(key).put(property, value);
-    }
+	/**
+	 * Adds a normal string string property to the library
+	 *
+	 * @param key
+	 * @param property
+	 * @param value
+	 */
+	public void addProperty(String key, String property, String value)
+	{
+		if (!globalProperties.containsKey(key))
+		{
+			globalProperties.put(key, new HashMap<>());
+		}
+		globalProperties.get(key).put(property, value);
+	}
 
-    /**
-     * Gets the key with the given map return type
-     *
-     * @param <K>
-     * @param <V>
-     * @param key
-     * @return
-     */
-    public <K extends Serializable, V extends Serializable> Map<K, V> getKey(String key)
-    {
-        return (Map<K, V>) globalProperties.get(key);
-    }
+	/**
+	 * Gets the key with the given map return type
+	 *
+	 * @param <K>
+	 * @param <V>
+	 * @param key
+	 *
+	 * @return
+	 */
+	public <K extends Serializable, V extends Serializable> Map<K, V> getKey(String key)
+	{
+		return (Map<K, V>) globalProperties.get(key);
+	}
 
-    /**
-     * Gets a default string key and property mapping
-     *
-     * @param <V>
-     * @param key
-     * @param property
-     * @return
-     */
-    public <V extends Serializable> V getProperty(String key, String property)
-    {
-        return (V) globalProperties.get(key).get(property);
-    }
+	/**
+	 * Gets a default string key and property mapping
+	 *
+	 * @param <V>
+	 * @param key
+	 * @param property
+	 *
+	 * @return
+	 */
+	public <V extends Serializable> V getProperty(String key, String property)
+	{
+		return (V) globalProperties.get(key).get(property);
+	}
 
-    /**
-     * Removes a property from any list
-     *
-     * @param key
-     * @param property
-     */
-    public void removeProperty(String key, String property)
-    {
-        if (globalProperties.containsKey(key))
-        {
-            globalProperties.get(key).remove(property);
-        }
-    }
+	/**
+	 * Removes a property from any list
+	 *
+	 * @param key
+	 * @param property
+	 */
+	public void removeProperty(String key, String property)
+	{
+		if (globalProperties.containsKey(key))
+		{
+			globalProperties.get(key).remove(property);
+		}
+	}
 
-    /**
-     * Sets the property
-     *
-     * @param key
-     * @param property
-     */
-    public void emptyProperty(String key, String property)
-    {
-        if (globalProperties.containsKey(key))
-        {
-            globalProperties.get(key).put(property, "");
-        }
-    }
+	/**
+	 * Sets the property
+	 *
+	 * @param key
+	 * @param property
+	 */
+	public void emptyProperty(String key, String property)
+	{
+		if (globalProperties.containsKey(key))
+		{
+			globalProperties.get(key).put(property, "");
+		}
+	}
 }

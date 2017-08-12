@@ -20,17 +20,15 @@ import com.armineasy.injection.abstractions.GuiceInjectorModule;
 import com.armineasy.injection.abstractions.GuiceSiteInjectorModule;
 import com.armineasy.injection.annotations.GuicePostStartup;
 import com.armineasy.injection.annotations.GuicePreStartup;
-import com.google.inject.AbstractModule;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Module;
+import com.google.inject.*;
 import com.google.inject.servlet.GuiceServletContextListener;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
+
+import javax.servlet.ServletContextEvent;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletContextEvent;
 
 /**
  * Provides an interface for reflection and injection in one.
@@ -38,401 +36,414 @@ import javax.servlet.ServletContextEvent;
  * Use reflect() to access the class library, or inject() to get the injector for any instance
  *
  * @author GedMarc
- * @since Nov 14, 2016
  * @version 1.0
- *
+ * @since Nov 14, 2016
  */
 public class GuiceContext extends GuiceServletContextListener
 {
 
-    private static final Logger log = Logger.getLogger("GuiceContext");
+	private static final Logger log = Logger.getLogger("GuiceContext");
 
-    private static GuiceContext instance;
+	private static GuiceContext instance;
 
-    /**
-     * The building injector
-     */
-    private static boolean buildingInjector = false;
-    /**
-     * If the references are built or not
-     */
-    private static boolean built = false;
-    /**
-     * The physical injector for the JVM container
-     */
-    private Injector injector;
+	/**
+	 * The building injector
+	 */
+	private static boolean buildingInjector = false;
+	/**
+	 * If the references are built or not
+	 */
+	private static boolean built = false;
+	/**
+	 * The physical injector for the JVM container
+	 */
+	private Injector injector;
 
-    /**
-     * The actual scanner
-     */
-    private transient FastClasspathScanner scanner;
-    /**
-     * The scan result built from everything - the core scanner.
-     */
-    private transient ScanResult scanResult;
+	/**
+	 * The actual scanner
+	 */
+	private transient FastClasspathScanner scanner;
+	/**
+	 * The scan result built from everything - the core scanner.
+	 */
+	private transient ScanResult scanResult;
 
-    /**
-     * Facade layer for backwards compatibility
-     */
-    private transient Reflections reflections;
+	/**
+	 * Facade layer for backwards compatibility
+	 */
+	private transient Reflections reflections;
 
-    /**
-     * A list of jars to exclude from the scan file for the application
-     */
-    private List<String> excludeJarsFromScan;
+	/**
+	 * A list of jars to exclude from the scan file for the application
+	 */
+	private List<String> excludeJarsFromScan;
 
-    /**
-     * Returns the current scan result
-     *
-     * @return
-     */
-    public ScanResult getScanResult()
-    {
-        if (scanResult == null)
-        {
-            GuiceStartup();
-        }
-        return scanResult;
-    }
+	/**
+	 * Creates a new Guice context. Not necessary
+	 */
+	private GuiceContext()
+	{
+		if (instance == null)
+		{
+			instance = this;
+		}
+	}
 
-    /**
-     * Sets the current scan result
-     *
-     * @param scanResult
-     */
-    public void setScanResult(ScanResult scanResult)
-    {
-        GuiceContext.context().scanResult = scanResult;
-    }
+	/**
+	 * Returns the actual context instance, provides access to methods existing a bit deeper
+	 *
+	 * @return
+	 */
+	public static GuiceContext context()
+	{
+		if (instance == null)
+		{
+			instance = new GuiceContext();
+		}
+		return instance;
+	}
 
-    /**
-     * Returns the actual context instance, provides access to methods existing a bit deeper
-     *
-     * @return
-     */
-    public static GuiceContext context()
-    {
-        if (instance == null)
-        {
-            instance = new GuiceContext();
-        }
-        return instance;
-    }
+	/**
+	 * Reference the Injector Directly
+	 *
+	 * @return
+	 */
+	public static synchronized Injector inject()
+	{
+		if (context().injector == null)
+		{
+			if (!buildingInjector)
+			{
+				buildingInjector = true;
+				log.info("Starting up Injections");
+				log.config("Startup Executions....");
+				Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
+				List<GuicePreStartup> startups = new ArrayList<>();
+				pres.stream().map(pre -> GuiceContext.getInstance(pre)).forEachOrdered(startups::add);
+				Collections.sort(startups, (GuicePreStartup o1, GuicePreStartup o2) -> o1.sortOrder().compareTo(o2.sortOrder()));
+				log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
+				startups.forEach(GuicePreStartup::onStartup);
+				log.info("Finished Startup Execution");
+				log.config("Loading All Default Binders (that extend GuiceDefaultBinder)");
 
-    /**
-     * Returns the current classpath scanner
-     *
-     * @return
-     */
-    public FastClasspathScanner getScanner()
-    {
-        return scanner;
-    }
+				GuiceInjectorModule defaultInjection;
+				defaultInjection = new GuiceInjectorModule();
+				log.config("Loading All Site Binders (that extend GuiceSiteBinder)");
 
-    /**
-     * Sets the classpath scanner
-     *
-     * @param scanner
-     */
-    public static void setScanner(FastClasspathScanner scanner)
-    {
-        context().scanner = scanner;
-    }
+				GuiceSiteInjectorModule siteInjection;
+				siteInjection = new GuiceSiteInjectorModule();
 
-    /**
-     * Creates a new Guice context. Not necessary
-     */
-    private GuiceContext()
-    {
-        if (instance == null)
-        {
-            instance = this;
-        }
-    }
+				int customModuleSize = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).size();
+				log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
+				ArrayList<Module> customModules = new ArrayList<>();
+				Module[] cModules;
+				for (Iterator<Class<?>> iterator = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).iterator(); iterator.hasNext(); )
+				{
+					try
+					{
+						Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) iterator.next();
+						log.log(Level.FINE, "Adding Module [{0}]", next.getCanonicalName());
+						Module moduleInstance = next.newInstance();
+						customModules.add(moduleInstance);
+					}
+					catch (InstantiationException | IllegalAccessException ex)
+					{
+						Logger.getLogger(GuiceContext.class.getName()).log(Level.SEVERE, null, ex);
+					}
+				}
+				customModules.add(0, siteInjection);
+				customModules.add(0, defaultInjection);
 
-    private void GuiceStartup()
-    {
-        log.info("Starting up classpath scanner");
-        StringBuilder sb = new StringBuilder();
-        if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
-        {
-            excludeJarsFromScan = new ArrayList<>();
-            excludeJarsFromScan.add("-com.fasterxml.jackson");
-            excludeJarsFromScan.add("-com.google.common");
-            excludeJarsFromScan.add("-com.google.inject");
-            excludeJarsFromScan.add("-com.microsoft.sqlserver");
-            excludeJarsFromScan.add("-com.sun.enterprise.glassfish");
-            excludeJarsFromScan.add("-com.sun.enterprise.module");
-            excludeJarsFromScan.add("-com.sun.jdi");
-            excludeJarsFromScan.add("-edu.umd.cs.findbugs");
-            excludeJarsFromScan.add("-io.github.lukehutch.fastclasspathscanner");
-            excludeJarsFromScan.add("-javassist");
-            excludeJarsFromScan.add("-net.sf.qualitycheck");
-            excludeJarsFromScan.add("-net.sf.uadetector");
-            excludeJarsFromScan.add("-org.aopalliance");
-            excludeJarsFromScan.add("-org.apache.catalina");
-            excludeJarsFromScan.add("-org.apache.commons");
-            excludeJarsFromScan.add("-org.apache.derby");
-            excludeJarsFromScan.add("-org.glassfish");
+				cModules = new Module[customModules.size()];
+				cModules = customModules.toArray(cModules);
 
-            //glassfish jar defaultsglassfish.jar
-            excludeJarsFromScan.add("-org.ietf");
-            excludeJarsFromScan.add("-org.jboss");
-            excludeJarsFromScan.add("-org.jvnet");
-            excludeJarsFromScan.add("-org.slf4j");
-            excludeJarsFromScan.add("-org.w3c");
-            excludeJarsFromScan.add("-org.xml.sax");
+				context().injector = Guice.createInjector(cModules);
+				buildingInjector = false;
+				log.config("Post Startup Executions....");
+				Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
+				List<GuicePostStartup> postStartups = new ArrayList<>();
+				closingPres.forEach(closingPre ->
+				                    {
+					                    try
+					                    {
+						                    postStartups.add(closingPre.newInstance());
+					                    }
+					                    catch (InstantiationException | IllegalAccessException ex)
+					                    {
+						                    log.log(Level.SEVERE, "Unable to create new Post Create Object, No default constructor", ex);
+					                    }
+				                    });
+				Collections.sort(postStartups, (GuicePostStartup o1, GuicePostStartup o2) -> o1.sortOrder().compareTo(o2.sortOrder()));
+				log.log(Level.FINE, "Total of [{0}] startup modules.", postStartups.size());
+				postStartups.forEach(GuicePostStartup::postLoad);
+				log.config("Finished Post Startup Execution");
+				log.info("Finished with Guice");
+				built = true;
+			}
+			else
+			{
+				log.severe("Premature call to GuiceContext.inject. Injector is still currently building, are you calling guice context from a constructor? consider using init() or preconfigure()");
+			}
+		}
+		buildingInjector = false;
+		return context().injector;
+	}
 
-        }
-        String[] exclusions = new String[excludeJarsFromScan.size()];
-        exclusions = excludeJarsFromScan.toArray(exclusions);
+	/**
+	 * If the context is built
+	 *
+	 * @return
+	 */
+	public static boolean isBuilt()
+	{
+		return built;
+	}
 
-        scanner = new FastClasspathScanner(exclusions);
-        scanner.enableFieldInfo();
-        scanner.enableFieldAnnotationIndexing();
-        scanner.enableFieldTypeIndexing();
-        scanner.enableMethodAnnotationIndexing();
-        scanner.enableMethodInfo();
-        scanner.ignoreFieldVisibility();
-        scanner.ignoreMethodVisibility();
-        scanResult = scanner.scan(5);
-        scanResult.getNamesOfAllStandardClasses().forEach(log::finer);
+	/**
+	 * If the context is built
+	 *
+	 * @param built
+	 */
+	public static void setBuilt(boolean built)
+	{
+		GuiceContext.built = built;
+	}
 
-        log.info("Classpath Scanner Completed");
-    }
+	/**
+	 * Builds a reflection object if one does not exist
+	 *
+	 * @return
+	 */
+	public static Reflections reflect()
+	{
+		if (context().reflections == null)
+		{
+			context().reflections = new Reflections();
+		}
+		return context().reflections;
+	}
 
-    /**
-     * If the context is built
-     *
-     * @return
-     */
-    public static boolean isBuilt()
-    {
-        return built;
-    }
+	/**
+	 * Execute on Destroy
+	 */
+	public static void destroy()
+	{
+		System.out.println("Destroying Context");
+		context().reflections = null;
+		context().scanResult = null;
+		context().scanner = null;
+		context().injector = null;
+		GuiceContext.instance = null;
+		System.out.println("Finalized Destroy");
+	}
 
-    /**
-     * If the context is built
-     *
-     * @param built
-     */
-    public static void setBuilt(boolean built)
-    {
-        GuiceContext.built = built;
-    }
+	/**
+	 * If the context is currently still building the injector
+	 *
+	 * @return
+	 */
+	public static boolean isBuildingInjector()
+	{
+		return buildingInjector;
+	}
 
-    /**
-     * Initializes Guice Context post Startup Beans
-     *
-     * @param servletContextEvent
-     */
-    @Override
-    public void contextInitialized(ServletContextEvent servletContextEvent)
-    {
-        log.info("Context Found, Reloading class path ");
-        log.info("Starting Up Servlet Context");
-        Date startDate = new Date();
-        Date endDate = new Date();
-        log.log(Level.FINER, "Reflections loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
-        inject();
-        log.log(Level.INFO, "Guice loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
-    }
+	/**
+	 * Gets a new injected instance of a class
+	 *
+	 * @param <T>
+	 * @param type
+	 *
+	 * @return
+	 */
+	public static <T> T getInstance(Class<T> type)
+	{
+		try
+		{
+			return inject().getInstance(type);
+		}
+		catch (NullPointerException npe)
+		{
+			log.log(Level.SEVERE, "Unable to return an injector", npe);
+			return null;
+		}
+	}
 
-    /**
-     * Maps the injector class to the injector
-     *
-     * @return
-     */
-    @Override
-    public Injector getInjector()
-    {
-        return inject();
-    }
+	/**
+	 * Gets a new specified instance from a give key
+	 *
+	 * @param <T>
+	 * @param type
+	 *
+	 * @return
+	 */
+	public static <T> T getInstance(Key<T> type)
+	{
+		try
+		{
+			return inject().getInstance(type);
+		}
+		catch (NullPointerException npe)
+		{
+			log.log(Level.SEVERE, "Unable to return an injector", npe);
+			return null;
+		}
+	}
 
-    /**
-     * Returns the fully populated reflections object
-     *
-     * @return
-     */
-    public Reflections getReflections()
-    {
-        return reflect();
-    }
+	/**
+	 * If context can be used
+	 *
+	 * @return
+	 */
+	public static boolean isReady()
+	{
+		return isBuilt() && isBuildingInjector();
+	}
 
-    /**
-     * Builds a reflection object if one does not exist
-     *
-     * @return
-     */
-    public static Reflections reflect()
-    {
-        if (context().reflections == null)
-        {
-            context().reflections = new Reflections();
-        }
-        return context().reflections;
-    }
+	/**
+	 * Returns the current scan result
+	 *
+	 * @return
+	 */
+	public ScanResult getScanResult()
+	{
+		if (scanResult == null)
+		{
+			GuiceStartup();
+		}
+		return scanResult;
+	}
 
-    /**
-     * Reference the Injector Directly
-     *
-     * @return
-     */
-    public static synchronized Injector inject()
-    {
-        if (context().injector == null)
-        {
-            if (!buildingInjector)
-            {
-                buildingInjector = true;
-                log.info("Starting up Injections");
-                log.config("Startup Executions....");
-                Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
-                List<GuicePreStartup> startups = new ArrayList<>();
-                pres.stream().map(pre -> GuiceContext.getInstance(pre)).forEachOrdered(startups::add);
-                Collections.sort(startups, (GuicePreStartup o1, GuicePreStartup o2) -> o1.sortOrder().compareTo(o2.sortOrder()));
-                log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
-                startups.forEach(GuicePreStartup::onStartup);
-                log.info("Finished Startup Execution");
-                log.config("Loading All Default Binders (that extend GuiceDefaultBinder)");
+	/**
+	 * Sets the current scan result
+	 *
+	 * @param scanResult
+	 */
+	public void setScanResult(ScanResult scanResult)
+	{
+		GuiceContext.context().scanResult = scanResult;
+	}
 
-                GuiceInjectorModule defaultInjection;
-                defaultInjection = new GuiceInjectorModule();
-                log.config("Loading All Site Binders (that extend GuiceSiteBinder)");
+	/**
+	 * Returns the current classpath scanner
+	 *
+	 * @return
+	 */
+	public FastClasspathScanner getScanner()
+	{
+		return scanner;
+	}
 
-                GuiceSiteInjectorModule siteInjection;
-                siteInjection = new GuiceSiteInjectorModule();
+	/**
+	 * Sets the classpath scanner
+	 *
+	 * @param scanner
+	 */
+	public static void setScanner(FastClasspathScanner scanner)
+	{
+		context().scanner = scanner;
+	}
 
-                int customModuleSize = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).size();
-                log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
-                ArrayList<Module> customModules = new ArrayList<>();
-                Module[] cModules;
-                for (Iterator<Class<?>> iterator = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).iterator(); iterator.hasNext();)
-                {
-                    try
-                    {
-                        Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) iterator.next();
-                        log.log(Level.FINE, "Adding Module [{0}]", next.getCanonicalName());
-                        Module moduleInstance = next.newInstance();
-                        customModules.add(moduleInstance);
-                    }
-                    catch (InstantiationException | IllegalAccessException ex)
-                    {
-                        Logger.getLogger(GuiceContext.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-                customModules.add(0, siteInjection);
-                customModules.add(0, defaultInjection);
+	/**
+	 * Initializes Guice Context post Startup Beans
+	 *
+	 * @param servletContextEvent
+	 */
+	@Override
+	public void contextInitialized(ServletContextEvent servletContextEvent)
+	{
+		log.info("Context Found, Reloading class path ");
+		log.info("Starting Up Servlet Context");
+		Date startDate = new Date();
+		Date endDate = new Date();
+		log.log(Level.FINER, "Reflections loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
+		inject();
+		log.log(Level.INFO, "Guice loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
+	}
 
-                cModules = new Module[customModules.size()];
-                cModules = customModules.toArray(cModules);
+	/**
+	 * Maps the injector class to the injector
+	 *
+	 * @return
+	 */
+	@Override
+	public Injector getInjector()
+	{
+		return inject();
+	}
 
-                //  context().injector = Guice.createInjector(cModules);
-                buildingInjector = false;
-                log.config("Post Startup Executions....");
-                Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
-                List<GuicePostStartup> postStartups = new ArrayList<>();
-                closingPres.stream().map(pre -> GuiceContext.getInstance(pre)).forEachOrdered(postStartups::add);
-                Collections.sort(postStartups, (GuicePostStartup o1, GuicePostStartup o2) -> o1.sortOrder().compareTo(o2.sortOrder()));
-                log.log(Level.FINE, "Total of [{0}] startup modules.", postStartups.size());
-                postStartups.stream().forEach(GuicePostStartup::postLoad);
-                log.config("Finished Post Startup Execution");
-                log.info("Finished with Guice");
-                built = true;
-            }
-            else
-            {
-                log.severe("Premature call to GuiceContext.inject. Injector is still currently building, are you calling guice context from a constructor? consider using init() or preconfigure()");
-            }
-        }
-        buildingInjector = false;
-        return context().injector;
-    }
+	/**
+	 * Returns the fully populated reflections object
+	 *
+	 * @return
+	 */
+	public Reflections getReflections()
+	{
+		return reflect();
+	}
 
-    /**
-     * If the context is currently still building the injector
-     *
-     * @return
-     */
-    public static boolean isBuildingInjector()
-    {
-        return buildingInjector;
-    }
+	/**
+	 * Removes all references
+	 *
+	 * @param servletContextEvent
+	 */
+	@Override
+	public void contextDestroyed(ServletContextEvent servletContextEvent)
+	{
+		super.contextDestroyed(servletContextEvent);
+	}
 
-    /**
-     * Removes all references
-     *
-     * @param servletContextEvent
-     */
-    @Override
-    public void contextDestroyed(ServletContextEvent servletContextEvent)
-    {
-        super.contextDestroyed(servletContextEvent);
-    }
+	private void GuiceStartup()
+	{
+		log.info("Starting up classpath scanner");
+		StringBuilder sb = new StringBuilder();
+		if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
+		{
+			excludeJarsFromScan = new ArrayList<>();
+			excludeJarsFromScan.add("-com.fasterxml.jackson");
+			excludeJarsFromScan.add("-com.google.common");
+			excludeJarsFromScan.add("-com.google.inject");
+			excludeJarsFromScan.add("-com.microsoft.sqlserver");
+			excludeJarsFromScan.add("-com.sun.enterprise.glassfish");
+			excludeJarsFromScan.add("-com.sun.enterprise.module");
+			excludeJarsFromScan.add("-com.sun.jdi");
+			excludeJarsFromScan.add("-edu.umd.cs.findbugs");
+			excludeJarsFromScan.add("-io.github.lukehutch.fastclasspathscanner");
+			excludeJarsFromScan.add("-javassist");
+			excludeJarsFromScan.add("-net.sf.qualitycheck");
+			excludeJarsFromScan.add("-net.sf.uadetector");
+			excludeJarsFromScan.add("-org.aopalliance");
+			excludeJarsFromScan.add("-org.apache.catalina");
+			excludeJarsFromScan.add("-org.apache.commons");
+			excludeJarsFromScan.add("-org.apache.derby");
+			excludeJarsFromScan.add("-org.glassfish");
 
-    /**
-     * Gets a new injected instance of a class
-     *
-     * @param <T>
-     * @param type
-     *
-     * @return
-     */
-    public static <T> T getInstance(Class<T> type)
-    {
-        try
-        {
-            return inject().getInstance(type);
-        }
-        catch (NullPointerException npe)
-        {
-            log.log(Level.SEVERE, "Unable to return an injector", npe);
-            return null;
-        }
-    }
+			excludeJarsFromScan.add("-org.atmosphere");
+			excludeJarsFromScan.add("-com.google.j2objc");
+			excludeJarsFromScan.add("-com.sun.grizzly");
 
-    /**
-     * Gets a new specified instance from a give key
-     *
-     * @param <T>
-     * @param type
-     *
-     * @return
-     */
-    public static <T> T getInstance(Key<T> type)
-    {
-        try
-        {
-            return inject().getInstance(type);
-        }
-        catch (NullPointerException npe)
-        {
-            log.log(Level.SEVERE, "Unable to return an injector", npe);
-            return null;
-        }
-    }
+			//glassfish jar defaultsglassfish.jar
+			excludeJarsFromScan.add("-org.ietf");
+			excludeJarsFromScan.add("-org.jboss");
+			excludeJarsFromScan.add("-org.jvnet");
+			excludeJarsFromScan.add("-org.slf4j");
+			excludeJarsFromScan.add("-org.w3c");
+			excludeJarsFromScan.add("-org.xml.sax");
 
-    /**
-     * Execute on Destroy
-     */
-    public static void destroy()
-    {
-        System.out.println("Destroying Context");
-        context().reflections = null;
-        context().scanResult = null;
-        context().scanner = null;
-        context().injector = null;
-        context().instance = null;
-        System.out.println("Finalized Destroy");
-    }
+		}
+		String[] exclusions = new String[excludeJarsFromScan.size()];
+		exclusions = excludeJarsFromScan.toArray(exclusions);
 
-    /**
-     * If context can be used
-     *
-     * @return
-     */
-    public static boolean isReady()
-    {
-        return isBuilt() && isBuildingInjector();
-    }
+		scanner = new FastClasspathScanner(exclusions);
+		scanner.enableFieldInfo();
+		scanner.enableFieldAnnotationIndexing();
+		scanner.enableFieldTypeIndexing();
+		scanner.enableMethodAnnotationIndexing();
+		scanner.enableMethodInfo();
+		scanner.ignoreFieldVisibility();
+		scanner.ignoreMethodVisibility();
+		scanResult = scanner.scan(5);
+		scanResult.getNamesOfAllStandardClasses().forEach(log::finer);
+
+		log.info("Classpath Scanner Completed");
+	}
 }

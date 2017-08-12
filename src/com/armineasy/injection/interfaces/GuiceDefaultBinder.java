@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright (C) 2017 Marc Magon
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,45 +23,44 @@ import java.util.Comparator;
  *
  * @author GedMarc
  * @since 12 Dec 2016
- *
  */
 public abstract class GuiceDefaultBinder
-        implements Comparator<GuiceDefaultBinder>, DefaultBinder<com.armineasy.injection.abstractions.GuiceInjectorModule>
+		implements Comparator<GuiceDefaultBinder>, DefaultBinder<com.armineasy.injection.abstractions.GuiceInjectorModule>
 {
 
-    private int DefaultSortOrder = 100;
+	private int DefaultSortOrder = 100;
 
-    /**
-     * Blank constructor
-     */
-    public GuiceDefaultBinder()
-    {
-        //Nothing needed to do on constructions
-    }
+	/**
+	 * Blank constructor
+	 */
+	public GuiceDefaultBinder()
+	{
+		//Nothing needed to do on constructions
+	}
 
-    public void setDefaultSortOrder(int DefaultSortOrder)
-    {
-        this.DefaultSortOrder = DefaultSortOrder;
-    }
+	public void setDefaultSortOrder(int DefaultSortOrder)
+	{
+		this.DefaultSortOrder = DefaultSortOrder;
+	}
 
-    /**
-     * The default value is 100
-     *
-     * @return
-     */
-    public Integer sortOrder()
-    {
-        return DefaultSortOrder;
-    }
+	/**
+	 * The default value is 100
+	 *
+	 * @return
+	 */
+	public Integer sortOrder()
+	{
+		return DefaultSortOrder;
+	}
 
-    @Override
-    public int compare(GuiceDefaultBinder o1, GuiceDefaultBinder o2)
-    {
-        if (o1 == null || o2 == null)
-        {
-            return -1;
-        }
-        return o1.sortOrder().compareTo(o2.sortOrder());
-    }
+	@Override
+	public int compare(GuiceDefaultBinder o1, GuiceDefaultBinder o2)
+	{
+		if (o1 == null || o2 == null)
+		{
+			return -1;
+		}
+		return o1.sortOrder().compareTo(o2.sortOrder());
+	}
 
 }

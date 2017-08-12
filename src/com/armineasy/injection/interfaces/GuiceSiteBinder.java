@@ -17,6 +17,7 @@
 package com.armineasy.injection.interfaces;
 
 import com.armineasy.injection.abstractions.GuiceSiteInjectorModule;
+
 import java.util.Comparator;
 
 /**
@@ -24,63 +25,62 @@ import java.util.Comparator;
  *
  * @author GedMarc
  * @since 12 Dec 2016
- *
  */
 public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, DefaultBinder<GuiceSiteInjectorModule>
 {
 
-    /**
-     * A default regex to identify query parameters
-     */
-    protected static String QueryParametersRegex = "(\\?.*)?";
-    /**
-     * Default order 100
-     */
-    private int DefaultSortOrder = 100;
+	/**
+	 * A default regex to identify query parameters
+	 */
+	protected static String QueryParametersRegex = "(\\?.*)?";
+	/**
+	 * Default order 100
+	 */
+	private int DefaultSortOrder = 100;
 
-    /**
-     * Blank constructor
-     */
-    public GuiceSiteBinder()
-    {
-        //Nothing needed to be done
-    }
+	/**
+	 * Blank constructor
+	 */
+	public GuiceSiteBinder()
+	{
+		//Nothing needed to be done
+	}
 
-    /**
-     * The default sort order number is 100
-     *
-     * @return
-     */
-    public Integer sortOrder()
-    {
-        return DefaultSortOrder;
-    }
+	/**
+	 * The default sort order number is 100
+	 *
+	 * @return
+	 */
+	public Integer sortOrder()
+	{
+		return DefaultSortOrder;
+	}
 
-    /**
-     * Sets the default sort order
-     *
-     * @param DefaultSortOrder
-     */
-    public void setDefaultSortOrder(int DefaultSortOrder)
-    {
-        this.DefaultSortOrder = DefaultSortOrder;
-    }
+	/**
+	 * Sets the default sort order
+	 *
+	 * @param DefaultSortOrder
+	 */
+	public void setDefaultSortOrder(int DefaultSortOrder)
+	{
+		this.DefaultSortOrder = DefaultSortOrder;
+	}
 
-    /**
-     * Compares the items across
-     *
-     * @param o1
-     * @param o2
-     *
-     * @return
-     */
-    @Override
-    public int compare(GuiceSiteBinder o1, GuiceSiteBinder o2)
-    {
-        if (o1 == null || o2 == null)
-        {
-            return -1;
-        }
-        return o1.sortOrder().compareTo(o2.sortOrder());
-    }
+	/**
+	 * Compares the items across
+	 *
+	 * @param o1
+	 * @param o2
+	 *
+	 * @return
+	 */
+	@Override
+	public int compare(GuiceSiteBinder o1, GuiceSiteBinder o2)
+	{
+		if (o1 == null || o2 == null)
+		{
+			return -1;
+		}
+		return o1.sortOrder().compareTo(o2.sortOrder());
+	}
 }

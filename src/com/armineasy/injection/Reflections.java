@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright (C) 2017 Marc Magon
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,7 @@
 package com.armineasy.injection;
 
 import com.google.common.base.Predicate;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -35,124 +36,133 @@ import java.util.regex.Pattern;
 public class Reflections
 {
 
-    /*
-     * Constructs a new Reflections
-     */
-    public Reflections()
-    {
-        //Nothing needed
-    }
+	/*
+	 * Constructs a new Reflections
+	 */
+	public Reflections()
+	{
+		//Nothing needed
+	}
 
-    /**
-     * Returns all the subtypes (interface or abstract) of a given class type
-     *
-     * @param <T>  The type to check
-     * @param type variable
-     * @return A set of classes matching
-     */
-    public <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type)
-    {
-        Set<Class<? extends T>> returnable = new HashSet<>();
-        List<String> allClasses = GuiceContext.context().getScanResult().getNamesOfAllClasses();
-        List<String> subtypes = type.isInterface() ? GuiceContext.context().getScanResult().getNamesOfClassesImplementing(type) : GuiceContext.context().getScanResult().getNamesOfSubclassesOf(type);
-        subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype)).forEach(returnable::add);
-        return returnable;
-    }
+	/**
+	 * Returns all the subtypes (interface or abstract) of a given class type
+	 *
+	 * @param <T>  The type to check
+	 * @param type variable
+	 *
+	 * @return A set of classes matching
+	 */
+	public <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type)
+	{
+		Set<Class<? extends T>> returnable = new HashSet<>();
+		List<String> allClasses = GuiceContext.context().getScanResult().getNamesOfAllClasses();
+		List<String> subtypes = type.isInterface() ? GuiceContext.context().getScanResult().getNamesOfClassesImplementing(type) : GuiceContext.context().getScanResult().getNamesOfSubclassesOf(type);
+		subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype)).forEach(returnable::add);
+		return returnable;
+	}
 
-    /**
-     * Returns all the class types annotated with an annotation
-     *
-     * @param <T>
-     * @param annotation
-     * @return
-     */
-    public <T> Set<Class<? extends T>> getTypesAnnotatedWith(final Class<? extends Annotation> annotation)
-    {
-        Set<Class<? extends T>> returnable = new HashSet<>();
-        List<String> subtypes = GuiceContext.context().getScanResult().getNamesOfClassesWithAnnotation(annotation);
-        subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype)).forEach(returnable::add);
-        return returnable;
-    }
+	/**
+	 * Returns all the class types annotated with an annotation
+	 *
+	 * @param <T>
+	 * @param annotation
+	 *
+	 * @return
+	 */
+	public <T> Set<Class<? extends T>> getTypesAnnotatedWith(final Class<? extends Annotation> annotation)
+	{
+		Set<Class<? extends T>> returnable = new HashSet<>();
+		List<String> subtypes = GuiceContext.context().getScanResult().getNamesOfClassesWithAnnotation(annotation);
+		subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype)).forEach(returnable::add);
+		return returnable;
+	}
 
-    /**
-     * Returns all the methods annotated with an annotation
-     *
-     * @param annotation
-     * @return
-     */
-    public Set<Method> getMethodsAnnotatedWith(final Class<? extends Annotation> annotation)
-    {
+	/**
+	 * Returns all the methods annotated with an annotation
+	 *
+	 * @param annotation
+	 *
+	 * @return
+	 */
+	public Set<Method> getMethodsAnnotatedWith(final Class<? extends Annotation> annotation)
+	{
 
-        return null;
-    }
+		return null;
+	}
 
-    /**
-     * Gets any methods with a parameter associated on it
-     *
-     * @param annotation
-     * @return
-     */
-    public Set<Method> getMethodsWithAnyParamAnnotated(Class<? extends Annotation> annotation)
-    {
-        return null;
-    }
+	/**
+	 * Gets any methods with a parameter associated on it
+	 *
+	 * @param annotation
+	 *
+	 * @return
+	 */
+	public Set<Method> getMethodsWithAnyParamAnnotated(Class<? extends Annotation> annotation)
+	{
+		return null;
+	}
 
-    /**
-     * Gets any methods with the annotation attached
-     *
-     * @param annotation
-     * @return
-     */
-    public Set<Method> getMethodsWithAnyParamAnnotated(Annotation annotation)
-    {
-        return null;
-    }
+	/**
+	 * Gets any methods with the annotation attached
+	 *
+	 * @param annotation
+	 *
+	 * @return
+	 */
+	public Set<Method> getMethodsWithAnyParamAnnotated(Annotation annotation)
+	{
+		return null;
+	}
 
-    /**
-     * Gets all the fields annotated with an annotation
-     *
-     * @param <T>
-     * @param annotation
-     * @return
-     */
-    public <T> Set<Field> getFieldsAnnotatedWith(final Class<? extends Annotation> annotation)
-    {
-        return null;
-    }
+	/**
+	 * Gets all the fields annotated with an annotation
+	 *
+	 * @param <T>
+	 * @param annotation
+	 *
+	 * @return
+	 */
+	public <T> Set<Field> getFieldsAnnotatedWith(final Class<? extends Annotation> annotation)
+	{
+		return null;
+	}
 
-    /**
-     * Gets all the resources with a given name predicate.
-     * Operates in its own scanner, may be a little slower
-     *
-     * @param namePredicate
-     * @return
-     */
-    public Set<String> getResources(final Predicate<String> namePredicate)
-    {
-        return null;
-    }
+	/**
+	 * Gets all the resources with a given name predicate.
+	 * Operates in its own scanner, may be a little slower
+	 *
+	 * @param namePredicate
+	 *
+	 * @return
+	 */
+	public Set<String> getResources(final Predicate<String> namePredicate)
+	{
+		return null;
+	}
 
-    /**
-     * Gets all the resources with a given pattern
-     * * Operates in its own scanner, may be a little slower
-     *
-     * @param pattern
-     * @return
-     */
-    public Set<String> getResources(final Pattern pattern)
-    {
-        return null;
-    }
+	/**
+	 * Gets all the resources with a given pattern
+	 * * Operates in its own scanner, may be a little slower
+	 *
+	 * @param pattern
+	 *
+	 * @return
+	 */
+	public Set<String> getResources(final Pattern pattern)
+	{
+		return null;
+	}
 
-    /**
-     * Returns all the members that access a particular field
-     *
-     * @param field
-     * @return
-     */
-    public Set<Member> getFieldUsage(Field field)
-    {
-        return null;
-    }
+	/**
+	 * Returns all the members that access a particular field
+	 *
+	 * @param field
+	 *
+	 * @return
+	 */
+	public Set<Member> getFieldUsage(Field field)
+	{
+		return null;
+	}
 
 }

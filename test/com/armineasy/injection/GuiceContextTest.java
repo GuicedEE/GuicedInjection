@@ -8,50 +8,50 @@ package com.armineasy.injection;
 import com.armineasy.injection.abstractions.GuiceInjectorModule;
 import com.armineasy.injection.interfaces.GuiceDefaultBinder;
 import com.armineasy.injection.interfaces.GuiceSiteBinder;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+
 /**
- *
  * @author GedMarc
  */
 public class GuiceContextTest extends GuiceDefaultBinder
 {
 
-    @BeforeClass
-    public static void pre()
-    {
-        LogManager.getLogManager().getLogger("").setLevel(Level.FINEST);
-    }
+	@BeforeClass
+	public static void pre()
+	{
+		LogManager.getLogManager().getLogger("").setLevel(Level.FINEST);
+	}
 
-    @Override
-    public void onBind(GuiceInjectorModule module)
-    {
-        System.out.println("Binding Test");
-    }
+	public static void main(String[] args)
+	{
+		System.out.println("Main");
+		GuiceContext.isBuilt();
+		GuiceContext.inject();
 
-    @Test
-    public void testReflection()
-    {
-        GuiceContext.reflect();
-    }
+		GuiceContext.reflect().getSubTypesOf(GuiceDefaultBinder.class);
+		GuiceContext.reflect().getSubTypesOf(GuiceSiteBinder.class);
+	}
 
-    @Test
-    public void testInjection()
-    {
-        GuiceContext.inject();
-    }
+	@Override
+	public void onBind(GuiceInjectorModule module)
+	{
+		System.out.println("Binding Test");
+	}
 
-    public static void main(String[] args)
-    {
-        System.out.println("Main");
-        GuiceContext.isBuilt();
-        GuiceContext.inject();
+	@Test
+	public void testReflection()
+	{
+		GuiceContext.reflect();
+	}
 
-        GuiceContext.reflect().getSubTypesOf(GuiceDefaultBinder.class);
-        GuiceContext.reflect().getSubTypesOf(GuiceSiteBinder.class);
-    }
+	@Test
+	public void testInjection()
+	{
+		GuiceContext.inject();
+	}
 
 }

@@ -1,16 +1,20 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.armineasy</groupId>
+    <groupId>za.co.mmagon</groupId>
     <artifactId>guice-injection</artifactId>
-    <version>0.10.2-SNAPSHOT</version>
+    <version>0.0.0_0</version>
     <packaging>jar</packaging>
 
     <name>Guice Injector</name>
-    <description>Guice Injection allows you to access multiple Guice Binders and Modules across separate archives. Allowing you to configure your applications with injection from multiple dependancies. Servlets, EJB's, and Stand-Alone is supported. Requires JDK 8</description>
+    <description>Guice Injection allows you to access multiple Guice Binders and Modules across separate archives.
+        Allowing you to configure your applications with injection from multiple dependancies. Servlets, EJB's, and
+        Stand-Alone is supported. Requires JDK 8
+    </description>
     <url>https://github.com/GedMarc/GuiceInjection</url>
-
 
     <repositories>
         <repository>
@@ -28,15 +32,97 @@
             </properties>
 
         </profile>
+
+
         <profile>
-            <id>unit-test</id>
+            <id>unittest-profile</id>
             <properties>
                 <src.dir>src</src.dir>
                 <test.dir>test</test.dir>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <version>${maven.dependency.version}</version>
+                        <executions>
+                            <execution>
+                                <id>copy-dependencies</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                                    <includeScope>runtime</includeScope>
+                                    <overWriteReleases>true</overWriteReleases>
+                                    <overWriteSnapshots>true</overWriteSnapshots>
+                                    <overWriteIfNewer>true</overWriteIfNewer>
+                                    <stripVersion>true</stripVersion>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>copy-test-libs</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/test-libs</outputDirectory>
+                                    <excludeScope>compile</excludeScope>
+                                    <excludeTransitive>true</excludeTransitive>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
+
+
         <profile>
-            <id>release</id>
+            <id>release-profile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <failOnError>false</failOnError>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <version>${maven.javadoc.version}</version>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven.source.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-source</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
             <properties>
                 <src.dir>src</src.dir>
                 <test.dir>test</test.dir>
@@ -55,6 +141,8 @@
         <maven.source.version>2.1.2</maven.source.version>
         <maven.resources.version>3.0.2</maven.resources.version>
 
+        <netbeans.hint.license>gpl30</netbeans.hint.license>
+
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
@@ -67,95 +155,18 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>${maven.dependency.version}</version>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                            <includeScope>runtime</includeScope>
-                            <overWriteReleases>true</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                            <stripVersion>true</stripVersion>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>copy-test-libs</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/test-libs</outputDirectory>
-                            <excludeScope>compile</excludeScope>
-                            <excludeTransitive>true</excludeTransitive>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                        </manifest>
-                        <manifestEntries>
-                            <Class-Path>lib/</Class-Path>
-                        </manifestEntries>
-                    </archive>
-                    <stripVersion>true</stripVersion>
-                    <destFileName>guice-injection</destFileName>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>testJar</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <version>${maven.jar.version}</version>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <failOnError>false</failOnError>
-                            <stripVersion>true</stripVersion>
-                            <!-- switch on dependency-driven aggregation -->
-                            <includeDependencySources>true</includeDependencySources>
-                        </configuration>
-                    </execution>
-                </executions>
-                <version>${maven.javadoc.version}</version>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>${maven.source.version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-source</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -168,6 +179,7 @@
             <version>LATEST</version>
             <type>jar</type>
         </dependency>
+
         <dependency>
             <groupId>com.jcabi</groupId>
             <artifactId>jcabi-aspects</artifactId>
