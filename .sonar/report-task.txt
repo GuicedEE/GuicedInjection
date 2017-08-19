@@ -1,5 +1,0 @@
-projectKey=com.armineasy.injection
-serverUrl=http://arminhost:9000
-dashboardUrl=http://arminhost:9000/dashboard/index/com.armineasy.injection
-ceTaskId=AV1LoUuM8kr51LW4vEde
-ceTaskUrl=http://arminhost:9000/api/ce/task?id=AV1LoUuM8kr51LW4vEde
