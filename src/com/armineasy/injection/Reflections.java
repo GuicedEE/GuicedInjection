@@ -24,6 +24,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -75,6 +76,28 @@ public class Reflections
 		List<String> subtypes = GuiceContext.context().getScanResult().getNamesOfClassesWithAnnotation(annotation);
 		subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype)).forEach(returnable::add);
 		return returnable;
+	}
+	
+	public Optional<Field> getFieldAnnotatedWithOfType(Class<? extends Annotation> annotation, Class type, Class in)
+	{
+		Field field = null;
+		Class inType = in;
+		Field[] allFields = inType.getFields();
+		for(Field f : allFields)
+		{
+			if(f.getAnnotationsByType(annotation) != null)
+			{
+				if(f.getAnnotationsByType(annotation).length > 0)
+				{
+					if(f.getType().equals(type))
+					{
+						field = f;
+						break;
+					}
+				}
+			}
+		}
+		return Optional.of(field);
 	}
 
 	/**

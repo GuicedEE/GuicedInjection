@@ -72,6 +72,22 @@ public class Globals implements Serializable
 		}
 		globalProperties.get(key).put(property, value);
 	}
+	
+	/**
+	 * Adds a normal string string property to the library
+	 *
+	 * @param key
+	 * @param property
+	 * @param value
+	 */
+	public void addProperty(String key, String property, Serializable value)
+	{
+		if (!globalProperties.containsKey(key))
+		{
+			globalProperties.put(key, new HashMap<>());
+		}
+		globalProperties.get(key).put(property, value);
+	}
 
 	/**
 	 * Gets the key with the given map return type

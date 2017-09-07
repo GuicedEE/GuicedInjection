@@ -260,14 +260,14 @@ public class GuiceContext extends GuiceServletContextListener
 		try
 		{
 			return inject().getInstance(type);
-		}
-		catch (NullPointerException npe)
-		{
-			log.log(Level.SEVERE, "Unable to return an injector", npe);
-			return null;
-		}
 	}
-
+		catch (NullPointerException npe)
+	{
+		log.log(Level.SEVERE, "Unable to return an injector", npe);
+		return null;
+	}
+}
+	
 	/**
 	 * Gets a new specified instance from a give key
 	 *
@@ -288,7 +288,7 @@ public class GuiceContext extends GuiceServletContextListener
 			return null;
 		}
 	}
-
+	
 	/**
 	 * If context can be used
 	 *
@@ -298,7 +298,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		return isBuilt() && isBuildingInjector();
 	}
-
+	
 	/**
 	 * Returns the current scan result
 	 *
