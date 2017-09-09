@@ -6,7 +6,7 @@
 
     <groupId>za.co.mmagon</groupId>
     <artifactId>guice-injection</artifactId>
-    <version>0.11.5.1-RELEASE</version>
+    <version>0.11.5-RELEASE</version>
     <packaging>jar</packaging>
 
     <name>Guice Injector</name>
