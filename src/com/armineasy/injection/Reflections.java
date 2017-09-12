@@ -97,7 +97,7 @@ public class Reflections
 				}
 			}
 		}
-		return Optional.of(field);
+		return Optional.ofNullable(field);
 	}
 
 	/**
