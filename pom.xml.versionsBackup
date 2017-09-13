@@ -348,12 +348,12 @@
         <snapshotRepository>
             <id>snapshots</id>
             <name>ArminSoftwareArtifactory-snapshots</name>
-            <url>https://www.armineasy.com/artifactory/libs-snapshot-local</url>
+            <url>https://www.armin.software/artifactory/libs-snapshot-local</url>
         </snapshotRepository>
         <repository>
             <id>central</id>
             <name>ArminSoftwareArtifactory-releases</name>
-            <url>https://www.armineasy.com/artifactory/libs-release-local</url>
+            <url>https://www.armin.software/artifactory/libs-release-local</url>
         </repository>
     </distributionManagement>
     <organization>
