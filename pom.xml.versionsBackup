@@ -346,7 +346,7 @@
     </dependencies>
     <distributionManagement>
         <snapshotRepository>
-            <id>snapshots</id>
+            <id>snapshot</id>
             <name>ArminSoftwareArtifactory-snapshots</name>
             <url>https://www.armin.software/artifactory/libs-snapshot-local</url>
         </snapshotRepository>
