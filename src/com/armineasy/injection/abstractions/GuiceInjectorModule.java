@@ -44,9 +44,9 @@ import java.util.logging.Logger;
  */
 public class GuiceInjectorModule extends AbstractModule implements DefaultModuleMethods
 {
-
+	
 	private static final Logger log = Logger.getLogger("GuiceInjectorModule");
-
+	
 	/**
 	 * Constructs a new instance of the module
 	 */
@@ -54,7 +54,7 @@ public class GuiceInjectorModule extends AbstractModule implements DefaultModule
 	{
 		//Nothing Needed
 	}
-
+	
 	/**
 	 * Executes the linked binders to perform any custom binding
 	 */
@@ -80,67 +80,67 @@ public class GuiceInjectorModule extends AbstractModule implements DefaultModule
 		if (!objects.isEmpty())
 		{
 			Collections.sort(objects, objects.get(0));
-			objects.stream().forEachOrdered(obj ->
-			                                {
-				                                log.log(Level.CONFIG, "Loading Guice Configuration {0}", obj.getClass().getSimpleName());
-				                                obj.onBind(this);
-				                                log.log(Level.CONFIG, "Finished Guice Configuration {0}", obj.getClass().getSimpleName());
-			                                });
+			objects.forEach(obj ->
+			                {
+				                log.log(Level.CONFIG, "Loading Guice Configuration {0}", obj.getClass().getSimpleName());
+				                obj.onBind(this);
+				                log.log(Level.CONFIG, "Finished Guice Configuration {0}", obj.getClass().getSimpleName());
+			                });
 		}
 	}
-
+	
 	@Override
 	public <T> AnnotatedBindingBuilder<T> bind(Class<T> clazz)
 	{
 		return super.bind(clazz);
 	}
-
+	
 	@Override
 	public <T> LinkedBindingBuilder<T> bind(Key<T> key)
 	{
 		return super.bind(key);
 	}
-
+	
 	@Override
 	public <T> AnnotatedBindingBuilder<T> bind(TypeLiteral<T> typeLiteral)
 	{
 		return super.bind(typeLiteral);
 	}
-
+	
 	@Override
 	public AnnotatedConstantBindingBuilder bindConstant()
 	{
 		return super.bindConstant();
 	}
-
+	
 	@Override
 	public void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener)
 	{
 		super.bindListener(bindingMatcher, listener);
 	}
-
+	
 	@Override
 	public void bindListener(Matcher<? super TypeLiteral<?>> typeMatcher, TypeListener listener)
 	{
 		super.bindListener(typeMatcher, listener);
 	}
-
+	
 	@Override
 	public void bindScope(Class<? extends Annotation> scopeAnnotation, Scope scope)
 	{
 		super.bindScope(scopeAnnotation, scope);
 	}
-
+	
 	@Override
 	public Binder binder()
 	{
 		return super.binder();
 	}
-
+	
 	@Override
 	protected void configure()
 	{
 		runBinders();
 	}
-
+	
 }

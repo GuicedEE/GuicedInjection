@@ -30,13 +30,15 @@ import java.util.regex.Pattern;
 
 /**
  * Facade Method implementer for the change from the org.Reflections library to the FastClasspathScanner
+ * <p>
+ * TODO This one
  *
  * @author Marc Magon
  * @since 07 Jul 2017
  */
 public class Reflections
 {
-
+	
 	/*
 	 * Constructs a new Reflections
 	 */
@@ -44,7 +46,7 @@ public class Reflections
 	{
 		//Nothing needed
 	}
-
+	
 	/**
 	 * Returns all the subtypes (interface or abstract) of a given class type
 	 *
@@ -58,10 +60,14 @@ public class Reflections
 		Set<Class<? extends T>> returnable = new HashSet<>();
 		List<String> allClasses = GuiceContext.context().getScanResult().getNamesOfAllClasses();
 		List<String> subtypes = type.isInterface() ? GuiceContext.context().getScanResult().getNamesOfClassesImplementing(type) : GuiceContext.context().getScanResult().getNamesOfSubclassesOf(type);
-		subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype)).forEach(returnable::add);
+		for (String subtype : subtypes)
+		{
+			Class<T> subType = (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype);
+			returnable.add(subType);
+		}
 		return returnable;
 	}
-
+	
 	/**
 	 * Returns all the class types annotated with an annotation
 	 *
@@ -74,7 +80,11 @@ public class Reflections
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
 		List<String> subtypes = GuiceContext.context().getScanResult().getNamesOfClassesWithAnnotation(annotation);
-		subtypes.stream().map(subtype -> (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype)).forEach(returnable::add);
+		for (String subtype : subtypes)
+		{
+			Class<T> subType = (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype);
+			returnable.add(subType);
+		}
 		return returnable;
 	}
 	
@@ -83,13 +93,13 @@ public class Reflections
 		Field field = null;
 		Class inType = in;
 		Field[] allFields = inType.getFields();
-		for(Field f : allFields)
+		for (Field f : allFields)
 		{
-			if(f.getAnnotationsByType(annotation) != null)
+			if (f.getAnnotationsByType(annotation) != null)
 			{
-				if(f.getAnnotationsByType(annotation).length > 0)
+				if (f.getAnnotationsByType(annotation).length > 0)
 				{
-					if(f.getType().equals(type))
+					if (f.getType().equals(type))
 					{
 						field = f;
 						break;
@@ -99,7 +109,7 @@ public class Reflections
 		}
 		return Optional.ofNullable(field);
 	}
-
+	
 	/**
 	 * Returns all the methods annotated with an annotation
 	 *
@@ -109,10 +119,10 @@ public class Reflections
 	 */
 	public Set<Method> getMethodsAnnotatedWith(final Class<? extends Annotation> annotation)
 	{
-
+		
 		return null;
 	}
-
+	
 	/**
 	 * Gets any methods with a parameter associated on it
 	 *
@@ -124,7 +134,7 @@ public class Reflections
 	{
 		return null;
 	}
-
+	
 	/**
 	 * Gets any methods with the annotation attached
 	 *
@@ -136,7 +146,7 @@ public class Reflections
 	{
 		return null;
 	}
-
+	
 	/**
 	 * Gets all the fields annotated with an annotation
 	 *
@@ -149,7 +159,7 @@ public class Reflections
 	{
 		return null;
 	}
-
+	
 	/**
 	 * Gets all the resources with a given name predicate.
 	 * Operates in its own scanner, may be a little slower
@@ -162,7 +172,7 @@ public class Reflections
 	{
 		return null;
 	}
-
+	
 	/**
 	 * Gets all the resources with a given pattern
 	 * * Operates in its own scanner, may be a little slower
@@ -175,7 +185,7 @@ public class Reflections
 	{
 		return null;
 	}
-
+	
 	/**
 	 * Returns all the members that access a particular field
 	 *
@@ -187,5 +197,5 @@ public class Reflections
 	{
 		return null;
 	}
-
+	
 }

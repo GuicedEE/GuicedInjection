@@ -28,7 +28,7 @@ import java.util.Comparator;
  */
 public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, DefaultBinder<GuiceSiteInjectorModule>
 {
-
+	
 	/**
 	 * A default regex to identify query parameters
 	 */
@@ -37,7 +37,7 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
 	 * Default order 100
 	 */
 	private int DefaultSortOrder = 100;
-
+	
 	/**
 	 * Blank constructor
 	 */
@@ -45,7 +45,7 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
 	{
 		//Nothing needed to be done
 	}
-
+	
 	/**
 	 * The default sort order number is 100
 	 *
@@ -55,7 +55,7 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
 	{
 		return DefaultSortOrder;
 	}
-
+	
 	/**
 	 * Sets the default sort order
 	 *
@@ -65,7 +65,7 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
 	{
 		this.DefaultSortOrder = DefaultSortOrder;
 	}
-
+	
 	/**
 	 * Compares the items across
 	 *

@@ -27,7 +27,7 @@ import com.armineasy.injection.interfaces.GuiceDefaultBinder;
  */
 public class GuiceDefaultBinding extends GuiceDefaultBinder
 {
-
+	
 	/*
 	* Constructs a new GuiceDefaultBinding
 	 */
@@ -35,7 +35,7 @@ public class GuiceDefaultBinding extends GuiceDefaultBinder
 	{
 		//Nothing needed
 	}
-
+	
 	@Override
 	public void onBind(GuiceInjectorModule module)
 	{

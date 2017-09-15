@@ -36,7 +36,7 @@ import java.lang.annotation.Annotation;
  */
 public interface DefaultModuleMethods
 {
-
+	
 	/**
 	 * Binds to the injector
 	 *
@@ -45,8 +45,8 @@ public interface DefaultModuleMethods
 	 *
 	 * @return
 	 */
-	public <T> AnnotatedBindingBuilder<T> bind(Class<T> clazz);
-
+	<T> AnnotatedBindingBuilder<T> bind(Class<T> clazz);
+	
 	/**
 	 * Binds to the injector
 	 *
@@ -55,8 +55,8 @@ public interface DefaultModuleMethods
 	 *
 	 * @return
 	 */
-	public <T> LinkedBindingBuilder<T> bind(Key<T> key);
-
+	<T> LinkedBindingBuilder<T> bind(Key<T> key);
+	
 	/**
 	 * Binds to the injector
 	 *
@@ -65,36 +65,36 @@ public interface DefaultModuleMethods
 	 *
 	 * @return
 	 */
-	public <T> AnnotatedBindingBuilder<T> bind(TypeLiteral<T> typeLiteral);
-
+	<T> AnnotatedBindingBuilder<T> bind(TypeLiteral<T> typeLiteral);
+	
 	/**
 	 * Binds to the injector
 	 *
 	 * @return
 	 */
-	public AnnotatedConstantBindingBuilder bindConstant();
-
+	AnnotatedConstantBindingBuilder bindConstant();
+	
 	/**
 	 * Binds to the injector
 	 *
 	 * @param bindingMatcher
 	 * @param listener
 	 */
-	public void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener);
-
+	void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener);
+	
 	/**
 	 * Binds to the injector
 	 *
 	 * @param typeMatcher
 	 * @param listener
 	 */
-	public void bindListener(Matcher<? super TypeLiteral<?>> typeMatcher, TypeListener listener);
-
+	void bindListener(Matcher<? super TypeLiteral<?>> typeMatcher, TypeListener listener);
+	
 	/**
 	 * Binds to the injector
 	 *
 	 * @param scopeAnnotation
 	 * @param scope
 	 */
-	public void bindScope(Class<? extends Annotation> scopeAnnotation, Scope scope);
+	void bindScope(Class<? extends Annotation> scopeAnnotation, Scope scope);
 }

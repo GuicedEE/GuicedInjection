@@ -27,9 +27,9 @@ import java.util.Comparator;
 public abstract class GuiceDefaultBinder
 		implements Comparator<GuiceDefaultBinder>, DefaultBinder<com.armineasy.injection.abstractions.GuiceInjectorModule>
 {
-
+	
 	private int DefaultSortOrder = 100;
-
+	
 	/**
 	 * Blank constructor
 	 */
@@ -37,12 +37,12 @@ public abstract class GuiceDefaultBinder
 	{
 		//Nothing needed to do on constructions
 	}
-
+	
 	public void setDefaultSortOrder(int DefaultSortOrder)
 	{
 		this.DefaultSortOrder = DefaultSortOrder;
 	}
-
+	
 	/**
 	 * The default value is 100
 	 *
@@ -52,7 +52,7 @@ public abstract class GuiceDefaultBinder
 	{
 		return DefaultSortOrder;
 	}
-
+	
 	@Override
 	public int compare(GuiceDefaultBinder o1, GuiceDefaultBinder o2)
 	{
@@ -62,5 +62,5 @@ public abstract class GuiceDefaultBinder
 		}
 		return o1.sortOrder().compareTo(o2.sortOrder());
 	}
-
+	
 }

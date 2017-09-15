@@ -34,10 +34,10 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Globals implements Serializable
 {
-
+	
 	private static final long serialVersionUID = 1L;
 	private final Map<String, Map<Serializable, Serializable>> globalProperties;
-
+	
 	/**
 	 * Constructs a new Globals
 	 */
@@ -45,7 +45,7 @@ public class Globals implements Serializable
 	{
 		globalProperties = new HashMap<>();
 	}
-
+	
 	/**
 	 * Adds a key to the global application library
 	 *
@@ -56,7 +56,7 @@ public class Globals implements Serializable
 	{
 		globalProperties.put(key, properties);
 	}
-
+	
 	/**
 	 * Adds a normal string string property to the library
 	 *
@@ -88,7 +88,7 @@ public class Globals implements Serializable
 		}
 		globalProperties.get(key).put(property, value);
 	}
-
+	
 	/**
 	 * Gets the key with the given map return type
 	 *
@@ -102,7 +102,7 @@ public class Globals implements Serializable
 	{
 		return (Map<K, V>) globalProperties.get(key);
 	}
-
+	
 	/**
 	 * Gets a default string key and property mapping
 	 *
@@ -116,7 +116,7 @@ public class Globals implements Serializable
 	{
 		return (V) globalProperties.get(key).get(property);
 	}
-
+	
 	/**
 	 * Removes a property from any list
 	 *
@@ -130,7 +130,7 @@ public class Globals implements Serializable
 			globalProperties.get(key).remove(property);
 		}
 	}
-
+	
 	/**
 	 * Sets the property
 	 *

@@ -2,10 +2,11 @@ package com.armineasy.injection;
 
 /**
  * Specifies a generic pair
+ *
  * @param <K> Key
  * @param <V> Value
  */
-public class Pair<K,V>
+public class Pair<K, V>
 {
 	/**
 	 * The specified key
@@ -25,6 +26,7 @@ public class Pair<K,V>
 	
 	/**
 	 * Constructs a new key value pair
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -36,6 +38,7 @@ public class Pair<K,V>
 	
 	/**
 	 * Gets the key for the given pair
+	 *
 	 * @return
 	 */
 	public K getKey()
@@ -45,7 +48,9 @@ public class Pair<K,V>
 	
 	/**
 	 * Sets the key for the given pair
+	 *
 	 * @param key
+	 *
 	 * @return
 	 */
 	public Pair setKey(K key)
@@ -56,6 +61,7 @@ public class Pair<K,V>
 	
 	/**
 	 * Returns the value for the given pair
+	 *
 	 * @return
 	 */
 	public V getValue()
@@ -65,7 +71,9 @@ public class Pair<K,V>
 	
 	/**
 	 * Sets the value for the given pair
+	 *
 	 * @param value
+	 *
 	 * @return
 	 */
 	public Pair setValue(V value)

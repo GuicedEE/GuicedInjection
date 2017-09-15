@@ -27,7 +27,9 @@ import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 
 import javax.servlet.ServletContextEvent;
 import java.util.*;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -41,11 +43,11 @@ import java.util.logging.Logger;
  */
 public class GuiceContext extends GuiceServletContextListener
 {
-
 	private static final Logger log = Logger.getLogger("GuiceContext");
-
+	/**
+	 * This particular instance of the class
+	 */
 	private static GuiceContext instance;
-
 	/**
 	 * The building injector
 	 */
@@ -54,11 +56,20 @@ public class GuiceContext extends GuiceServletContextListener
 	 * If the references are built or not
 	 */
 	private static boolean built = false;
+	
+	static
+	{
+		for (Handler handler : LogManager.getLogManager().getLogger("").getHandlers())
+		{
+			handler.setFormatter(new LogColourFormatter());
+		}
+	}
+
 	/**
 	 * The physical injector for the JVM container
 	 */
 	private Injector injector;
-
+	
 	/**
 	 * The actual scanner
 	 */
@@ -67,17 +78,17 @@ public class GuiceContext extends GuiceServletContextListener
 	 * The scan result built from everything - the core scanner.
 	 */
 	private transient ScanResult scanResult;
-
+	
 	/**
 	 * Facade layer for backwards compatibility
 	 */
 	private transient Reflections reflections;
-
+	
 	/**
 	 * A list of jars to exclude from the scan file for the application
 	 */
 	private List<String> excludeJarsFromScan;
-
+	
 	/**
 	 * Creates a new Guice context. Not necessary
 	 */
@@ -88,7 +99,7 @@ public class GuiceContext extends GuiceServletContextListener
 			instance = this;
 		}
 	}
-
+	
 	/**
 	 * Returns the actual context instance, provides access to methods existing a bit deeper
 	 *
@@ -102,7 +113,7 @@ public class GuiceContext extends GuiceServletContextListener
 		}
 		return instance;
 	}
-
+	
 	/**
 	 * Reference the Injector Directly
 	 *
@@ -119,20 +130,24 @@ public class GuiceContext extends GuiceServletContextListener
 				log.config("Startup Executions....");
 				Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
 				List<GuicePreStartup> startups = new ArrayList<>();
-				pres.stream().map(pre -> GuiceContext.getInstance(pre)).forEachOrdered(startups::add);
-				Collections.sort(startups, (GuicePreStartup o1, GuicePreStartup o2) -> o1.sortOrder().compareTo(o2.sortOrder()));
+				for (Class<? extends GuicePreStartup> pre : pres)
+				{
+					GuicePreStartup pr = GuiceContext.getInstance(pre);
+					startups.add(pr);
+				}
+				Collections.sort(startups, Comparator.comparing(GuicePreStartup::sortOrder));
 				log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
 				startups.forEach(GuicePreStartup::onStartup);
 				log.info("Finished Startup Execution");
 				log.config("Loading All Default Binders (that extend GuiceDefaultBinder)");
-
+				
 				GuiceInjectorModule defaultInjection;
 				defaultInjection = new GuiceInjectorModule();
 				log.config("Loading All Site Binders (that extend GuiceSiteBinder)");
-
+				
 				GuiceSiteInjectorModule siteInjection;
 				siteInjection = new GuiceSiteInjectorModule();
-
+				
 				int customModuleSize = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).size();
 				log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
 				ArrayList<Module> customModules = new ArrayList<>();
@@ -153,10 +168,10 @@ public class GuiceContext extends GuiceServletContextListener
 				}
 				customModules.add(0, siteInjection);
 				customModules.add(0, defaultInjection);
-
+				
 				cModules = new Module[customModules.size()];
 				cModules = customModules.toArray(cModules);
-
+				
 				context().injector = Guice.createInjector(cModules);
 				buildingInjector = false;
 				log.config("Post Startup Executions....");
@@ -164,16 +179,9 @@ public class GuiceContext extends GuiceServletContextListener
 				List<GuicePostStartup> postStartups = new ArrayList<>();
 				closingPres.forEach(closingPre ->
 				                    {
-					                    try
-					                    {
-						                    postStartups.add(closingPre.newInstance());
-					                    }
-					                    catch (InstantiationException | IllegalAccessException ex)
-					                    {
-						                    log.log(Level.SEVERE, "Unable to create new Post Create Object, No default constructor", ex);
-					                    }
+					                    postStartups.add(GuiceContext.getInstance(closingPre));
 				                    });
-				Collections.sort(postStartups, (GuicePostStartup o1, GuicePostStartup o2) -> o1.sortOrder().compareTo(o2.sortOrder()));
+				Collections.sort(postStartups, Comparator.comparing(GuicePostStartup::sortOrder));
 				log.log(Level.FINE, "Total of [{0}] startup modules.", postStartups.size());
 				postStartups.forEach(GuicePostStartup::postLoad);
 				log.config("Finished Post Startup Execution");
@@ -188,7 +196,7 @@ public class GuiceContext extends GuiceServletContextListener
 		buildingInjector = false;
 		return context().injector;
 	}
-
+	
 	/**
 	 * If the context is built
 	 *
@@ -198,7 +206,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		return built;
 	}
-
+	
 	/**
 	 * If the context is built
 	 *
@@ -208,7 +216,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		GuiceContext.built = built;
 	}
-
+	
 	/**
 	 * Builds a reflection object if one does not exist
 	 *
@@ -222,7 +230,7 @@ public class GuiceContext extends GuiceServletContextListener
 		}
 		return context().reflections;
 	}
-
+	
 	/**
 	 * Execute on Destroy
 	 */
@@ -236,7 +244,7 @@ public class GuiceContext extends GuiceServletContextListener
 		GuiceContext.instance = null;
 		System.out.println("Finalized Destroy");
 	}
-
+	
 	/**
 	 * If the context is currently still building the injector
 	 *
@@ -246,7 +254,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		return buildingInjector;
 	}
-
+	
 	/**
 	 * Gets a new injected instance of a class
 	 *
@@ -260,13 +268,13 @@ public class GuiceContext extends GuiceServletContextListener
 		try
 		{
 			return inject().getInstance(type);
-	}
+		}
 		catch (NullPointerException npe)
-	{
-		log.log(Level.SEVERE, "Unable to return an injector", npe);
-		return null;
+		{
+			log.log(Level.SEVERE, "Unable to return an injector", npe);
+			return null;
+		}
 	}
-}
 	
 	/**
 	 * Gets a new specified instance from a give key
@@ -312,7 +320,7 @@ public class GuiceContext extends GuiceServletContextListener
 		}
 		return scanResult;
 	}
-
+	
 	/**
 	 * Sets the current scan result
 	 *
@@ -322,7 +330,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		GuiceContext.context().scanResult = scanResult;
 	}
-
+	
 	/**
 	 * Returns the current classpath scanner
 	 *
@@ -332,7 +340,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		return scanner;
 	}
-
+	
 	/**
 	 * Sets the classpath scanner
 	 *
@@ -342,7 +350,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		context().scanner = scanner;
 	}
-
+	
 	/**
 	 * Initializes Guice Context post Startup Beans
 	 *
@@ -359,7 +367,7 @@ public class GuiceContext extends GuiceServletContextListener
 		inject();
 		log.log(Level.INFO, "Guice loaded successfully. [{0}ms]", endDate.getTime() - startDate.getTime());
 	}
-
+	
 	/**
 	 * Maps the injector class to the injector
 	 *
@@ -370,7 +378,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		return inject();
 	}
-
+	
 	/**
 	 * Returns the fully populated reflections object
 	 *
@@ -380,7 +388,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		return reflect();
 	}
-
+	
 	/**
 	 * Removes all references
 	 *
@@ -391,7 +399,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		super.contextDestroyed(servletContextEvent);
 	}
-
+	
 	private void GuiceStartup()
 	{
 		log.info("Starting up classpath scanner");
@@ -416,11 +424,11 @@ public class GuiceContext extends GuiceServletContextListener
 			excludeJarsFromScan.add("-org.apache.commons");
 			excludeJarsFromScan.add("-org.apache.derby");
 			excludeJarsFromScan.add("-org.glassfish");
-
+			
 			excludeJarsFromScan.add("-org.atmosphere");
 			excludeJarsFromScan.add("-com.google.j2objc");
 			excludeJarsFromScan.add("-com.sun.grizzly");
-
+			
 			//glassfish jar defaultsglassfish.jar
 			excludeJarsFromScan.add("-org.ietf");
 			excludeJarsFromScan.add("-org.jboss");
@@ -428,11 +436,11 @@ public class GuiceContext extends GuiceServletContextListener
 			excludeJarsFromScan.add("-org.slf4j");
 			excludeJarsFromScan.add("-org.w3c");
 			excludeJarsFromScan.add("-org.xml.sax");
-
+			
 		}
 		String[] exclusions = new String[excludeJarsFromScan.size()];
 		exclusions = excludeJarsFromScan.toArray(exclusions);
-
+		
 		scanner = new FastClasspathScanner(exclusions);
 		scanner.enableFieldInfo();
 		scanner.enableFieldAnnotationIndexing();
@@ -443,7 +451,7 @@ public class GuiceContext extends GuiceServletContextListener
 		scanner.ignoreMethodVisibility();
 		scanResult = scanner.scan(5);
 		scanResult.getNamesOfAllStandardClasses().forEach(log::finer);
-
+		
 		log.info("Classpath Scanner Completed");
 	}
 }
