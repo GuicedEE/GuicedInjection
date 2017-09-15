@@ -16,6 +16,8 @@
  */
 package com.armineasy.injection;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -154,12 +156,36 @@ public class LogColourFormatter extends java.util.logging.Formatter
 				output = output.replaceAll(replace, replacable);
 			}
 		}
-		output += " - ";
+		
+		if (record.getThrown() != null)
+		{
+			Throwable t = record.getThrown();
+			StringWriter sw = new StringWriter();
+			try (PrintWriter pw = new PrintWriter(sw))
+			{
+				t.printStackTrace(pw);
+			}
+			output += ANSI_RESET;
+			output += sw.toString();
+		}
+		
 		if (!INVERTED)
 		{
-			output += ANSI_WHITE;
-			output += ANSI_BLACK_BACKGROUND;
+			if (!(record.getThrown() != null))
+			{
+				output += ANSI_RESET;
+				output += ANSI_BLACK_BACKGROUND;
+				output += ANSI_WHITE;
+				
+			}
+			else
+			{
+				output += ANSI_BLACK;
+			}
 		}
+		
+		output += " - ";
+		
 		output += "[" + record.getLevel().getLocalizedName() + "]";
 		
 		return output + System.getProperty("line.separator");
