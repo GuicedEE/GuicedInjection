@@ -97,6 +97,12 @@ public class LogColourFormatter extends java.util.logging.Formatter
 	@Override
 	public String format(LogRecord record)
 	{
+		if (record.getMessage() == null || record.getMessage().trim().isEmpty())
+		{
+			return "";
+		}
+		
+		
 		String output = "";
 		if (!INVERTED)
 		{
@@ -118,7 +124,7 @@ public class LogColourFormatter extends java.util.logging.Formatter
 		}
 		else if (record.getLevel() == Level.FINE)
 		{
-			output += ANSI_GREEN
+			output += ANSI_BLUE
 					+ ANSI_BLACK_BACKGROUND + record.getMessage().toString();
 		}
 		else if (record.getLevel() == Level.CONFIG)

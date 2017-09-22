@@ -8,8 +8,8 @@ package com.armineasy.injection;
 import com.armineasy.injection.abstractions.GuiceInjectorModule;
 import com.armineasy.injection.interfaces.GuiceDefaultBinder;
 import com.armineasy.injection.interfaces.GuiceSiteBinder;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -20,7 +20,7 @@ import java.util.logging.LogManager;
 public class GuiceContextTest extends GuiceDefaultBinder
 {
 	
-	@BeforeClass
+	@BeforeAll
 	public static void pre()
 	{
 		LogManager.getLogManager().getLogger("").setLevel(Level.FINEST);

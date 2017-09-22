@@ -18,6 +18,8 @@ package com.armineasy.injection;
 
 import com.google.common.base.Predicate;
 
+import javax.cache.annotation.CacheDefaults;
+import javax.cache.annotation.CacheResult;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -36,6 +38,7 @@ import java.util.regex.Pattern;
  * @author Marc Magon
  * @since 07 Jul 2017
  */
+@CacheDefaults(cacheName = "Reflections")
 public class Reflections
 {
 	
@@ -55,6 +58,7 @@ public class Reflections
 	 *
 	 * @return A set of classes matching
 	 */
+	@CacheResult
 	public <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type)
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
@@ -76,6 +80,7 @@ public class Reflections
 	 *
 	 * @return
 	 */
+	@CacheResult
 	public <T> Set<Class<? extends T>> getTypesAnnotatedWith(final Class<? extends Annotation> annotation)
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
@@ -88,6 +93,7 @@ public class Reflections
 		return returnable;
 	}
 	
+	@CacheResult
 	public Optional<Field> getFieldAnnotatedWithOfType(Class<? extends Annotation> annotation, Class type, Class in)
 	{
 		Field field = null;
@@ -117,6 +123,7 @@ public class Reflections
 	 *
 	 * @return
 	 */
+	@CacheResult
 	public Set<Method> getMethodsAnnotatedWith(final Class<? extends Annotation> annotation)
 	{
 		
@@ -130,6 +137,7 @@ public class Reflections
 	 *
 	 * @return
 	 */
+	@CacheResult
 	public Set<Method> getMethodsWithAnyParamAnnotated(Class<? extends Annotation> annotation)
 	{
 		return null;
@@ -142,6 +150,7 @@ public class Reflections
 	 *
 	 * @return
 	 */
+	@CacheResult
 	public Set<Method> getMethodsWithAnyParamAnnotated(Annotation annotation)
 	{
 		return null;
@@ -155,6 +164,7 @@ public class Reflections
 	 *
 	 * @return
 	 */
+	@CacheResult
 	public <T> Set<Field> getFieldsAnnotatedWith(final Class<? extends Annotation> annotation)
 	{
 		return null;
@@ -168,6 +178,7 @@ public class Reflections
 	 *
 	 * @return
 	 */
+	@CacheResult
 	public Set<String> getResources(final Predicate<String> namePredicate)
 	{
 		return null;
@@ -181,6 +192,7 @@ public class Reflections
 	 *
 	 * @return
 	 */
+	@CacheResult
 	public Set<String> getResources(final Pattern pattern)
 	{
 		return null;
@@ -193,6 +205,7 @@ public class Reflections
 	 *
 	 * @return
 	 */
+	@CacheResult
 	public Set<Member> getFieldUsage(Field field)
 	{
 		return null;

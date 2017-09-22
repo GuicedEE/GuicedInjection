@@ -59,12 +59,13 @@ public class GuiceContext extends GuiceServletContextListener
 	
 	static
 	{
+		Logger logRoot = LogManager.getLogManager().getLogger("");
 		for (Handler handler : LogManager.getLogManager().getLogger("").getHandlers())
 		{
-			handler.setFormatter(new LogColourFormatter());
+			handler.setFormatter(new LogSingleLineFormatter());
 		}
 	}
-
+	
 	/**
 	 * The physical injector for the JVM container
 	 */
