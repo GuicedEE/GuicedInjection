@@ -1,21 +1,16 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                      https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>za.co.mmagon</groupId>
     <artifactId>guice-injection</artifactId>
     <version>0.0.0_0</version>
     <packaging>jar</packaging>
-
     <name>Guice Injector</name>
     <description>Guice Injection allows you to access multiple Guice Binders and Modules across separate archives.
         Allowing you to configure your applications with injection from multiple dependancies. Servlets, EJB's, and
         Stand-Alone is supported. Requires JDK 8
     </description>
     <url>https://github.com/GedMarc/GuiceInjection</url>
-
     <repositories>
         <repository>
             <id>oss.sonatype.org</id>
@@ -32,7 +27,6 @@
             <url>https://www.armin.software/artifactory/libs-snapshot</url>
         </repository>
     </repositories>
-
     <profiles>
         <profile>
             <id>development</id>
@@ -40,9 +34,7 @@
                 <src.dir>src</src.dir>
                 <test.dir>test</test.dir>
             </properties>
-
         </profile>
-
         <profile>
             <id>unittest-profile</id>
             <properties>
@@ -71,7 +63,6 @@
                                     <stripVersion>true</stripVersion>
                                 </configuration>
                             </execution>
-
                             <execution>
                                 <id>copy-test-libs</id>
                                 <phase>generate-test-resources</phase>
@@ -89,8 +80,6 @@
                 </plugins>
             </build>
         </profile>
-
-
         <profile>
             <id>release-profile</id>
             <build>
@@ -112,7 +101,6 @@
                         </executions>
                         <version>${maven.javadoc.version}</version>
                     </plugin>
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
@@ -124,22 +112,18 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
-                                <configuration>
-                                </configuration>
+                                <configuration></configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
-
             <properties>
                 <src.dir>src</src.dir>
                 <test.dir>test</test.dir>
             </properties>
         </profile>
     </profiles>
-
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <src.dir>src</src.dir>
@@ -149,25 +133,20 @@
         <maven.javadoc.version>2.10.4</maven.javadoc.version>
         <maven.source.version>2.1.2</maven.source.version>
         <maven.resources.version>3.0.2</maven.resources.version>
-
         <netbeans.hint.license>gpl30</netbeans.hint.license>
-
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <sonar.host.url>https://www.armin.software/sonar</sonar.host.url>
     </properties>
-
     <build>
         <sourceDirectory>${src.dir}</sourceDirectory>
         <testSourceDirectory>${test.dir}</testSourceDirectory>
         <finalName>guice-injection</finalName>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                </configuration>
+                <configuration></configuration>
                 <executions>
                     <execution>
                         <id>testJar</id>
@@ -190,115 +169,91 @@
             </plugin>
         </plugins>
     </build>
-
     <dependencies>
-
         <dependency>
             <groupId>io.github.lukehutch</groupId>
             <artifactId>fast-classpath-scanner</artifactId>
             <version>LATEST</version>
             <type>jar</type>
         </dependency>
-
         <dependency>
             <groupId>com.jcabi</groupId>
             <artifactId>jcabi-aspects</artifactId>
             <version>1.0-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>22.0</version>
             <type>jar</type>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.google.guava/guava-gwt -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava-gwt</artifactId>
             <version>22.0</version>
             <type>jar</type>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.google.inject/guice -->
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <version>4.1.0</version>
             <type>jar</type>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.google.inject.extensions/guice-servlet -->
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-servlet</artifactId>
             <version>4.1.0</version>
             <type>jar</type>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-multibindings</artifactId>
             <version>4.1.0</version>
             <type>jar</type>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-persist</artifactId>
             <version>4.1.0</version>
             <type>jar</type>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-jndi</artifactId>
             <version>4.1.0</version>
             <type>jar</type>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>3.1.0</version>
             <type>jar</type>
         </dependency>
-
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
             <version>3.22.0-CR1</version>
             <type>jar</type>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>2.8.9</version>
             <type>jar</type>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>2.8.9</version>
             <type>jar</type>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.8.9</version>
             <type>jar</type>
         </dependency>
-
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
@@ -306,7 +261,6 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
-
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -314,29 +268,24 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
-
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
             <version>2.0.3</version>
             <type>jar</type>
         </dependency>
-
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>jsr311-api</artifactId>
             <version>1.1.1</version>
             <type>jar</type>
         </dependency>
-
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
             <version>1.3</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- Jackson JDK 8 Support-->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-parameter-names</artifactId>
@@ -367,7 +316,6 @@
             <artifactId>cache-api</artifactId>
             <version>1.0.0</version>
         </dependency>
-
     </dependencies>
     <distributionManagement>
         <snapshotRepository>
@@ -406,7 +354,6 @@
                 <reportSets>
                     <reportSet>
                         <reports>
-                            <!-- select non-aggregate reports -->
                             <report>report</report>
                         </reports>
                     </reportSet>
@@ -415,3 +362,5 @@
         </plugins>
     </reporting>
 </project>
+
+
