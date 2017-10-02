@@ -10,7 +10,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: io.github.lukehutch:fast-classpath-scanner:2.7.0" level="project" />
+    <orderEntry type="library" name="Maven: io.github.lukehutch:fast-classpath-scanner:2.7.1" level="project" />
     <orderEntry type="library" name="Maven: com.jcabi:jcabi-aspects:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.jcabi:jcabi-log:0.17" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.5" level="project" />
