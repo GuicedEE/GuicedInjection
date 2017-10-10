@@ -6,7 +6,7 @@
 
     <groupId>za.co.mmagon</groupId>
     <artifactId>guice-injection</artifactId>
-    <version>0.11.6.1-RELEASE</version>
+    <version>0.0.0_0</version>
     <packaging>jar</packaging>
 
     <name>Guice Injector</name>
@@ -154,7 +154,7 @@
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <sonar.host.url>https://www.armin.software/sonar</sonar.host.url>
+        <sonar.host.url>https://www.armin.software/sonar</sonar.host.url><sonar.exclusions>**bower_components</sonar.exclusions>
     </properties>
 
     <build>
