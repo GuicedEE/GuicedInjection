@@ -49,27 +49,4 @@
     <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.objenesis:objenesis:2.1" level="project" />
   </component>
-  <component name="sonarModuleSettings">
-    <option name="alternativeWorkingDirPath" value="" />
-    <option name="localAnalysisScripName" value="&lt;PROJECT&gt;" />
-    <option name="resources">
-      <list>
-        <Resource>
-          <option name="creationDate" value="1506369391000" />
-          <option name="date" value="1506962529000" />
-          <option name="description" value="Guice Injection allows you to access multiple Guice Binders and Modules across separate archives.&#10;        Allowing you to configure your applications with injection from multiple dependancies. Servlets, EJB's, and&#10;        Stand-Alone is supported. Requires JDK 8" />
-          <option name="id" value="1" />
-          <option name="key" value="za.co.mmagon:guice-injection" />
-          <option name="longName" value="Guice Injector" />
-          <option name="name" value="Guice Injector" />
-          <option name="qualifier" value="TRK" />
-          <option name="scope" value="PRJ" />
-          <option name="version" value="0.11.6.1-RELEASE" />
-        </Resource>
-      </list>
-    </option>
-    <option name="serverName" value="ArminHost" />
-    <option name="useAlternativeWorkingDir" value="false" />
-    <option name="workingDirSelection" value="&lt;MODULE&gt;" />
-  </component>
 </module>

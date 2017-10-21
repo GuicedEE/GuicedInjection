@@ -45,16 +45,16 @@ import java.util.logging.Logger;
  */
 public class GuiceSiteInjectorModule extends ServletModule implements DefaultModuleMethods
 {
-	
+
 	private static final Logger log = Logger.getLogger("GuiceSiteInjectorModule");
-	
+
 	private int sortOrder = 100;
-	
+
 	public GuiceSiteInjectorModule()
 	{
 		//Nothing needed
 	}
-	
+
 	/**
 	 * Gets the current sort order, default 100
 	 *
@@ -64,7 +64,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return sortOrder;
 	}
-	
+
 	/**
 	 * Sets the current sort order default 100
 	 *
@@ -74,7 +74,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		this.sortOrder = sortOrder;
 	}
-	
+
 	/**
 	 * Installs a given module
 	 *
@@ -85,7 +85,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		super.install(module);
 	}
-	
+
 	/**
 	 * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
 	 *
@@ -98,7 +98,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return serve(urlPattern, morePatterns);
 	}
-	
+
 	/**
 	 * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
 	 *
@@ -110,7 +110,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return serve(urlPatterns);
 	}
-	
+
 	/**
 	 * regexes - Any Java-style regular expressions. Since: 4.1
 	 *
@@ -123,7 +123,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return serveRegex(regex, regexes);
 	}
-	
+
 	/**
 	 * regexes - Any Java-style regular expressions. Since: 4.1
 	 *
@@ -135,15 +135,12 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return serveRegex(regexes);
 	}
-	
+
 	/**
 	 * Runs the binders for the system
 	 */
 	public void runBinders()
 	{
-		//defaults
-		//filter("/*").through(CorsAllowedFilter.class);
-		
 		Reflections reflections = GuiceContext.reflect();
 		Set<Class<? extends GuiceSiteBinder>> siteBinders = reflections.getSubTypesOf(GuiceSiteBinder.class);
 		log.log(Level.CONFIG, "Total number of site injectors - {0}", siteBinders.size());
@@ -170,7 +167,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 			                });
 		}
 	}
-	
+
 	/**
 	 * Runs the binders
 	 */
@@ -179,7 +176,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		runBinders();
 	}
-	
+
 	/**
 	 * Binds to a given class
 	 *
@@ -193,7 +190,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.bind(clazz);
 	}
-	
+
 	/**
 	 * Binds to a given guice key
 	 *
@@ -207,7 +204,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.bind(key);
 	}
-	
+
 	/**
 	 * Binds to a given type literal
 	 *
@@ -221,7 +218,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.bind(typeLiteral);
 	}
-	
+
 	/**
 	 * Binds to a given constant
 	 *
@@ -232,7 +229,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.bindConstant();
 	}
-	
+
 	/**
 	 * Bind listener
 	 *
@@ -244,7 +241,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		super.bindListener(bindingMatcher, listener);
 	}
-	
+
 	/**
 	 * Bind listener
 	 *
@@ -256,7 +253,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		super.bindListener(typeMatcher, listener);
 	}
-	
+
 	/**
 	 * Binds to a given scope
 	 *
@@ -268,7 +265,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		super.bindScope(scopeAnnotation, scope);
 	}
-	
+
 	/**
 	 * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
 	 *
@@ -280,7 +277,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.filter(urlPatterns);
 	}
-	
+
 	/**
 	 * regexes - Any Java-style regular expressions. Since: 4.1
 	 *
@@ -293,7 +290,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.filterRegex(regex, regexes);
 	}
-	
+
 	/**
 	 * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
 	 *
@@ -305,7 +302,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.filterRegex(regexes);
 	}
-	
+
 	/**
 	 * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
 	 *
@@ -318,7 +315,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.serve(urlPattern, morePatterns);
 	}
-	
+
 	/**
 	 * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
 	 *
@@ -330,7 +327,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.serve(urlPatterns);
 	}
-	
+
 	/**
 	 * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
 	 *
@@ -343,7 +340,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.serveRegex(regex, regexes);
 	}
-	
+
 	/**
 	 * regexes - Any Java-style regular expressions. Since: 4.1
 	 *
@@ -355,7 +352,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.serveRegex(regexes);
 	}
-	
+
 	/**
 	 * This method only works if you are using the GuiceServletContextListener to create your injector. Otherwise, it returns null.
 	 *
@@ -365,7 +362,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.getServletContext();
 	}
-	
+
 	/**
 	 * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
 	 *
@@ -378,7 +375,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		return super.filter(urlPattern, morePatterns);
 	}
-	
+
 	/**
 	 * Binds a method intercepter
 	 *
@@ -390,5 +387,5 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		super.bindInterceptor(classMatcher, methodMatcher, interceptors);
 	}
-	
+
 }
