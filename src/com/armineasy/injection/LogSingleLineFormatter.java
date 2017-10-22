@@ -103,7 +103,15 @@ public class LogSingleLineFormatter extends java.util.logging.Formatter
 		}
 
 		output += message;
+		output = configureParameters(record, output);
 
+		output += " - ";
+		output += "[" + record.getLevel().getLocalizedName() + "]";
+		return output + System.getProperty("line.separator");
+	}
+
+	private String configureParameters(LogRecord record, String output)
+	{
 		if (record.getParameters() != null && record.getParameters().length > 0)
 		{
 			for (int n = 0; n < record.getParameters().length; n++)
@@ -129,8 +137,7 @@ public class LogSingleLineFormatter extends java.util.logging.Formatter
 			}
 			output += sw.toString();
 		}
-		output += " - ";
-		output += "[" + record.getLevel().getLocalizedName() + "]";
-		return output + System.getProperty("line.separator");
+
+		return output;
 	}
 }

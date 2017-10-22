@@ -5,8 +5,10 @@ import java.util.Optional;
 /**
  * Specifies a generic pair
  *
- * @param <K> Key
- * @param <V> Value
+ * @param <K>
+ * 		Key
+ * @param <V>
+ * 		Value
  */
 public class OptionalPair<K, V> extends Pair<K, V>
 {
@@ -18,14 +20,14 @@ public class OptionalPair<K, V> extends Pair<K, V>
 	 * The specified value
 	 */
 	private Optional<V> value;
-	
+
 	/**
 	 * Constructs a new blank pair
 	 */
 	public OptionalPair()
 	{
 	}
-	
+
 	/**
 	 * Constructs a new key value pair
 	 *
@@ -37,17 +39,18 @@ public class OptionalPair<K, V> extends Pair<K, V>
 		this.key = Optional.of(key);
 		this.value = Optional.of(value);
 	}
-	
+
 	/**
 	 * Gets the key for the given pair
 	 *
 	 * @return
 	 */
+	@Override
 	public K getKey()
 	{
 		return key.get();
 	}
-	
+
 	/**
 	 * Sets the key for the given pair
 	 *
@@ -55,22 +58,24 @@ public class OptionalPair<K, V> extends Pair<K, V>
 	 *
 	 * @return
 	 */
+	@Override
 	public OptionalPair setKey(K key)
 	{
 		this.key = Optional.of(key);
 		return this;
 	}
-	
+
 	/**
 	 * Returns the value for the given pair
 	 *
 	 * @return
 	 */
+	@Override
 	public V getValue()
 	{
 		return value.get();
 	}
-	
+
 	/**
 	 * Sets the value for the given pair
 	 *
@@ -78,6 +83,7 @@ public class OptionalPair<K, V> extends Pair<K, V>
 	 *
 	 * @return
 	 */
+	@Override
 	public OptionalPair setValue(V value)
 	{
 		this.value = Optional.of(value);
