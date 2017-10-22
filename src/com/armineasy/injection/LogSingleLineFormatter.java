@@ -33,9 +33,9 @@ public class LogSingleLineFormatter extends java.util.logging.Formatter
 	/**
 	 * Ansi Colour
 	 */
-	
-	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy/mm/dd HH:mm:ss.SSS");
-	
+
+	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy/mm/dd HH:mm:ss.SSS");
+
 	/**
 	 * The log colour formatter
 	 */
@@ -43,7 +43,7 @@ public class LogSingleLineFormatter extends java.util.logging.Formatter
 	{
 		//Nothing needing to be done
 	}
-	
+
 	/**
 	 * Formats according to level
 	 *
@@ -62,12 +62,12 @@ public class LogSingleLineFormatter extends java.util.logging.Formatter
 		{
 			return "";
 		}
-		
+
 		String output = "";
-		
+
 		output += "[" + sdf.format(record.getMillis()) + "]-";
 		String message = "";
-		
+
 		if (record.getLevel().getLocalizedName().equals(Level.FINEST.getLocalizedName()))
 		{
 			message += record.getMessage();
@@ -96,14 +96,14 @@ public class LogSingleLineFormatter extends java.util.logging.Formatter
 		{
 			message += record.getMessage();
 		}
-		
+
 		if (message.trim().isEmpty())
 		{
 			return "";
 		}
-		
+
 		output += message;
-		
+
 		if (record.getParameters() != null && record.getParameters().length > 0)
 		{
 			for (int n = 0; n < record.getParameters().length; n++)
@@ -118,7 +118,7 @@ public class LogSingleLineFormatter extends java.util.logging.Formatter
 				output = output.replaceAll(replace, replacable);
 			}
 		}
-		
+
 		if (record.getThrown() != null)
 		{
 			Throwable t = record.getThrown();

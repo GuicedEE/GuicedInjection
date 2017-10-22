@@ -74,11 +74,11 @@ public class LogColourFormatter extends java.util.logging.Formatter
 	public static final String ANSI_PURPLE_BACKGROUND = "\u001B[45m";
 	public static final String ANSI_CYAN_BACKGROUND = "\u001B[46m";
 	public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
-	
-	public static boolean INVERTED = false;
-	
-	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy/mm/dd HH:mm:ss.SSS");
-	
+
+	private static boolean INVERTED = false;
+
+	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy/mm/dd HH:mm:ss.SSS");
+
 	/**
 	 * The log colour formatter
 	 */
@@ -86,7 +86,17 @@ public class LogColourFormatter extends java.util.logging.Formatter
 	{
 		//Nothing needing to be done
 	}
-	
+
+	public static boolean isINVERTED()
+	{
+		return INVERTED;
+	}
+
+	public static void setINVERTED(boolean INVERTED)
+	{
+		LogColourFormatter.INVERTED = INVERTED;
+	}
+
 	/**
 	 * Formats according to level
 	 *
@@ -101,8 +111,8 @@ public class LogColourFormatter extends java.util.logging.Formatter
 		{
 			return "";
 		}
-		
-		
+
+
 		String output = "";
 		if (!INVERTED)
 		{
@@ -110,44 +120,44 @@ public class LogColourFormatter extends java.util.logging.Formatter
 			output += ANSI_BLACK_BACKGROUND;
 		}
 		output += "[" + sdf.format(record.getMillis()) + "]-";
-		
+
 		if (record.getLevel() == Level.FINEST)
 		{
 			output += ANSI_RED
-					+ ANSI_BLACK_BACKGROUND
-					+ record.getMessage().toString();
+					          + ANSI_BLACK_BACKGROUND
+					          + record.getMessage();
 		}
 		else if (record.getLevel() == Level.FINER)
 		{
 			output += ANSI_CYAN
-					+ ANSI_BLACK_BACKGROUND + record.getMessage().toString();
+					          + ANSI_BLACK_BACKGROUND + record.getMessage();
 		}
 		else if (record.getLevel() == Level.FINE)
 		{
 			output += ANSI_BLUE
-					+ ANSI_BLACK_BACKGROUND + record.getMessage().toString();
+					          + ANSI_BLACK_BACKGROUND + record.getMessage();
 		}
 		else if (record.getLevel() == Level.CONFIG)
 		{
 			output += ANSI_PURPLE
-					+ ANSI_BLACK_BACKGROUND + record.getMessage().toString();
+					          + ANSI_BLACK_BACKGROUND + record.getMessage();
 		}
 		else if (record.getLevel() == Level.INFO)
 		{
 			output += ANSI_GREEN
-					+ ANSI_BLACK_BACKGROUND + record.getMessage().toString();
+					          + ANSI_BLACK_BACKGROUND + record.getMessage();
 		}
 		else if (record.getLevel() == Level.WARNING)
 		{
 			output += ANSI_YELLOW +
-					ANSI_BLACK_BACKGROUND + record.getMessage().toString();
+					          ANSI_BLACK_BACKGROUND + record.getMessage();
 		}
 		else if (record.getLevel() == Level.SEVERE)
 		{
 			output += ANSI_RED +
-					ANSI_BLACK_BACKGROUND + record.getMessage().toString();
+					          ANSI_BLACK_BACKGROUND + record.getMessage();
 		}
-		
+
 		if (record.getParameters() != null && record.getParameters().length > 0)
 		{
 			for (int n = 0; n < record.getParameters().length; n++)
@@ -162,7 +172,7 @@ public class LogColourFormatter extends java.util.logging.Formatter
 				output = output.replaceAll(replace, replacable);
 			}
 		}
-		
+
 		if (record.getThrown() != null)
 		{
 			Throwable t = record.getThrown();
@@ -174,26 +184,36 @@ public class LogColourFormatter extends java.util.logging.Formatter
 			output += ANSI_RESET;
 			output += sw.toString();
 		}
-		
+
 		if (!INVERTED)
 		{
-			if (!(record.getThrown() != null))
+			if (record.getThrown() == null)
 			{
 				output += ANSI_RESET;
 				output += ANSI_BLACK_BACKGROUND;
 				output += ANSI_WHITE;
-				
+
 			}
 			else
 			{
 				output += ANSI_BLACK;
 			}
 		}
-		
+
 		output += " - ";
-		
+
 		output += "[" + record.getLevel().getLocalizedName() + "]";
-		
+
 		return output + System.getProperty("line.separator");
+	}
+
+	public SimpleDateFormat getSdf()
+	{
+		return sdf;
+	}
+
+	public void setSdf(SimpleDateFormat sdf)
+	{
+		this.sdf = sdf;
 	}
 }
