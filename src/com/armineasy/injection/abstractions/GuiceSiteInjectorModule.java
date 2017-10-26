@@ -143,7 +143,7 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	{
 		Reflections reflections = GuiceContext.reflect();
 		Set<Class<? extends GuiceSiteBinder>> siteBinders = reflections.getSubTypesOf(GuiceSiteBinder.class);
-		log.log(Level.CONFIG, "Total number of site injectors - {0}", siteBinders.size());
+		log.log(Level.INFO, "Total number of site injectors - {0}", siteBinders.size());
 		List<GuiceSiteBinder> objects = new ArrayList<>();
 		siteBinders.forEach(next ->
 		                    {
@@ -161,9 +161,9 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 		{
 			objects.forEach(obj ->
 			                {
-				                log.log(Level.CONFIG, "Loading Guice Servlet Configuration {0}", obj.getClass().getSimpleName());
+				                log.log(Level.INFO, "Loading Guice Servlet Configuration {0}", obj.getClass().getSimpleName());
 				                obj.onBind(this);
-				                log.log(Level.CONFIG, "Loaded Guice Servlet Configuration {0}", obj.getClass().getSimpleName());
+				                log.log(Level.INFO, "Loaded Guice Servlet Configuration {0}", obj.getClass().getSimpleName());
 			                });
 		}
 	}
