@@ -28,11 +28,8 @@ import java.util.Comparator;
  */
 public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, DefaultBinder<GuiceSiteInjectorModule>
 {
-	
-	/**
-	 * A default regex to identify query parameters
-	 */
-	protected static String QueryParametersRegex = "(\\?.*)?";
+
+
 	/**
 	 * Default order 100
 	 */
