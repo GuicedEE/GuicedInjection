@@ -121,76 +121,75 @@ public class GuiceContext extends GuiceServletContextListener
 	 */
 	public static synchronized Injector inject()
 	{
-		if (!built)
+		if (!built && !buildingInjector && context().injector == null)
 		{
-			if (!buildingInjector && context().injector == null)
+			buildingInjector = true;
+			log.info("Starting up Injections");
+			log.config("Startup Executions....");
+			Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
+			List<GuicePreStartup> startups = new ArrayList<>();
+			for (Class<? extends GuicePreStartup> pre : pres)
 			{
-				buildingInjector = true;
-				log.info("Starting up Injections");
-				log.config("Startup Executions....");
-				Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
-				List<GuicePreStartup> startups = new ArrayList<>();
-				for (Class<? extends GuicePreStartup> pre : pres)
-				{
-					GuicePreStartup pr = GuiceContext.getInstance(pre);
-					startups.add(pr);
-				}
-				Collections.sort(startups, Comparator.comparing(GuicePreStartup::sortOrder));
-				log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
-				startups.forEach(GuicePreStartup::onStartup);
-				log.info("Finished Startup Execution");
-
-				log.info("Loading All Default Binders (that extend GuiceDefaultBinder)");
-
-				GuiceInjectorModule defaultInjection;
-				defaultInjection = new GuiceInjectorModule();
-				log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
-
-				GuiceSiteInjectorModule siteInjection;
-				siteInjection = new GuiceSiteInjectorModule();
-
-				int customModuleSize = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).size();
-				log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
-				ArrayList<Module> customModules = new ArrayList<>();
-				Module[] cModules;
-				for (Iterator<Class<?>> iterator = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).iterator(); iterator.hasNext(); )
-				{
-					try
-					{
-						Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) iterator.next();
-						log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
-						Module moduleInstance = next.newInstance();
-						customModules.add(moduleInstance);
-					}
-					catch (InstantiationException | IllegalAccessException ex)
-					{
-						Logger.getLogger(GuiceContext.class.getName()).log(Level.SEVERE, null, ex);
-					}
-				}
-				customModules.add(0, siteInjection);
-				customModules.add(0, defaultInjection);
-
-				cModules = new Module[customModules.size()];
-				cModules = customModules.toArray(cModules);
-
-				context().injector = Guice.createInjector(cModules);
-				buildingInjector = false;
-				log.info("Post Startup Executions....");
-				Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
-				List<GuicePostStartup> postStartups = new ArrayList<>();
-				closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
-				Collections.sort(postStartups, Comparator.comparing(GuicePostStartup::sortOrder));
-				log.log(Level.CONFIG, "Total of [{0}] startup modules.", postStartups.size());
-				postStartups.forEach(GuicePostStartup::postLoad);
-				log.info("Finished Post Startup Execution");
-				log.info("Finished with Guice");
-				built = true;
+				GuicePreStartup pr = GuiceContext.getInstance(pre);
+				startups.add(pr);
 			}
-			else
+			Collections.sort(startups, Comparator.comparing(GuicePreStartup::sortOrder));
+			log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
+			startups.forEach(GuicePreStartup::onStartup);
+			log.info("Finished Startup Execution");
+
+			log.info("Loading All Default Binders (that extend GuiceDefaultBinder)");
+
+			GuiceInjectorModule defaultInjection;
+			defaultInjection = new GuiceInjectorModule();
+			log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
+
+			GuiceSiteInjectorModule siteInjection;
+			siteInjection = new GuiceSiteInjectorModule();
+
+			int customModuleSize = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).size();
+			log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
+			ArrayList<Module> customModules = new ArrayList<>();
+			Module[] cModules;
+
+			for (Iterator<Class<?>> iterator = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).iterator(); iterator.hasNext(); )
 			{
-				log.severe("Premature call to GuiceContext.inject. Injector is still currently building, are you calling guice context from a constructor? consider using init() or preconfigure()");
+				try
+				{
+					Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) iterator.next();
+					log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
+					Module moduleInstance = next.newInstance();
+					customModules.add(moduleInstance);
+				}
+				catch (InstantiationException | IllegalAccessException ex)
+				{
+					Logger.getLogger(GuiceContext.class.getName()).log(Level.SEVERE, null, ex);
+				}
 			}
+			customModules.add(0, siteInjection);
+			customModules.add(0, defaultInjection);
+
+			cModules = new Module[customModules.size()];
+			cModules = customModules.toArray(cModules);
+
+			context().injector = Guice.createInjector(cModules);
+			buildingInjector = false;
+			log.info("Post Startup Executions....");
+			Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
+			List<GuicePostStartup> postStartups = new ArrayList<>();
+			closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
+			Collections.sort(postStartups, Comparator.comparing(GuicePostStartup::sortOrder));
+			log.log(Level.CONFIG, "Total of [{0}] startup modules.", postStartups.size());
+			postStartups.forEach(GuicePostStartup::postLoad);
+			log.info("Finished Post Startup Execution");
+			log.info("Finished with Guice");
+			built = true;
 		}
+		else
+		{
+			log.severe("Premature call to GuiceContext.inject. Injector is still currently building, are you calling guice context from a constructor? consider using init() or preconfigure()");
+		}
+
 
 		buildingInjector = false;
 		return context().injector;
