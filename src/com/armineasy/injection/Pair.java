@@ -3,8 +3,10 @@ package com.armineasy.injection;
 /**
  * Specifies a generic pair
  *
- * @param <K> Key
- * @param <V> Value
+ * @param <K>
+ * 		Key
+ * @param <V>
+ * 		Value
  */
 public class Pair<K, V>
 {
@@ -16,14 +18,15 @@ public class Pair<K, V>
 	 * The specified value
 	 */
 	private V value;
-	
+
 	/**
 	 * Constructs a new blank pair
 	 */
 	public Pair()
 	{
+		//Nothing Needed
 	}
-	
+
 	/**
 	 * Constructs a new key value pair
 	 *
@@ -35,7 +38,7 @@ public class Pair<K, V>
 		this.key = key;
 		this.value = value;
 	}
-	
+
 	/**
 	 * Gets the key for the given pair
 	 *
@@ -45,7 +48,7 @@ public class Pair<K, V>
 	{
 		return key;
 	}
-	
+
 	/**
 	 * Sets the key for the given pair
 	 *
@@ -58,7 +61,7 @@ public class Pair<K, V>
 		this.key = key;
 		return this;
 	}
-	
+
 	/**
 	 * Returns the value for the given pair
 	 *
@@ -68,7 +71,7 @@ public class Pair<K, V>
 	{
 		return value;
 	}
-	
+
 	/**
 	 * Sets the value for the given pair
 	 *

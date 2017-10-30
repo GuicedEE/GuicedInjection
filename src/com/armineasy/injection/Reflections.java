@@ -21,6 +21,7 @@ import com.google.common.base.Predicate;
 import javax.cache.annotation.CacheDefaults;
 import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CacheResult;
+import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -31,7 +32,6 @@ import java.util.regex.Pattern;
 /**
  * Facade Method implementer for the change from the org.Reflections library to the FastClasspathScanner
  * <p>
- * TODO This one
  *
  * @author Marc Magon
  * @since 07 Jul 2017
@@ -59,6 +59,7 @@ public class Reflections
 	 * @return A set of classes matching
 	 */
 	@CacheResult
+	@NotNull
 	public <T> Set<Class<? extends T>> getSubTypesOf(@CacheKey final Class<T> type)
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
@@ -80,6 +81,7 @@ public class Reflections
 	 * @return
 	 */
 	@CacheResult
+	@NotNull
 	public <T> Set<Class<? extends T>> getTypesAnnotatedWith(@CacheKey final Class<? extends Annotation> annotation)
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
@@ -92,7 +94,17 @@ public class Reflections
 		return returnable;
 	}
 
+	/**
+	 * Get all fields with the annotation
+	 *
+	 * @param annotation
+	 * @param type
+	 * @param in
+	 *
+	 * @return
+	 */
 	@CacheResult
+	@NotNull
 	public Optional<Field> getFieldAnnotatedWithOfType(@CacheKey Class<? extends Annotation> annotation, Class type, Class in)
 	{
 		Field field = null;
@@ -100,16 +112,11 @@ public class Reflections
 		Field[] allFields = inType.getFields();
 		for (Field f : allFields)
 		{
-			if (f.getAnnotationsByType(annotation) != null)
+
+			if (f.getAnnotationsByType(annotation) != null && f.getAnnotationsByType(annotation).length > 0 && f.getType().equals(type))
 			{
-				if (f.getAnnotationsByType(annotation).length > 0)
-				{
-					if (f.getType().equals(type))
-					{
-						field = f;
-						break;
-					}
-				}
+				field = f;
+				break;
 			}
 		}
 		return Optional.ofNullable(field);
@@ -123,6 +130,7 @@ public class Reflections
 	 * @return
 	 */
 	@CacheResult
+	@NotNull
 	public Set<Method> getMethodsAnnotatedWith(@CacheKey final Class<? extends Annotation> annotation)
 	{
 		return Collections.emptySet();
@@ -136,6 +144,7 @@ public class Reflections
 	 * @return
 	 */
 	@CacheResult
+	@NotNull
 	public Set<Method> getMethodsWithAnyParamAnnotated(@CacheKey Class<? extends Annotation> annotation)
 	{
 		return Collections.emptySet();
@@ -149,6 +158,7 @@ public class Reflections
 	 * @return
 	 */
 	@CacheResult
+	@NotNull
 	public Set<Method> getMethodsWithAnyParamAnnotated(@CacheKey Annotation annotation)
 	{
 		return Collections.emptySet();
@@ -163,7 +173,8 @@ public class Reflections
 	 * @return
 	 */
 	@CacheResult
-	public <T> Set<Field> getFieldsAnnotatedWith(@CacheKey final Class<? extends Annotation> annotation)
+	@NotNull
+	public Set<Field> getFieldsAnnotatedWith(@CacheKey final Class<? extends Annotation> annotation)
 	{
 		return Collections.emptySet();
 	}
@@ -177,6 +188,7 @@ public class Reflections
 	 * @return
 	 */
 	@CacheResult
+	@NotNull
 	public Set<String> getResources(@CacheKey final Predicate<String> namePredicate)
 	{
 		return Collections.emptySet();
@@ -191,6 +203,7 @@ public class Reflections
 	 * @return
 	 */
 	@CacheResult
+	@NotNull
 	public Set<String> getResources(@CacheKey final Pattern pattern)
 	{
 		return Collections.emptySet();
@@ -204,6 +217,7 @@ public class Reflections
 	 * @return
 	 */
 	@CacheResult
+	@NotNull
 	public Set<Member> getFieldUsage(@CacheKey Field field)
 	{
 		return Collections.emptySet();

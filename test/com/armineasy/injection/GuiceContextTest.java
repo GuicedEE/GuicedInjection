@@ -34,6 +34,7 @@ public class GuiceContextTest extends GuiceDefaultBinder
 		
 		GuiceContext.reflect().getSubTypesOf(GuiceDefaultBinder.class);
 		GuiceContext.reflect().getSubTypesOf(GuiceSiteBinder.class);
+		GuiceContext.reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class);
 	}
 	
 	@Override

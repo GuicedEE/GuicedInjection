@@ -26,6 +26,7 @@ public class OptionalPair<K, V> extends Pair<K, V>
 	 */
 	public OptionalPair()
 	{
+		//Nothing needed
 	}
 
 	/**
@@ -88,5 +89,11 @@ public class OptionalPair<K, V> extends Pair<K, V>
 	{
 		this.value = Optional.of(value);
 		return this;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "Key[" + getKey() + "];Value[" + getValue() + "]";
 	}
 }
