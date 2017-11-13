@@ -26,6 +26,7 @@ import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 
 import javax.servlet.ServletContextEvent;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -119,6 +120,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
+	@NotNull
 	public static synchronized Injector inject()
 	{
 		if (!built && !buildingInjector && context().injector == null)
