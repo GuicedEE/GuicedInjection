@@ -3,7 +3,7 @@ package com.armineasy.injection;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class PairTest
+public class PairTest
 {
 	@Test
 	public void testPair()

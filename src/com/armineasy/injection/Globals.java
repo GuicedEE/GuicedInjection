@@ -98,6 +98,7 @@ public class Globals implements Serializable
 	 *
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public <K extends Serializable, V extends Serializable> Map<K, V> getKey(String key)
 	{
 		return (Map<K, V>) globalProperties.get(key);
@@ -112,6 +113,7 @@ public class Globals implements Serializable
 	 *
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public <V extends Serializable> V getProperty(String key, String property)
 	{
 		return (V) globalProperties.get(key).get(property);
