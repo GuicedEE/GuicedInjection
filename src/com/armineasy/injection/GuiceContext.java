@@ -192,7 +192,6 @@ public class GuiceContext extends GuiceServletContextListener
 			log.severe("Premature call to GuiceContext.inject. Injector is still currently building, are you calling guice context from a constructor? consider using init() or preconfigure()");
 		}
 
-
 		buildingInjector = false;
 		return context().injector;
 	}
