@@ -60,6 +60,7 @@ public class Reflections
 	 */
 	@CacheResult
 	@NotNull
+	@SuppressWarnings("unchecked")
 	public <T> Set<Class<? extends T>> getSubTypesOf(@CacheKey final Class<T> type)
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
@@ -82,6 +83,7 @@ public class Reflections
 	 */
 	@CacheResult
 	@NotNull
+	@SuppressWarnings("unchecked")
 	public <T> Set<Class<? extends T>> getTypesAnnotatedWith(@CacheKey final Class<? extends Annotation> annotation)
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
@@ -108,8 +110,7 @@ public class Reflections
 	public Optional<Field> getFieldAnnotatedWithOfType(@CacheKey Class<? extends Annotation> annotation, Class type, Class in)
 	{
 		Field field = null;
-		Class inType = in;
-		Field[] allFields = inType.getFields();
+		Field[] allFields = in.getFields();
 		for (Field f : allFields)
 		{
 

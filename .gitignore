@@ -13,3 +13,4 @@ persistence.xml
 /out/
 /**/.sonar/
 **.jacocoverage/
+**/*.iml

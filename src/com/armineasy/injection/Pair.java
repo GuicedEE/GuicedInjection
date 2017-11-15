@@ -84,4 +84,10 @@ public class Pair<K, V>
 		this.value = value;
 		return this;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "Key[" + getKey() + "]-[" + getValue() + "}";
+	}
 }
