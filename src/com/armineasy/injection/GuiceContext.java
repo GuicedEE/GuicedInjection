@@ -121,6 +121,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 * @return
 	 */
 	@NotNull
+	@SuppressWarnings("unchecked")
 	public static synchronized Injector inject()
 	{
 		if (!built && !buildingInjector && context().injector == null)
@@ -154,11 +155,11 @@ public class GuiceContext extends GuiceServletContextListener
 			ArrayList<Module> customModules = new ArrayList<>();
 			Module[] cModules;
 
-			for (Iterator<Class<?>> iterator = reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class).iterator(); iterator.hasNext(); )
+			for (Class<?> aClass : reflect().getTypesAnnotatedWith(com.armineasy.injection.annotations.GuiceInjectorModule.class))
 			{
 				try
 				{
-					Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) iterator.next();
+					Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) aClass;
 					log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
 					Module moduleInstance = next.newInstance();
 					customModules.add(moduleInstance);
