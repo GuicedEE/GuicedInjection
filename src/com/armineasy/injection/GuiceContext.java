@@ -27,7 +27,10 @@ import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 
 import javax.servlet.ServletContextEvent;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -136,7 +139,7 @@ public class GuiceContext extends GuiceServletContextListener
 				GuicePreStartup pr = GuiceContext.getInstance(pre);
 				startups.add(pr);
 			}
-			Collections.sort(startups, Comparator.comparing(GuicePreStartup::sortOrder));
+			startups.sort(Comparator.comparing(GuicePreStartup::sortOrder));
 			log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
 			startups.forEach(GuicePreStartup::onStartup);
 			log.info("Finished Startup Execution");
@@ -181,7 +184,7 @@ public class GuiceContext extends GuiceServletContextListener
 			Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
 			List<GuicePostStartup> postStartups = new ArrayList<>();
 			closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
-			Collections.sort(postStartups, Comparator.comparing(GuicePostStartup::sortOrder));
+			postStartups.sort(Comparator.comparing(GuicePostStartup::sortOrder));
 			log.log(Level.CONFIG, "Total of [{0}] startup modules.", postStartups.size());
 			postStartups.forEach(GuicePostStartup::postLoad);
 			log.info("Finished Post Startup Execution");
@@ -261,17 +264,10 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
+	@NotNull
 	public static <T> T getInstance(Class<T> type)
 	{
-		try
-		{
-			return inject().getInstance(type);
-		}
-		catch (NullPointerException npe)
-		{
-			log.log(Level.SEVERE, "Unable to return an injector", npe);
-			return null;
-		}
+		return inject().getInstance(type);
 	}
 
 	/**
@@ -282,17 +278,10 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
+	@NotNull
 	public static <T> T getInstance(Key<T> type)
 	{
-		try
-		{
-			return inject().getInstance(type);
-		}
-		catch (NullPointerException npe)
-		{
-			log.log(Level.SEVERE, "Unable to return an injector", npe);
-			return null;
-		}
+		return inject().getInstance(type);
 	}
 
 	/**
