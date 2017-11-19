@@ -193,7 +193,7 @@ public class GuiceContext extends GuiceServletContextListener
 		}
 		else
 		{
-			log.severe("Premature call to GuiceContext.inject. Injector is still currently building, are you calling guice context from a constructor? consider using init() or preconfigure()");
+			log.fine("Premature call to GuiceContext.inject. Injector is still currently building, are you calling guice context from a constructor? consider using init() or preconfigure()");
 		}
 
 		buildingInjector = false;
@@ -370,12 +370,15 @@ public class GuiceContext extends GuiceServletContextListener
 		return reflect();
 	}
 
+
 	private void GuiceStartup()
 	{
 		log.info("Starting up classpath scanner");
 		if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
 		{
+
 			excludeJarsFromScan = new ArrayList<>();
+
 			excludeJarsFromScan.add("-com.fasterxml.jackson");
 			excludeJarsFromScan.add("-com.google.common");
 			excludeJarsFromScan.add("-com.google.inject");
@@ -419,7 +422,7 @@ public class GuiceContext extends GuiceServletContextListener
 		scanner.ignoreFieldVisibility();
 		scanner.ignoreMethodVisibility();
 		scanResult = scanner.scan(5);
-		scanResult.getNamesOfAllStandardClasses().forEach(log::finer);
+		scanResult.getNamesOfAllStandardClasses().forEach(log::finest);
 
 		log.info("Classpath Scanner Completed");
 	}
