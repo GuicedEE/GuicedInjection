@@ -27,10 +27,9 @@ import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 
 import javax.servlet.ServletContextEvent;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
+import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -52,6 +51,13 @@ public class GuiceContext extends GuiceServletContextListener
 	 * This particular instance of the class
 	 */
 	private static GuiceContext instance;
+	/**
+	 * A list of all the specifically excluded jar files (to skip unzip)
+	 */
+	private static String[] excludedJarFiles = new String[]{"-jar:animal-sniffer-annotations.jar",
+			"-jar:jackson-core.jar",
+			"-jar:jackson-annotations.jar"};
+
 	/**
 	 * The building injector
 	 */
@@ -102,20 +108,6 @@ public class GuiceContext extends GuiceServletContextListener
 		{
 			instance = this;
 		}
-	}
-
-	/**
-	 * Returns the actual context instance, provides access to methods existing a bit deeper
-	 *
-	 * @return
-	 */
-	public static GuiceContext context()
-	{
-		if (instance == null)
-		{
-			instance = new GuiceContext();
-		}
-		return instance;
 	}
 
 	/**
@@ -201,40 +193,6 @@ public class GuiceContext extends GuiceServletContextListener
 	}
 
 	/**
-	 * If the context is built
-	 *
-	 * @return
-	 */
-	public static boolean isBuilt()
-	{
-		return built;
-	}
-
-	/**
-	 * If the context is built
-	 *
-	 * @param built
-	 */
-	public static void setBuilt(boolean built)
-	{
-		GuiceContext.built = built;
-	}
-
-	/**
-	 * Builds a reflection object if one does not exist
-	 *
-	 * @return
-	 */
-	public static Reflections reflect()
-	{
-		if (context().reflections == null)
-		{
-			context().reflections = new Reflections();
-		}
-		return context().reflections;
-	}
-
-	/**
 	 * Execute on Destroy
 	 */
 	public static void destroy()
@@ -247,13 +205,13 @@ public class GuiceContext extends GuiceServletContextListener
 	}
 
 	/**
-	 * If the context is currently still building the injector
+	 * If the context is built
 	 *
 	 * @return
 	 */
-	public static boolean isBuildingInjector()
+	public static boolean isBuilt()
 	{
-		return buildingInjector;
+		return built;
 	}
 
 	/**
@@ -292,6 +250,134 @@ public class GuiceContext extends GuiceServletContextListener
 	public static boolean isReady()
 	{
 		return isBuilt() && isBuildingInjector();
+	}
+
+	/**
+	 * If the context is built
+	 *
+	 * @param built
+	 */
+	public static void setBuilt(boolean built)
+	{
+		GuiceContext.built = built;
+	}
+
+	/**
+	 * If the context is currently still building the injector
+	 *
+	 * @return
+	 */
+	public static boolean isBuildingInjector()
+	{
+		return buildingInjector;
+	}
+
+	/**
+	 * A list of all the specifically excluded jar files (to skip unzip)
+	 *
+	 * @return
+	 */
+	public static String[] getExcludedJarFiles()
+	{
+		return excludedJarFiles;
+	}
+
+	/**
+	 * A list of all the specifically excluded jar files (to skip unzip)
+	 *
+	 * @param excludedJarFiles
+	 */
+	public static void setExcludedJarFiles(String[] excludedJarFiles)
+	{
+		GuiceContext.excludedJarFiles = excludedJarFiles;
+	}
+
+	private void GuiceStartup()
+	{
+		log.info("Starting up classpath scanner");
+		LocalDateTime start = LocalDateTime.now();
+		if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
+		{
+
+			excludeJarsFromScan = new ArrayList<>();
+
+			excludeJarsFromScan.add("-com.fasterxml.jackson");
+			excludeJarsFromScan.add("-com.google.common");
+			excludeJarsFromScan.add("-com.google.inject");
+			excludeJarsFromScan.add("-com.microsoft.sqlserver");
+			excludeJarsFromScan.add("-com.sun.enterprise.glassfish");
+			excludeJarsFromScan.add("-com.sun.enterprise.module");
+			excludeJarsFromScan.add("-com.sun.jdi");
+			excludeJarsFromScan.add("-edu.umd.cs.findbugs");
+			excludeJarsFromScan.add("-io.github.lukehutch.fastclasspathscanner");
+			excludeJarsFromScan.add("-javassist");
+			excludeJarsFromScan.add("-net.sf.qualitycheck");
+			excludeJarsFromScan.add("-net.sf.uadetector");
+			excludeJarsFromScan.add("-org.aopalliance");
+			excludeJarsFromScan.add("-org.apache.catalina");
+			excludeJarsFromScan.add("-org.apache.commons");
+			excludeJarsFromScan.add("-org.apache.derby");
+			excludeJarsFromScan.add("-org.glassfish");
+
+			excludeJarsFromScan.add("-org.atmosphere");
+			excludeJarsFromScan.add("-com.google.j2objc");
+			excludeJarsFromScan.add("-com.sun.grizzly");
+
+
+			excludeJarsFromScan.add("-com.google.thirdparty");
+			excludeJarsFromScan.add("-com.intellij");
+			excludeJarsFromScan.add("-com.jcabi");
+			excludeJarsFromScan.add("-junit");
+			excludeJarsFromScan.add("-org.apache.log4j");
+			excludeJarsFromScan.add("-org.apache.tools");
+			excludeJarsFromScan.add("-org.apiguardian");
+			excludeJarsFromScan.add("-org.aspectj");
+			excludeJarsFromScan.add("-org.assertj");
+			excludeJarsFromScan.add("-org.hamcrest");
+			excludeJarsFromScan.add("-org.junit");
+			excludeJarsFromScan.add("-org.mockito");
+			excludeJarsFromScan.add("-org.objenesis");
+			excludeJarsFromScan.add("-org.opentest4j");
+			excludeJarsFromScan.add("-FormPreviewFrame");
+			excludeJarsFromScan.add("-FormPreviewFrame$");
+			excludeJarsFromScan.add("-FormPreviewFrame$MyExitAction");
+			excludeJarsFromScan.add("-FormPreviewFrame$MyPackAction");
+			excludeJarsFromScan.add("-FormPreviewFrame$MySetLafAction");
+			excludeJarsFromScan.add("-org.jacoco");
+			excludeJarsFromScan.add("-com.vladium.emma");
+
+			//glassfish jar defaultsglassfish.jar
+			excludeJarsFromScan.add("-org.ietf");
+			excludeJarsFromScan.add("-org.jboss");
+			excludeJarsFromScan.add("-org.jvnet");
+			excludeJarsFromScan.add("-org.slf4j");
+			excludeJarsFromScan.add("-org.w3c");
+			excludeJarsFromScan.add("-org.xml.sax");
+
+		}
+
+		excludeJarsFromScan.addAll(Arrays.asList(excludedJarFiles));
+
+		String[] exclusions = new String[excludeJarsFromScan.size()];
+		exclusions = excludeJarsFromScan.toArray(exclusions);
+
+		scanner = new FastClasspathScanner(exclusions);
+		scanner.enableFieldInfo();
+		scanner.enableFieldAnnotationIndexing();
+		scanner.enableFieldTypeIndexing();
+		scanner.enableMethodAnnotationIndexing();
+		scanner.enableMethodInfo();
+		scanner.ignoreFieldVisibility();
+		scanner.ignoreMethodVisibility();
+		scanResult = scanner.scan();
+		LocalDateTime finish = LocalDateTime.now();
+		scanResult.getNamesOfAllStandardClasses().forEach(a ->
+		                                                  {
+			                                                  System.out.println(a);
+		                                                  });
+		scanResult.getNamesOfAllStandardClasses().forEach(log::severe);
+
+		log.info("Classpath Scanner Completed. Took [" + (finish.getLong(ChronoField.MILLI_OF_SECOND) - start.getLong(ChronoField.MILLI_OF_SECOND)) + "] millis.");
 	}
 
 	/**
@@ -339,6 +425,20 @@ public class GuiceContext extends GuiceServletContextListener
 	}
 
 	/**
+	 * Returns the actual context instance, provides access to methods existing a bit deeper
+	 *
+	 * @return
+	 */
+	public static GuiceContext context()
+	{
+		if (instance == null)
+		{
+			instance = new GuiceContext();
+		}
+		return instance;
+	}
+
+	/**
 	 * Initializes Guice Context post Startup Beans
 	 *
 	 * @param servletContextEvent
@@ -370,60 +470,17 @@ public class GuiceContext extends GuiceServletContextListener
 		return reflect();
 	}
 
-
-	private void GuiceStartup()
+	/**
+	 * Builds a reflection object if one does not exist
+	 *
+	 * @return
+	 */
+	public static Reflections reflect()
 	{
-		log.info("Starting up classpath scanner");
-		if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
+		if (context().reflections == null)
 		{
-
-			excludeJarsFromScan = new ArrayList<>();
-
-			excludeJarsFromScan.add("-com.fasterxml.jackson");
-			excludeJarsFromScan.add("-com.google.common");
-			excludeJarsFromScan.add("-com.google.inject");
-			excludeJarsFromScan.add("-com.microsoft.sqlserver");
-			excludeJarsFromScan.add("-com.sun.enterprise.glassfish");
-			excludeJarsFromScan.add("-com.sun.enterprise.module");
-			excludeJarsFromScan.add("-com.sun.jdi");
-			excludeJarsFromScan.add("-edu.umd.cs.findbugs");
-			excludeJarsFromScan.add("-io.github.lukehutch.fastclasspathscanner");
-			excludeJarsFromScan.add("-javassist");
-			excludeJarsFromScan.add("-net.sf.qualitycheck");
-			excludeJarsFromScan.add("-net.sf.uadetector");
-			excludeJarsFromScan.add("-org.aopalliance");
-			excludeJarsFromScan.add("-org.apache.catalina");
-			excludeJarsFromScan.add("-org.apache.commons");
-			excludeJarsFromScan.add("-org.apache.derby");
-			excludeJarsFromScan.add("-org.glassfish");
-
-			excludeJarsFromScan.add("-org.atmosphere");
-			excludeJarsFromScan.add("-com.google.j2objc");
-			excludeJarsFromScan.add("-com.sun.grizzly");
-
-			//glassfish jar defaultsglassfish.jar
-			excludeJarsFromScan.add("-org.ietf");
-			excludeJarsFromScan.add("-org.jboss");
-			excludeJarsFromScan.add("-org.jvnet");
-			excludeJarsFromScan.add("-org.slf4j");
-			excludeJarsFromScan.add("-org.w3c");
-			excludeJarsFromScan.add("-org.xml.sax");
-
+			context().reflections = new Reflections();
 		}
-		String[] exclusions = new String[excludeJarsFromScan.size()];
-		exclusions = excludeJarsFromScan.toArray(exclusions);
-
-		scanner = new FastClasspathScanner(exclusions);
-		scanner.enableFieldInfo();
-		scanner.enableFieldAnnotationIndexing();
-		scanner.enableFieldTypeIndexing();
-		scanner.enableMethodAnnotationIndexing();
-		scanner.enableMethodInfo();
-		scanner.ignoreFieldVisibility();
-		scanner.ignoreMethodVisibility();
-		scanResult = scanner.scan(5);
-		scanResult.getNamesOfAllStandardClasses().forEach(log::finest);
-
-		log.info("Classpath Scanner Completed");
+		return context().reflections;
 	}
 }

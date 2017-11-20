@@ -24,12 +24,12 @@ package com.armineasy.injection.annotations;
  */
 public interface GuicePostStartup
 {
-	
+
 	/**
 	 * Runs immediately after the post load
 	 */
 	void postLoad();
-	
+
 	/**
 	 * Sets the order in which this must run, default 100.
 	 *

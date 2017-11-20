@@ -24,12 +24,12 @@ package com.armineasy.injection.annotations;
  */
 public interface GuicePreStartup
 {
-	
+
 	/**
 	 * Runs on startup
 	 */
 	void onStartup();
-	
+
 	/**
 	 * Sort order for startup, Default 100.
 	 *

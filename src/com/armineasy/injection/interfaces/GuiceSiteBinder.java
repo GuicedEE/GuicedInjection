@@ -34,7 +34,7 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
 	 * Default order 100
 	 */
 	private int DefaultSortOrder = 100;
-	
+
 	/**
 	 * Blank constructor
 	 */
@@ -42,17 +42,7 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
 	{
 		//Nothing needed to be done
 	}
-	
-	/**
-	 * The default sort order number is 100
-	 *
-	 * @return
-	 */
-	public Integer sortOrder()
-	{
-		return DefaultSortOrder;
-	}
-	
+
 	/**
 	 * Sets the default sort order
 	 *
@@ -62,7 +52,7 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
 	{
 		this.DefaultSortOrder = DefaultSortOrder;
 	}
-	
+
 	/**
 	 * Compares the items across
 	 *
@@ -79,5 +69,15 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
 			return -1;
 		}
 		return o1.sortOrder().compareTo(o2.sortOrder());
+	}
+
+	/**
+	 * The default sort order number is 100
+	 *
+	 * @return
+	 */
+	public Integer sortOrder()
+	{
+		return DefaultSortOrder;
 	}
 }

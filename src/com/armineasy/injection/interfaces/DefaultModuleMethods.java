@@ -36,7 +36,7 @@ import java.lang.annotation.Annotation;
  */
 public interface DefaultModuleMethods
 {
-	
+
 	/**
 	 * Binds to the injector
 	 *
@@ -46,7 +46,7 @@ public interface DefaultModuleMethods
 	 * @return
 	 */
 	<T> AnnotatedBindingBuilder<T> bind(Class<T> clazz);
-	
+
 	/**
 	 * Binds to the injector
 	 *
@@ -56,7 +56,7 @@ public interface DefaultModuleMethods
 	 * @return
 	 */
 	<T> LinkedBindingBuilder<T> bind(Key<T> key);
-	
+
 	/**
 	 * Binds to the injector
 	 *
@@ -66,14 +66,14 @@ public interface DefaultModuleMethods
 	 * @return
 	 */
 	<T> AnnotatedBindingBuilder<T> bind(TypeLiteral<T> typeLiteral);
-	
+
 	/**
 	 * Binds to the injector
 	 *
 	 * @return
 	 */
 	AnnotatedConstantBindingBuilder bindConstant();
-	
+
 	/**
 	 * Binds to the injector
 	 *
@@ -81,7 +81,7 @@ public interface DefaultModuleMethods
 	 * @param listener
 	 */
 	void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener);
-	
+
 	/**
 	 * Binds to the injector
 	 *
@@ -89,7 +89,7 @@ public interface DefaultModuleMethods
 	 * @param listener
 	 */
 	void bindListener(Matcher<? super TypeLiteral<?>> typeMatcher, TypeListener listener);
-	
+
 	/**
 	 * Binds to the injector
 	 *

@@ -76,17 +76,6 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	}
 
 	/**
-	 * Installs a given module
-	 *
-	 * @param module
-	 */
-	@Override
-	public void install(Module module)
-	{
-		super.install(module);
-	}
-
-	/**
 	 * urlPatterns - Any Servlet-style patterns. examples: /*, /html/*, *.html, etc. Since: 4.1
 	 *
 	 * @param urlPattern
@@ -137,6 +126,15 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	}
 
 	/**
+	 * Runs the binders
+	 */
+	@Override
+	public void configureServlets()
+	{
+		runBinders();
+	}
+
+	/**
 	 * Runs the binders for the system
 	 */
 	public void runBinders()
@@ -169,26 +167,15 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	}
 
 	/**
-	 * Runs the binders
+	 * Binds to a given scope
+	 *
+	 * @param scopeAnnotation
+	 * @param scope
 	 */
 	@Override
-	public void configureServlets()
+	public void bindScope(Class<? extends Annotation> scopeAnnotation, Scope scope)
 	{
-		runBinders();
-	}
-
-	/**
-	 * Binds to a given class
-	 *
-	 * @param <T>
-	 * @param clazz
-	 *
-	 * @return
-	 */
-	@Override
-	public <T> AnnotatedBindingBuilder<T> bind(Class<T> clazz)
-	{
-		return super.bind(clazz);
+		super.bindScope(scopeAnnotation, scope);
 	}
 
 	/**
@@ -220,6 +207,20 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	}
 
 	/**
+	 * Binds to a given class
+	 *
+	 * @param <T>
+	 * @param clazz
+	 *
+	 * @return
+	 */
+	@Override
+	public <T> AnnotatedBindingBuilder<T> bind(Class<T> clazz)
+	{
+		return super.bind(clazz);
+	}
+
+	/**
 	 * Binds to a given constant
 	 *
 	 * @return
@@ -231,15 +232,14 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	}
 
 	/**
-	 * Bind listener
+	 * Installs a given module
 	 *
-	 * @param bindingMatcher
-	 * @param listener
+	 * @param module
 	 */
 	@Override
-	public void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener)
+	public void install(Module module)
 	{
-		super.bindListener(bindingMatcher, listener);
+		super.install(module);
 	}
 
 	/**
@@ -255,15 +255,15 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 	}
 
 	/**
-	 * Binds to a given scope
+	 * Bind listener
 	 *
-	 * @param scopeAnnotation
-	 * @param scope
+	 * @param bindingMatcher
+	 * @param listener
 	 */
 	@Override
-	public void bindScope(Class<? extends Annotation> scopeAnnotation, Scope scope)
+	public void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener)
 	{
-		super.bindScope(scopeAnnotation, scope);
+		super.bindListener(bindingMatcher, listener);
 	}
 
 	/**

@@ -39,6 +39,12 @@ public class Pair<K, V>
 		this.value = value;
 	}
 
+	@Override
+	public String toString()
+	{
+		return "Key[" + getKey() + "]-[" + getValue() + "}";
+	}
+
 	/**
 	 * Gets the key for the given pair
 	 *
@@ -83,11 +89,5 @@ public class Pair<K, V>
 	{
 		this.value = value;
 		return this;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "Key[" + getKey() + "]-[" + getValue() + "}";
 	}
 }
