@@ -681,13 +681,16 @@ public class GuiceContext extends GuiceServletContextListener
 			{
 				getFastAccessFiles().put(type, new LinkedHashMap<>());
 			}
-			scanner.matchFilenamePathLeaf(type.getEndsWith(), (File classpathElt, String relativePath, byte[] fileContents) ->
+			for (String typeExtension : type.getEndsWith().split(";"))
 			{
-				String idName = relativePath.substring(0, relativePath.lastIndexOf('.'));
-				Map<String, byte[]> fastFiles = getFastAccessFiles().get(FastAccessFileTypes.Sql);
-				fastFiles.put(idName, fileContents);
-				log.warning(type.name() + " File Loaded : " + idName);
-			});
+				scanner.matchFilenamePathLeaf(typeExtension, (File classpathElt, String relativePath, byte[] fileContents) ->
+				{
+					String idName = relativePath.substring(0, relativePath.lastIndexOf('.'));
+					Map<String, byte[]> fastFiles = getFastAccessFiles().get(FastAccessFileTypes.Sql);
+					fastFiles.put(idName, fileContents);
+					log.warning(type.name() + " File Loaded : " + idName);
+				});
+			}
 		}
 	}
 

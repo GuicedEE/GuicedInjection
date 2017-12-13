@@ -6,7 +6,6 @@ import com.oracle.jaxb21.Persistence;
 import za.co.mmagon.guiceinjection.GuiceContext;
 import za.co.mmagon.guiceinjection.enumerations.FastAccessFileTypes;
 
-import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
@@ -52,32 +51,42 @@ public abstract class AbstractDatabaseProviderModule
 		return dataSource.get();
 	}
 
+	/**
+	 * The name found in jta-data-source from the persistence.xml
+	 *
+	 * @return
+	 */
 	@NotNull
-	public abstract String getPersistenceUnitName();
+	protected abstract String getJndiMapping();
+
+	/**
+	 * A unique suffix to apply to the binding names
+	 *
+	 * @return
+	 */
+	@NotNull
+	protected abstract String getJdbcPropertySuffix();
 
 	@NotNull
-	public abstract String getJndiMapping();
-
-	@NotNull
-	public abstract String getJdbcPropertySuffix();
-
-	@NotNull
-	public Key<DataSource> getDataSourceKey()
+	protected Key<DataSource> getDataSourceKey()
 	{
 		return Key.get(DataSource.class, getBindingAnnotation());
 	}
 
+	/**
+	 * The annotation which will identify this guy
+	 *
+	 * @return
+	 */
 	@NotNull
-	public abstract Class<? extends Annotation> getBindingAnnotation();
+	protected abstract Class<? extends Annotation> getBindingAnnotation();
 
+	/**
+	 * A properties map of the properties from the file
+	 * @return
+	 */
 	@NotNull
-	public Key<EntityManager> getEntityManagerKey()
-	{
-		return Key.get(EntityManager.class, getBindingAnnotation());
-	}
-
-	@NotNull
-	public Properties getJDBCPropertiesMap()
+	private Properties getJDBCPropertiesMap()
 	{
 		Properties jdbcProperties = new Properties();
 
@@ -99,6 +108,29 @@ public abstract class AbstractDatabaseProviderModule
 		return jdbcProperties;
 	}
 
+	private Persistence getPersistence()
+	{
+		if (GuiceContext.getFastAccessFiles().get(FastAccessFileTypes.Persistence).containsKey(getPersistenceUnitName()))
+		{
+			try
+			{
+				//Make sure the persistence handler is up and running
+				GuiceContext.getAsynchronousPersistenceFileLoader().shutdown();
+				GuiceContext.getAsynchronousPersistenceFileLoader().awaitTermination(5, TimeUnit.SECONDS);
+				JAXBContext pContext = GuiceContext.getPersistenceContext();
+				byte[] contextBytes = GuiceContext.getFastAccessFiles().get(FastAccessFileTypes.Persistence).get(getPersistenceUnitName());
+				String content = new String(contextBytes);
+				return (Persistence) pContext.createUnmarshaller().unmarshal(new StringReader(content));
+			}
+			catch (Exception e)
+			{
+				log.log(Level.SEVERE, "Unable to get the persistence xsd object [" + getPersistenceUnitName() + "]", e);
+			}
+		}
+		return null;
+	}
+
+
 	private void configurePersistenceUnitProperties(Persistence.PersistenceUnit pu, Properties jdbcProperties)
 	{
 		Properties sysProps = System.getProperties();
@@ -118,31 +150,15 @@ public abstract class AbstractDatabaseProviderModule
 		}
 	}
 
+	/**
+	 * The name found in persistence.xml
+	 *
+	 * @return
+	 */
 	@NotNull
-	public Persistence getPersistence()
-	{
-		if (GuiceContext.getFastAccessFiles().get(FastAccessFileTypes.Persistence).containsKey(getPersistenceUnitName()))
-		{
-			try
-			{
-				//Make sure the persistence handler is up and running
-				GuiceContext.getAsynchronousPersistenceFileLoader().shutdown();
-				GuiceContext.getAsynchronousPersistenceFileLoader().awaitTermination(2, TimeUnit.SECONDS);
-				JAXBContext pContext = GuiceContext.getPersistenceContext();
-				byte[] contextBytes = GuiceContext.getFastAccessFiles().get(FastAccessFileTypes.Persistence).get(getPersistenceUnitName());
-				String content = new String(contextBytes);
-				return (Persistence) pContext.createUnmarshaller().unmarshal(new StringReader(content));
-			}
-			catch (Exception e)
-			{
-				log.log(Level.SEVERE, "Unable to get the persistence xsd object [" + getPersistenceUnitName() + "]", e);
-			}
-		}
-		return null;
-	}
+	protected abstract String getPersistenceUnitName();
 
-	@NotNull
-	public Persistence.PersistenceUnit getPersistenceUnit()
+	private Persistence.PersistenceUnit getPersistenceUnit()
 	{
 		Persistence p = getPersistence();
 		if (p == null)

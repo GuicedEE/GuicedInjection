@@ -11,7 +11,8 @@ public enum FastAccessFileTypes
 	WebXml("web.xml"),
 	WebFragmentXml("web-fragment.xml"),
 	EjbJarXml("ejb-jar.xml"),
-	Properties(".properties");
+	Properties(".properties"),
+	Custom(".nevershouldexist");
 
 	private String endsWith;
 
@@ -29,5 +30,10 @@ public enum FastAccessFileTypes
 	public String getEndsWith()
 	{
 		return endsWith;
+	}
+
+	public void setEndsWith(String endsWith)
+	{
+		this.endsWith = endsWith;
 	}
 }
