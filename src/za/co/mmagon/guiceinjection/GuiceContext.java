@@ -59,10 +59,10 @@ public class GuiceContext extends GuiceServletContextListener
 	 */
 	private static GuiceContext instance;
 	public static final Key<JAXBContext> PERSISTENCE_CONTEXT_KEY = Key.get(JAXBContext.class, JaxbContext.class);
+
 	/**
 	 * A list of all the specifically excluded jar files (to skip unzip)
 	 */
-
 	private static volatile Map<FastAccessFileTypes, Map<String, byte[]>> fastAccessFiles;
 	private static ExecutorService asynchronousFileLoader = Executors.newWorkStealingPool();
 	private static ExecutorService asynchronousPersistenceFileLoader = Executors.newWorkStealingPool();
