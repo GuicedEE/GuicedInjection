@@ -686,10 +686,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		for (FastAccessFileTypes type : FastAccessFileTypes.values())
 		{
-			if (getFastAccessFiles().get(type) == null)
-			{
-				getFastAccessFiles().put(type, new LinkedHashMap<>());
-			}
+			getFastAccessFiles().computeIfAbsent(type, k -> new LinkedHashMap<>());
 			for (String typeExtension : type.getEndsWith().split(";"))
 			{
 				scanner.matchFilenamePathLeaf(typeExtension, (File classpathElt, String relativePath, byte[] fileContents) ->
