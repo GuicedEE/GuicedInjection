@@ -98,8 +98,7 @@
         <dependency>
             <groupId>com.jcabi</groupId>
             <artifactId>jcabi-aspects</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <type>jar</type>
+            <version>0.22.6</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->

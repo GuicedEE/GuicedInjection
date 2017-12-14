@@ -67,6 +67,14 @@ public abstract class AbstractDatabaseProviderModule
 	@NotNull
 	protected abstract String getJdbcPropertySuffix();
 
+	/**
+	 * The name found in persistence.xml
+	 *
+	 * @return
+	 */
+	@NotNull
+	protected abstract String getPersistenceUnitName();
+
 	@NotNull
 	protected Key<DataSource> getDataSourceKey()
 	{
@@ -150,14 +158,6 @@ public abstract class AbstractDatabaseProviderModule
 		}
 	}
 
-	/**
-	 * The name found in persistence.xml
-	 *
-	 * @return
-	 */
-	@NotNull
-	protected abstract String getPersistenceUnitName();
-
 	private Persistence.PersistenceUnit getPersistenceUnit()
 	{
 		Persistence p = getPersistence();
@@ -175,5 +175,6 @@ public abstract class AbstractDatabaseProviderModule
 		}
 		return null;
 	}
+
 
 }
