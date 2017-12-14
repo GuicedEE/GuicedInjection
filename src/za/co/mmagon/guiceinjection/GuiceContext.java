@@ -94,11 +94,11 @@ public class GuiceContext extends GuiceServletContextListener
 	/**
 	 * The actual scanner
 	 */
-	private FastClasspathScanner scanner;
+	private static FastClasspathScanner scanner;
 	/**
 	 * The scan result built from everything - the core scanner.
 	 */
-	private ScanResult scanResult;
+	private static ScanResult scanResult;
 
 	/**
 	 * Facade layer for backwards compatibility
@@ -108,7 +108,7 @@ public class GuiceContext extends GuiceServletContextListener
 	/**
 	 * A list of jars to exclude from the scan file for the application
 	 */
-	private List<String> excludeJarsFromScan;
+	private static List<String> excludeJarsFromScan;
 
 	/**
 	 * Creates a new Guice context. Not necessary
@@ -136,6 +136,15 @@ public class GuiceContext extends GuiceServletContextListener
 			};
 			asynchronousPersistenceFileLoader.submit(loadAsync);
 		}
+	}
+
+	/**
+	 * Reconstructs the class scanner
+	 */
+	public static void buildScanner()
+	{
+		setScanner(new FastClasspathScanner());
+		buildScanner();
 	}
 
 	/**
@@ -435,7 +444,7 @@ public class GuiceContext extends GuiceServletContextListener
 		return persistenceContext;
 	}
 
-	private void GuiceStartup()
+	private static void GuiceStartup()
 	{
 		log.info("Starting up classpath scanner");
 		LocalDateTime start = LocalDateTime.now();
@@ -673,7 +682,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @param scanner
 	 */
-	private void registerScanQuickFiles(FastClasspathScanner scanner)
+	private static void registerScanQuickFiles(FastClasspathScanner scanner)
 	{
 		for (FastAccessFileTypes type : FastAccessFileTypes.values())
 		{
@@ -692,6 +701,16 @@ public class GuiceContext extends GuiceServletContextListener
 				});
 			}
 		}
+	}
+
+	/**
+	 * Sets the given injector to this context
+	 *
+	 * @param injector
+	 */
+	public void setInjector(Injector injector)
+	{
+		this.injector = injector;
 	}
 
 	/**
