@@ -75,7 +75,7 @@ public class LogColourFormatter extends LogFormatter
 
 	private static boolean INVERTED = false;
 
-	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy/mm/dd HH:mm:ss.SSS");
+	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
 
 	/**
 	 * The log colour formatter
@@ -109,7 +109,6 @@ public class LogColourFormatter extends LogFormatter
 		{
 			return "";
 		}
-
 
 		String output = "";
 		if (!INVERTED)

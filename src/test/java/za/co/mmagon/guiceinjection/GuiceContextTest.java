@@ -26,10 +26,10 @@ public class GuiceContextTest extends GuiceDefaultBinder
 		LogManager.getLogManager().getLogger("").setLevel(Level.FINEST);
 	}
 
-	public static void main(String[] args)
+	@Test
+	public void main()
 	{
 		System.out.println("Main");
-		GuiceContext.isBuilt();
 		GuiceContext.inject();
 
 		GuiceContext.reflect().getSubTypesOf(GuiceDefaultBinder.class);

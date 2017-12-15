@@ -6,9 +6,10 @@ import java.util.logging.LogRecord;
 
 import static za.co.mmagon.guiceinjection.logging.LogColourFormatter.ANSI_RESET;
 
-public abstract class LogFormatter extends java.util.logging.Formatter
+abstract class LogFormatter extends java.util.logging.Formatter
 {
-	protected StringBuilder printException(LogRecord record)
+
+	StringBuilder printException(LogRecord record)
 	{
 		StringBuilder output = new StringBuilder();
 		if (record.getThrown() != null)
@@ -25,7 +26,7 @@ public abstract class LogFormatter extends java.util.logging.Formatter
 		return output;
 	}
 
-	protected String processParameters(String output, LogRecord record)
+	String processParameters(String output, LogRecord record)
 	{
 		if (record.getParameters() != null && record.getParameters().length > 0)
 		{
