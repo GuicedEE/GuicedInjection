@@ -48,8 +48,6 @@
     </properties>
 
     <build>
-        <sourceDirectory>${src.dir}</sourceDirectory>
-        <testSourceDirectory>${test.dir}</testSourceDirectory>
         <finalName>guice-injection</finalName>
 
         <plugins>
@@ -292,6 +290,15 @@
             <version>2.1.4</version>
             <type>jar</type>
         </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.195</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
     <distributionManagement>
