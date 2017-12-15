@@ -40,15 +40,38 @@ public abstract class AbstractDatabaseProviderModule
 			return;
 		}
 		install(new JpaPersistPrivateModule(getPersistenceUnitName(), jdbcProperties, getBindingAnnotation()));
+		final ConnectionBaseInfo connectionBaseInfo = getConnectionBaseInfo(pu);
+		bind(Key.get(DataSource.class, getBindingAnnotation())).toProvider(() -> provideDataSource(connectionBaseInfo));
+
 		log.config(getPersistenceUnitName() + " Finished Binding. Please remember to bind the keys");
 	}
 
+	/**
+	 * A properties map of the properties from the file
+	 *
+	 * @return
+	 */
 	@NotNull
-	public DataSource provideDataSource(ConnectionBaseInfo cbi)
+	private Properties getJDBCPropertiesMap()
 	{
-		JtaPoolDataSource dataSource = new JtaPoolDataSource();
-		dataSource.configure(cbi);
-		return dataSource.get();
+		Properties jdbcProperties = new Properties();
+
+		Persistence p = getPersistence();
+		if (p == null)
+		{
+			log.severe("Unable to find a persistence unit with name : " + getPersistenceUnitName());
+		}
+		else
+		{
+			for (Persistence.PersistenceUnit pu : p.getPersistenceUnit())
+			{
+				if (pu.getName().equals(getPersistenceUnitName()))
+				{
+					configurePersistenceUnitProperties(pu, jdbcProperties);
+				}
+			}
+		}
+		return jdbcProperties;
 	}
 
 	/**
@@ -75,6 +98,18 @@ public abstract class AbstractDatabaseProviderModule
 	@NotNull
 	protected abstract String getPersistenceUnitName();
 
+	/**
+	 * Builds up connection base data info from a persistence unit.
+	 * <p>
+	 * Use with the utility methods e.g.
+	 *
+	 * @param unit
+	 *
+	 * @return
+	 */
+	@NotNull
+	protected abstract ConnectionBaseInfo getConnectionBaseInfo(Persistence.PersistenceUnit unit);
+
 	@NotNull
 	protected Key<DataSource> getDataSourceKey()
 	{
@@ -89,31 +124,16 @@ public abstract class AbstractDatabaseProviderModule
 	@NotNull
 	protected abstract Class<? extends Annotation> getBindingAnnotation();
 
-	/**
-	 * A properties map of the properties from the file
-	 * @return
-	 */
 	@NotNull
-	private Properties getJDBCPropertiesMap()
+	public DataSource provideDataSource(ConnectionBaseInfo cbi)
 	{
-		Properties jdbcProperties = new Properties();
-
-		Persistence p = getPersistence();
-		if (p == null)
+		if (cbi == null)
 		{
-			log.severe("Unable to find a persistence unit with name : " + getPersistenceUnitName());
+			throw new RuntimeException("Not point in trying to create a connection with no info.....");
 		}
-		else
-		{
-			for (Persistence.PersistenceUnit pu : p.getPersistenceUnit())
-			{
-				if (pu.getName().equals(getPersistenceUnitName()))
-				{
-					configurePersistenceUnitProperties(pu, jdbcProperties);
-				}
-			}
-		}
-		return jdbcProperties;
+		JtaPoolDataSource dataSource = new JtaPoolDataSource();
+		dataSource.configure(cbi);
+		return dataSource.get();
 	}
 
 	private Persistence getPersistence()
@@ -138,8 +158,13 @@ public abstract class AbstractDatabaseProviderModule
 		return null;
 	}
 
-
-	private void configurePersistenceUnitProperties(Persistence.PersistenceUnit pu, Properties jdbcProperties)
+	/**
+	 * Builds a property map from a persistence unit properties file
+	 *
+	 * @param pu
+	 * @param jdbcProperties
+	 */
+	protected void configurePersistenceUnitProperties(Persistence.PersistenceUnit pu, Properties jdbcProperties)
 	{
 		Properties sysProps = System.getProperties();
 		for (Persistence.PersistenceUnit.Properties.Property props : pu.getProperties().getProperty())
