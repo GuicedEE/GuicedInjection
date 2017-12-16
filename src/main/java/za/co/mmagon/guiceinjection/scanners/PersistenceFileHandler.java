@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-
+@SuppressWarnings("unused")
 public class PersistenceFileHandler implements FileContentsScanner
 {
 	private static final Logger log = Logger.getLogger("FastFileTypesScanner");
@@ -26,7 +26,7 @@ public class PersistenceFileHandler implements FileContentsScanner
 		{
 			String idName = relativePath.substring(0, relativePath.lastIndexOf('.'));
 			persistenceUnits.put(idName, fileContents);
-			log.info(FastAccessFileTypes.Persistence.name() + " File Loaded : " + idName);
+			log.info(FastAccessFileTypes.Persistence.name() + " File Loaded : " + classpathElt.getCanonicalPath());
 		};
 		map.put(FastAccessFileTypes.Persistence.getEndsWith(), processor);
 

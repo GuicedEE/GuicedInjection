@@ -29,9 +29,7 @@ public class GuiceContextTest extends GuiceDefaultBinder
 	@Test
 	public void main()
 	{
-		System.out.println("Main");
 		GuiceContext.inject();
-
 		GuiceContext.reflect().getSubTypesOf(GuiceDefaultBinder.class);
 		GuiceContext.reflect().getSubTypesOf(GuiceSiteBinder.class);
 		GuiceContext.reflect().getTypesAnnotatedWith(za.co.mmagon.guiceinjection.annotations.GuiceInjectorModule.class);
@@ -40,7 +38,7 @@ public class GuiceContextTest extends GuiceDefaultBinder
 	@Override
 	public void onBind(GuiceInjectorModule module)
 	{
-		System.out.println("Binding Test");
+		System.out.println("On Bind");
 	}
 
 	@Test

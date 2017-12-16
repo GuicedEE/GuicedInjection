@@ -203,7 +203,7 @@ public abstract class AbstractDatabaseProviderModule
 		{
 			String checkProperty = props.getValue().replace("\\$", "");
 			checkProperty = checkProperty.replaceAll("\\{", "");
-			checkProperty = checkProperty.replaceAll("\\}", "");
+			checkProperty = checkProperty.replaceAll("}", "");
 			if (sysProps.containsKey(checkProperty))
 			{
 				jdbcProperties.put(props.getName(), sysProps.get(checkProperty));

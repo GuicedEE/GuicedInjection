@@ -15,3 +15,5 @@ persistence.xml
 **.jacocoverage/
 **/*.iml
 *.iml
+*.tloh
+*.tlog
