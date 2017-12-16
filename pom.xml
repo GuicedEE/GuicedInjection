@@ -295,7 +295,6 @@
             <artifactId>h2</artifactId>
             <version>1.4.195</version>
             <type>jar</type>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
