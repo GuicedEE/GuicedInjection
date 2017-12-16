@@ -5,7 +5,9 @@
       <configuration>
         <setting name="validation-enabled" value="true" />
         <setting name="provider-name" value="" />
-        <datasource-mapping />
+        <datasource-mapping>
+          <factory-entry name="guiceinjectionh2test" value="6aee338c-43d9-47f6-ac64-94e9e430624f" />
+        </datasource-mapping>
         <deploymentDescriptor name="persistence.xml" url="file://$MODULE_DIR$/src/test/resources/META-INF/persistence.xml" />
       </configuration>
     </facet>
