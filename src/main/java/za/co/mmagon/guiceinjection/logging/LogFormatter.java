@@ -37,7 +37,7 @@ abstract class LogFormatter extends java.util.logging.Formatter
 				{
 					continue;
 				}
-				String replace = "\\{" + n + "\\}";
+				String replace = "\\{" + n + "}";
 				String replacable = o.toString();
 				output = output.replaceAll(replace, replacable);
 			}

@@ -154,9 +154,8 @@ public class LogColourFormatter extends LogFormatter
 			output += ANSI_RED +
 					          ANSI_BLACK_BACKGROUND + record.getMessage();
 		}
-
-		output = processParameters(output, record);
 		output += printException(record).toString();
+		output = processParameters(output, record);
 		output = processInverted(output, record);
 
 		output += " - ";

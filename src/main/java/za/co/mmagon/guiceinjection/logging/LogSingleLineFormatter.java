@@ -100,9 +100,9 @@ public class LogSingleLineFormatter extends LogFormatter
 			return "";
 		}
 
-		output = processParameters(output, record);
-		output += printException(record).toString();
 		output += message;
+		output += printException(record).toString();
+		output = processParameters(output, record);
 
 		output += " - ";
 		output += "[" + record.getLevel().getLocalizedName() + "]";
