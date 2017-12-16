@@ -1,4 +1,6 @@
-package za.co.mmagon.guiceinjection.db;
+package za.co.mmagon.guiceinjection.interfaces;
+
+import za.co.mmagon.guiceinjection.db.ConnectionBaseInfo;
 
 import java.io.Serializable;
 
