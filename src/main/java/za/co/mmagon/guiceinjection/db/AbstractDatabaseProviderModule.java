@@ -2,6 +2,7 @@ package za.co.mmagon.guiceinjection.db;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
+import com.google.inject.Singleton;
 import com.oracle.jaxb21.Persistence;
 import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.exceptions.NoConnectionInfoException;
@@ -75,7 +76,7 @@ public abstract class AbstractDatabaseProviderModule
 		install(new JpaPersistPrivateModule(getPersistenceUnitName(), jdbcProperties, getBindingAnnotation()));
 		final ConnectionBaseInfo connectionBaseInfo = getConnectionBaseInfo(pu, jdbcProperties);
 		connectionBaseInfo.setJndiName(getJndiMapping());
-		bind(Key.get(DataSource.class, getBindingAnnotation())).toProvider(() -> provideDataSource(connectionBaseInfo));
+		bind(Key.get(DataSource.class, getBindingAnnotation())).toProvider(() -> provideDataSource(connectionBaseInfo)).in(Singleton.class);
 		log.config(getPersistenceUnitName() + " Finished Binding.");
 	}
 
