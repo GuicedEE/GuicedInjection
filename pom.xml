@@ -37,18 +37,24 @@
 
         <maven.jackson.version>2.9.2</maven.jackson.version>
         <maven.fastclasspath.version>2.9.3</maven.fastclasspath.version>
+        <maven.guice.version>4.1.0</maven.guice.version>
+
+        <maven.hibernate.version>5.2.12.Final</maven.hibernate.version>
+        <maven.hibernate.validator.version>5.4.2.Final</maven.hibernate.validator.version>
+        <maven.hibernate.annotations.version>5.0.1.Final</maven.hibernate.annotations.version>
 
         <netbeans.hint.license>gpl30</netbeans.hint.license>
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+
+
         <sonar.host.url>https://jwebswing.com/sonar</sonar.host.url>
         <sonar.exclusions>**bower_components</sonar.exclusions>
     </properties>
 
     <build>
         <finalName>guice-injection</finalName>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -65,6 +71,7 @@
                 </executions>
                 <version>${maven.jar.version}</version>
             </plugin>
+
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
@@ -84,7 +91,6 @@
     </build>
 
     <dependencies>
-
         <dependency>
             <groupId>io.github.lukehutch</groupId>
             <artifactId>fast-classpath-scanner</artifactId>
@@ -118,7 +124,7 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>4.1.0</version>
+            <version>${maven.guice.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -126,7 +132,7 @@
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-servlet</artifactId>
-            <version>4.1.0</version>
+            <version>${maven.guice.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -134,7 +140,7 @@
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-multibindings</artifactId>
-            <version>4.1.0</version>
+            <version>${maven.guice.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -142,7 +148,7 @@
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-persist</artifactId>
-            <version>4.1.0</version>
+            <version>${maven.guice.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -150,7 +156,7 @@
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-jndi</artifactId>
-            <version>4.1.0</version>
+            <version>${maven.guice.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -300,7 +306,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>5.2.12.Final</version>
+            <version>${maven.hibernate.version}</version>
             <type>jar</type>
             <scope>test</scope>
         </dependency>
@@ -308,7 +314,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>5.4.2.Final</version>
+            <version>${maven.hibernate.validator.version}</version>
             <type>jar</type>
             <scope>test</scope>
         </dependency>
@@ -316,7 +322,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-jpamodelgen</artifactId>
-            <version>5.2.12.Final</version>
+            <version>${maven.hibernate.version}</version>
             <type>jar</type>
             <scope>test</scope>
         </dependency>
@@ -324,7 +330,7 @@
         <dependency>
             <groupId>org.hibernate.common</groupId>
             <artifactId>hibernate-commons-annotations</artifactId>
-            <version>5.0.1.Final</version>
+            <version>${maven.hibernate.annotations.version}</version>
             <type>jar</type>
             <scope>test</scope>
         </dependency>
@@ -336,7 +342,6 @@
             <type>jar</type>
             <scope>test</scope>
         </dependency>
-
 
     </dependencies>
     <distributionManagement>

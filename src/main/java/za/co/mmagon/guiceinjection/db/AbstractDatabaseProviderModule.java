@@ -3,21 +3,15 @@ package za.co.mmagon.guiceinjection.db;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.oracle.jaxb21.Persistence;
-import za.co.mmagon.guiceinjection.GuiceContext;
 import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModule;
-import za.co.mmagon.guiceinjection.enumerations.FastAccessFileTypes;
 import za.co.mmagon.guiceinjection.exceptions.NoConnectionInfoException;
+import za.co.mmagon.guiceinjection.scanners.PersistenceFileHandler;
 
+import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import java.io.StringReader;
 import java.lang.annotation.Annotation;
-import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,7 +22,6 @@ import java.util.logging.Logger;
 public abstract class AbstractDatabaseProviderModule
 		extends AbstractModule
 {
-	protected static final Set<Persistence> globalUnits = new LinkedHashSet<>();
 	private static final Logger log = Logger.getLogger("AbstractDatabaseProviderModule");
 
 	@SuppressWarnings("unchecked")
@@ -56,13 +49,6 @@ public abstract class AbstractDatabaseProviderModule
 	@NotNull
 	protected abstract String getJndiMapping();
 
-	/**
-	 * A unique suffix to apply to the binding names
-	 *
-	 * @return
-	 */
-	@NotNull
-	protected abstract String getJdbcPropertySuffix();
 
 	/**
 	 * The name found in persistence.xml
@@ -78,7 +64,6 @@ public abstract class AbstractDatabaseProviderModule
 	protected void configure()
 	{
 		log.config(getPersistenceUnitName() + " Is Binding");
-		loadPersistenceUnits();
 		Properties jdbcProperties = null;
 		jdbcProperties = getJDBCPropertiesMap();
 		Persistence.PersistenceUnit pu = getPersistenceUnit();
@@ -90,9 +75,8 @@ public abstract class AbstractDatabaseProviderModule
 		install(new JpaPersistPrivateModule(getPersistenceUnitName(), jdbcProperties, getBindingAnnotation()));
 		final ConnectionBaseInfo connectionBaseInfo = getConnectionBaseInfo(pu, jdbcProperties);
 		connectionBaseInfo.setJndiName(getJndiMapping());
-		connectionBaseInfo.setJdbcIdentifier(getJdbcPropertySuffix());
 		bind(Key.get(DataSource.class, getBindingAnnotation())).toProvider(() -> provideDataSource(connectionBaseInfo));
-		log.config(getPersistenceUnitName() + " Finished Binding. Please remember to bind the keys");
+		log.config(getPersistenceUnitName() + " Finished Binding.");
 	}
 
 	/**
@@ -104,29 +88,31 @@ public abstract class AbstractDatabaseProviderModule
 	private Properties getJDBCPropertiesMap()
 	{
 		Properties jdbcProperties = new Properties();
-
-		Persistence p = getPersistence();
-		if (p == null)
-		{
-			log.severe("Unable to find a persistence unit with name : " + getPersistenceUnitName());
-		}
-		else
-		{
-			for (Persistence.PersistenceUnit pu : p.getPersistenceUnit())
-			{
-				if (pu.getName().equals(getPersistenceUnitName()))
-				{
-					configurePersistenceUnitProperties(pu, jdbcProperties);
-				}
-			}
-		}
+		Persistence.PersistenceUnit pu = getPersistenceUnit();
+		configurePersistenceUnitProperties(pu, jdbcProperties);
 		return jdbcProperties;
 	}
 
+	/**
+	 * Returns the generated key for the data source
+	 *
+	 * @return
+	 */
 	@NotNull
 	protected Key<DataSource> getDataSourceKey()
 	{
 		return Key.get(DataSource.class, getBindingAnnotation());
+	}
+
+	/**
+	 * Returns the key used for the entity manager
+	 *
+	 * @return
+	 */
+	@NotNull
+	protected Key<EntityManager> getEntityManagerKey()
+	{
+		return Key.get(EntityManager.class, getBindingAnnotation());
 	}
 
 	/**
@@ -147,47 +133,6 @@ public abstract class AbstractDatabaseProviderModule
 		JtaPoolDataSource dataSource = new JtaPoolDataSource();
 		dataSource.configure(cbi);
 		return dataSource.get();
-	}
-
-	private void loadPersistenceUnits()
-	{
-		if (globalUnits.isEmpty())
-		{
-			Map<String, byte[]> me = GuiceContext.getFastAccessFiles().get(FastAccessFileTypes.Persistence);
-			me.forEach((key, value) ->
-			           {
-				           JAXBContext pContext = GuiceContext.getPersistenceContext();
-				           String content = new String(value);
-				           try
-				           {
-					           globalUnits.add((Persistence) pContext.createUnmarshaller().unmarshal(new StringReader(content)));
-				           }
-				           catch (JAXBException e)
-				           {
-					           log.log(Level.SEVERE, "Unable to get the persistence xsd object [" + getPersistenceUnitName() + "]", e);
-				           }
-			           });
-		}
-	}
-
-	/**
-	 * Returns the persistence file associated with this module
-	 *
-	 * @return
-	 */
-	private Persistence getPersistence()
-	{
-		for (Persistence a : globalUnits)
-		{
-			for (Persistence.PersistenceUnit b : a.getPersistenceUnit())
-			{
-				if (b.getName().equals(getPersistenceUnitName()))
-				{
-					return a;
-				}
-			}
-		}
-		return null;
 	}
 
 	/**
@@ -220,23 +165,16 @@ public abstract class AbstractDatabaseProviderModule
 	 *
 	 * @return
 	 */
-	private Persistence.PersistenceUnit getPersistenceUnit()
+	protected Persistence.PersistenceUnit getPersistenceUnit()
 	{
-		Persistence p = getPersistence();
-		if (p == null)
-		{
-			log.severe("Unable to get persistence unit!!! - " + getPersistenceUnitName());
-			return null;
-		}
-		for (Persistence.PersistenceUnit pu : p.getPersistenceUnit())
+		for (Persistence.PersistenceUnit pu : PersistenceFileHandler.getPersistenceUnits())
 		{
 			if (pu.getName().equals(getPersistenceUnitName()))
 			{
 				return pu;
 			}
 		}
+		log.log(Level.SEVERE, "Couldn't Find Persistence Unit for the given name [" + getPersistenceUnitName() + "]");
 		return null;
 	}
-
-
 }

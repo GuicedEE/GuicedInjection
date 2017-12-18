@@ -1,13 +1,13 @@
-package za.co.mmagon.guiceinjection.db;
+package za.co.mmagon.guiceinjection.db.connectionbasebuilders;
 
 import com.oracle.jaxb21.Persistence;
+import za.co.mmagon.guiceinjection.db.AbstractDatabaseProviderModule;
+import za.co.mmagon.guiceinjection.db.ConnectionBaseInfo;
 
-import java.lang.annotation.Annotation;
 import java.util.Properties;
 
-public class TestDBPrivateModule extends AbstractDatabaseProviderModule
+public abstract class HibernateDefaultConnectionBaseBuilder extends AbstractDatabaseProviderModule
 {
-
 	@Override
 	protected ConnectionBaseInfo getConnectionBaseInfo(Persistence.PersistenceUnit unit, Properties filteredProperties)
 	{
@@ -31,26 +31,12 @@ public class TestDBPrivateModule extends AbstractDatabaseProviderModule
 					cbi.setDriverClass(filteredProperties.getProperty(prop));
 					break;
 				}
+				default:
+				{
+					break;
+				}
 			}
 		}
 		return cbi;
-	}
-
-	@Override
-	protected String getJndiMapping()
-	{
-		return "jdbc/jndi";
-	}
-
-	@Override
-	protected String getPersistenceUnitName()
-	{
-		return "guiceinjectionh2test";
-	}
-
-	@Override
-	protected Class<? extends Annotation> getBindingAnnotation()
-	{
-		return TestCustomPersistenceLoader.class;
 	}
 }

@@ -25,11 +25,6 @@ public class JtaPoolDataSource implements Provider<DataSource>, CustomPoolDataSo
 		//No config required
 	}
 
-	public PoolingDataSource getPds()
-	{
-		return pds;
-	}
-
 	@Override
 	public void configure(ConnectionBaseInfo cbi)
 	{

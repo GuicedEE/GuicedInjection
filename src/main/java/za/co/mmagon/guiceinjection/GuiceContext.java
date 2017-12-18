@@ -25,7 +25,6 @@ import za.co.mmagon.guiceinjection.abstractions.GuiceSiteInjectorModule;
 import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
 import za.co.mmagon.guiceinjection.annotations.GuicePreStartup;
 import za.co.mmagon.guiceinjection.annotations.JaxbContext;
-import za.co.mmagon.guiceinjection.enumerations.FastAccessFileTypes;
 import za.co.mmagon.guiceinjection.interfaces.FileContentsScanner;
 import za.co.mmagon.guiceinjection.logging.LogSingleLineFormatter;
 
@@ -64,7 +63,7 @@ public class GuiceContext extends GuiceServletContextListener
 	/**
 	 * A list of all the specifically excluded jar files (to skip unzip)
 	 */
-	private static volatile Map<FastAccessFileTypes, Map<String, byte[]>> fastAccessFiles;
+
 	private static ExecutorService asynchronousFileLoader = Executors.newWorkStealingPool();
 	private static ExecutorService asynchronousPersistenceFileLoader = Executors.newWorkStealingPool();
 
@@ -340,20 +339,6 @@ public class GuiceContext extends GuiceServletContextListener
 	public static JAXBContext getPersistenceContext()
 	{
 		return persistenceContext;
-	}
-
-	/**
-	 * Returns the volatile list of fast access files (all the fast access file types)
-	 *
-	 * @return
-	 */
-	public static Map<FastAccessFileTypes, Map<String, byte[]>> getFastAccessFiles()
-	{
-		if (fastAccessFiles == null)
-		{
-			fastAccessFiles = new EnumMap<>(FastAccessFileTypes.class);
-		}
-		return fastAccessFiles;
 	}
 
 	/**
