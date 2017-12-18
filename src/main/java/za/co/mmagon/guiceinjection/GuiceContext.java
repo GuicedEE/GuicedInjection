@@ -152,7 +152,15 @@ public class GuiceContext extends GuiceServletContextListener
 			List<GuicePreStartup> startups = new ArrayList<>();
 			for (Class<? extends GuicePreStartup> pre : pres)
 			{
-				GuicePreStartup pr = GuiceContext.getInstance(pre);
+				GuicePreStartup pr = null;
+				try
+				{
+					pr = pre.newInstance();
+				}
+				catch (InstantiationException | IllegalAccessException e)
+				{
+					log.log(Level.SEVERE, "Error trying to create Pre Startup Class (newInstance) - " + pre.getCanonicalName(), e);
+				}
 				startups.add(pr);
 			}
 			startups.sort(Comparator.comparing(GuicePreStartup::sortOrder));
