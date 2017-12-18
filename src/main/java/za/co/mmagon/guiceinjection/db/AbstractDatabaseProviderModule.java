@@ -145,18 +145,21 @@ public abstract class AbstractDatabaseProviderModule
 	private void configurePersistenceUnitProperties(Persistence.PersistenceUnit pu, Properties jdbcProperties)
 	{
 		Properties sysProps = System.getProperties();
-		for (Persistence.PersistenceUnit.Properties.Property props : pu.getProperties().getProperty())
+		if (pu != null)
 		{
-			String checkProperty = props.getValue().replace("\\$", "");
-			checkProperty = checkProperty.replaceAll("\\{", "");
-			checkProperty = checkProperty.replaceAll("}", "");
-			if (sysProps.containsKey(checkProperty))
+			for (Persistence.PersistenceUnit.Properties.Property props : pu.getProperties().getProperty())
 			{
-				jdbcProperties.put(props.getName(), sysProps.get(checkProperty));
-			}
-			else
-			{
-				jdbcProperties.put(props.getName(), props.getValue());
+				String checkProperty = props.getValue().replace("\\$", "");
+				checkProperty = checkProperty.replaceAll("\\{", "");
+				checkProperty = checkProperty.replaceAll("}", "");
+				if (sysProps.containsKey(checkProperty))
+				{
+					jdbcProperties.put(props.getName(), sysProps.get(checkProperty));
+				}
+				else
+				{
+					jdbcProperties.put(props.getName(), props.getValue());
+				}
 			}
 		}
 	}
