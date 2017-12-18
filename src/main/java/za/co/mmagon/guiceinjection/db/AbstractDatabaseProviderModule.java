@@ -3,7 +3,7 @@ package za.co.mmagon.guiceinjection.db;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.oracle.jaxb21.Persistence;
-import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModule;
+import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.exceptions.NoConnectionInfoException;
 import za.co.mmagon.guiceinjection.scanners.PersistenceFileHandler;
 
@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 /**
  * An abstract implementation for persistence.exml
  */
-@GuiceInjectorModule
+@GuiceInjectorModuleMarker
 public abstract class AbstractDatabaseProviderModule
 		extends AbstractModule
 {

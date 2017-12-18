@@ -22,6 +22,7 @@ import com.oracle.jaxb21.Persistence;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 import za.co.mmagon.guiceinjection.abstractions.GuiceSiteInjectorModule;
+import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
 import za.co.mmagon.guiceinjection.annotations.GuicePreStartup;
 import za.co.mmagon.guiceinjection.annotations.JaxbContext;
@@ -177,12 +178,12 @@ public class GuiceContext extends GuiceServletContextListener
 			GuiceSiteInjectorModule siteInjection;
 			siteInjection = new GuiceSiteInjectorModule();
 
-			int customModuleSize = reflect().getTypesAnnotatedWith(za.co.mmagon.guiceinjection.annotations.GuiceInjectorModule.class).size();
+			int customModuleSize = reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class).size();
 			log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
 			ArrayList<Module> customModules = new ArrayList<>();
 			Module[] cModules;
 
-			for (Class<?> aClass : reflect().getTypesAnnotatedWith(za.co.mmagon.guiceinjection.annotations.GuiceInjectorModule.class))
+			for (Class<?> aClass : reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class))
 			{
 				try
 				{

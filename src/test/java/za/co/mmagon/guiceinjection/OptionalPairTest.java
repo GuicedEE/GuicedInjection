@@ -8,6 +8,7 @@ public class OptionalPairTest
 	@Test
 	public void toStringTest()
 	{
+		Globals global = GuiceContext.getInstance(Globals.class);
 	}
 
 	@Test

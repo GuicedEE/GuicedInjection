@@ -24,7 +24,7 @@ import com.google.inject.Module;
  * @author Marc Magon
  * @since 15 May 2017
  */
-@GuiceInjectorModule
+@GuiceInjectorModuleMarker
 public interface GuiceStartupModule
 {
 

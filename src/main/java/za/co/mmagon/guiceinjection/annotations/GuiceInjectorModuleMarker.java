@@ -31,7 +31,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-public @interface GuiceInjectorModule
+public @interface GuiceInjectorModuleMarker
 {
 
 }

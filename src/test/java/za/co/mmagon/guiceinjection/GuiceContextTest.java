@@ -8,6 +8,7 @@ package za.co.mmagon.guiceinjection;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import za.co.mmagon.guiceinjection.abstractions.GuiceInjectorModule;
+import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.interfaces.GuiceDefaultBinder;
 import za.co.mmagon.guiceinjection.interfaces.GuiceSiteBinder;
 
@@ -32,7 +33,7 @@ public class GuiceContextTest extends GuiceDefaultBinder
 		GuiceContext.inject();
 		GuiceContext.reflect().getSubTypesOf(GuiceDefaultBinder.class);
 		GuiceContext.reflect().getSubTypesOf(GuiceSiteBinder.class);
-		GuiceContext.reflect().getTypesAnnotatedWith(za.co.mmagon.guiceinjection.annotations.GuiceInjectorModule.class);
+		GuiceContext.reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class);
 	}
 
 	@Override
