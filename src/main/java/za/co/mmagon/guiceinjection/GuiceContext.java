@@ -391,7 +391,7 @@ public class GuiceContext extends GuiceServletContextListener
 		scanner.ignoreFieldVisibility();
 		scanner.ignoreMethodVisibility();
 		registerScanQuickFiles(scanner);
-		scanResult = scanner.scan();
+		scanResult = scanner.scan(Runtime.getRuntime().availableProcessors());
 		LocalDateTime finish = LocalDateTime.now();
 		log.info("Classpath Scanner Completed. Took [" + (finish.getLong(ChronoField.MILLI_OF_SECOND) - start.getLong(ChronoField.MILLI_OF_SECOND)) + "] millis.");
 	}

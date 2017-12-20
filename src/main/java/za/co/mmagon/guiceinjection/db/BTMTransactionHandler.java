@@ -12,7 +12,16 @@ public class BTMTransactionHandler implements MethodInterceptor
 	@Override
 	public Object invoke(MethodInvocation invocation) throws Throwable
 	{
-		UserTransaction ut = GuiceContext.getInstance(UserTransaction.class);
+		UserTransaction ut = null;
+		try
+		{
+			ut = GuiceContext.getInstance(UserTransaction.class);
+		}
+		catch (Exception T)
+		{
+			return invocation.proceed();
+		}
+
 		Object returnable = null;
 		if (ut.getStatus() == Status.STATUS_NO_TRANSACTION)
 		{

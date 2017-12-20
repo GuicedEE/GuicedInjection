@@ -13,6 +13,7 @@ public class DBStartupAsync
 {
 	private static final Logger log = Logger.getLogger("DBStartupAsync");
 
+	@SuppressWarnings("unchecked")
 	protected void buildStartupThread(PersistService persistService)
 	{
 		Callable asyncStartup = () ->
