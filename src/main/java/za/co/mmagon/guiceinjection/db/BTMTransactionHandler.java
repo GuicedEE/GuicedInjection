@@ -1,5 +1,6 @@
 package za.co.mmagon.guiceinjection.db;
 
+import com.google.inject.persist.Transactional;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import za.co.mmagon.guiceinjection.GuiceContext;
@@ -23,7 +24,7 @@ public class BTMTransactionHandler implements MethodInterceptor
 		}
 
 		Object returnable = null;
-		if (ut.getStatus() == Status.STATUS_NO_TRANSACTION)
+		if (ut.getStatus() == Status.STATUS_NO_TRANSACTION || ut.getStatus() != Status.STATUS_ACTIVE)
 		{
 			ut.begin();
 		}
@@ -34,8 +35,14 @@ public class BTMTransactionHandler implements MethodInterceptor
 		}
 		catch (Throwable T)
 		{
-			ut.rollback();
-			throw T;
+			Transactional t = invocation.getMethod().getAnnotation(Transactional.class);
+			for (Class<? extends Exception> aClass : t.rollbackOn())
+			{
+				if (aClass.isAssignableFrom(T.getClass()))
+				{
+					throw T;
+				}
+			}
 		}
 		return returnable;
 	}
