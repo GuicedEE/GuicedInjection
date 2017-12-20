@@ -29,6 +29,7 @@ import za.co.mmagon.guiceinjection.interfaces.DefaultModuleMethods;
 import za.co.mmagon.guiceinjection.interfaces.GuiceDefaultBinder;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -141,6 +142,14 @@ public class GuiceInjectorModule extends AbstractModule implements DefaultModule
 	public void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener)
 	{
 		super.bindListener(bindingMatcher, listener);
+	}
+
+	@Override
+	public void bindInterceptor(Matcher<? super Class<?>> classMatcher,
+	                            Matcher<? super Method> methodMatcher,
+	                            org.aopalliance.intercept.MethodInterceptor... interceptors)
+	{
+		binder().bindInterceptor(classMatcher, methodMatcher, interceptors);
 	}
 
 }
