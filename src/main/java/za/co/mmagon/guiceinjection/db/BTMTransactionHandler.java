@@ -33,6 +33,10 @@ public class BTMTransactionHandler implements MethodInterceptor
 			returnable = invocation.proceed();
 			ut.commit();
 		}
+		catch (IllegalStateException ise)
+		{
+			//Nothing to commit in this transaction
+		}
 		catch (Throwable T)
 		{
 			Transactional t = invocation.getMethod().getAnnotation(Transactional.class);
@@ -40,7 +44,7 @@ public class BTMTransactionHandler implements MethodInterceptor
 			{
 				if (aClass.isAssignableFrom(T.getClass()))
 				{
-					throw T;
+					ut.rollback();
 				}
 			}
 		}
