@@ -587,7 +587,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		log.config("Starting simple scanner");
 		FastClasspathScanner fcs = new FastClasspathScanner();
-		ScanResult simpleResult = fcs.scan();
+		ScanResult simpleResult = fcs.scan(Runtime.getRuntime().availableProcessors());
 		log.config("Completed nested scanning for scanning properties");
 		Set<Class<? extends FileContentsScanner>> returnable = new HashSet<>();
 		List<String> subtypes = simpleResult.getNamesOfClassesImplementing(FileContentsScanner.class);
