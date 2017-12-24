@@ -1,7 +1,7 @@
 package za.co.mmagon.guiceinjection;
 
 import io.github.lukehutch.fastclasspathscanner.matchprocessor.FileMatchContentsProcessorWithContext;
-import za.co.mmagon.guiceinjection.interfaces.FileContentsScanner;
+import za.co.mmagon.guiceinjection.scanners.FileContentsScanner;
 
 import java.io.File;
 import java.util.HashMap;

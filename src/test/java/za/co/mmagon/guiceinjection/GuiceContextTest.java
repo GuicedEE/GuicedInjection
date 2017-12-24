@@ -12,8 +12,10 @@ import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.interfaces.GuiceDefaultBinder;
 import za.co.mmagon.guiceinjection.interfaces.GuiceSiteBinder;
 
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * @author GedMarc
@@ -30,6 +32,11 @@ public class GuiceContextTest extends GuiceDefaultBinder
 	@Test
 	public void main()
 	{
+		for (Handler handler : Logger.getLogger("").getHandlers())
+		{
+			handler.setLevel(Level.CONFIG);
+		}
+
 		GuiceContext.inject();
 		GuiceContext.reflect().getSubTypesOf(GuiceDefaultBinder.class);
 		GuiceContext.reflect().getSubTypesOf(GuiceSiteBinder.class);

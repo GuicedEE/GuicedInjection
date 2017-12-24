@@ -26,14 +26,16 @@ import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
 import za.co.mmagon.guiceinjection.annotations.GuicePreStartup;
 import za.co.mmagon.guiceinjection.annotations.JaxbContext;
-import za.co.mmagon.guiceinjection.interfaces.FileContentsScanner;
 import za.co.mmagon.guiceinjection.logging.LogSingleLineFormatter;
+import za.co.mmagon.guiceinjection.scanners.FileContentsScanner;
+import za.co.mmagon.guiceinjection.scanners.PackageContentsScanner;
 
 import javax.annotation.Nullable;
 import javax.servlet.ServletContextEvent;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import java.lang.reflect.Modifier;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import java.util.*;
@@ -187,6 +189,7 @@ public class GuiceContext extends GuiceServletContextListener
 			{
 				try
 				{
+
 					Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) aClass;
 					log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
 					Module moduleInstance = next.newInstance();
@@ -194,6 +197,10 @@ public class GuiceContext extends GuiceServletContextListener
 				}
 				catch (InstantiationException | IllegalAccessException ex)
 				{
+					if (Modifier.isAbstract(aClass.getModifiers()))
+					{
+						continue;
+					}
 					Logger.getLogger(GuiceContext.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
@@ -382,7 +389,7 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		log.info("Starting up classpath scanner");
 		LocalDateTime start = LocalDateTime.now();
-		scanner = new FastClasspathScanner(getExclusionsList());
+		scanner = new FastClasspathScanner(getPackagesList());
 		scanner.enableFieldInfo();
 		scanner.enableFieldAnnotationIndexing();
 		scanner.enableFieldTypeIndexing();
@@ -401,179 +408,20 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	private String[] getExclusionsList()
+	private String[] getPackagesList()
 	{
+		log.config("Starting scan for package monitors. Services registered with PackageContentsScanner will be found.");
 		if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
 		{
 			excludeJarsFromScan = new HashSet<>();
-
-			excludeJarsFromScan.add("-com.sun.grizzly");
-			excludeJarsFromScan.add("-com.jcabi");
-			excludeJarsFromScan.add("-junit");
-			excludeJarsFromScan.add("-org.apache.log4j");
-			excludeJarsFromScan.add("-org.apache.tools");
-			excludeJarsFromScan.add("-org.apiguardian");
-			excludeJarsFromScan.add("-org.aspectj");
-			excludeJarsFromScan.add("-FormPreviewFrame$");
-			excludeJarsFromScan.add("-FormPreviewFrame$MyExitAction");
-			excludeJarsFromScan.add("-FormPreviewFrame$MyPackAction");
-			excludeJarsFromScan.add("-FormPreviewFrame$MySetLafAction");
-			excludeJarsFromScan.add("-org.jacoco");
-			excludeJarsFromScan.add("-com.vladium.emma");
-
-			//glassfish jar defaultsglassfish.jar
-			excludeJarsFromScan.add("-com.fasterxml.jackson");
-			excludeJarsFromScan.add("-com.google.common");
-			excludeJarsFromScan.add("-com.google.inject");
-			excludeJarsFromScan.add("-com.microsoft.sqlserver");
-			excludeJarsFromScan.add("-com.sun.enterprise.glassfish");
-			excludeJarsFromScan.add("-com.sun.enterprise.module");
-			excludeJarsFromScan.add("-com.sun.jdi");
-			excludeJarsFromScan.add("-edu.umd.cs.findbugs");
-			excludeJarsFromScan.add("-io.github.lukehutch.fastclasspathscanner");
-			excludeJarsFromScan.add("-javassist");
-			excludeJarsFromScan.add("-net.sf.qualitycheck");
-			excludeJarsFromScan.add("-net.sf.uadetector");
-			excludeJarsFromScan.add("-org.aopalliance");
-			excludeJarsFromScan.add("-org.apache.catalina");
-			excludeJarsFromScan.add("-org.apache.commons");
-			excludeJarsFromScan.add("-org.apache.derby");
-			excludeJarsFromScan.add("-org.glassfish");
-
-			//glassfish jar defaultsglassfish.jar
-			excludeJarsFromScan.add("-org.ietf");
-			excludeJarsFromScan.add("-org.jboss");
-			excludeJarsFromScan.add("-org.jvnet");
-			excludeJarsFromScan.add("-org.slf4j");
-			excludeJarsFromScan.add("-org.w3c");
-			excludeJarsFromScan.add("-org.xml.sax");
-
-			//JBoss Stuffs
-			excludeJarsFromScan.add("-com.sun");
-			excludeJarsFromScan.add("-junit.framework");
-			excludeJarsFromScan.add("-junit.runner");
-			excludeJarsFromScan.add("-junit.textui");
-			excludeJarsFromScan.add("-org.apache");
-			excludeJarsFromScan.add("-org.hamcrest");
-			excludeJarsFromScan.add("-org.junit");
-			excludeJarsFromScan.add("-junit.extensions");
-			excludeJarsFromScan.add("-com.google.thirdparty");
-			excludeJarsFromScan.add("-asposewobfuscated");
-			excludeJarsFromScan.add("-com.hazelcast");
-			excludeJarsFromScan.add("-org.dom4j");
-			excludeJarsFromScan.add("-net.sf.jasperreports");
-			excludeJarsFromScan.add("-org.mozilla.javascript");
-			excludeJarsFromScan.add("-org.openxmlformats");
-			excludeJarsFromScan.add("-com.aspose");
-			excludeJarsFromScan.add("-com.lowagie");
-			excludeJarsFromScan.add("-antlr");
-			excludeJarsFromScan.add("-com.concerto");
-			excludeJarsFromScan.add("-com.itextpdf");
-			excludeJarsFromScan.add("-org.eclipse");
-			excludeJarsFromScan.add("-org.exolab");
-			excludeJarsFromScan.add("-org.hibernate");
-			excludeJarsFromScan.add("-org.tartarus");
-			excludeJarsFromScan.add("-org.olap4j");
-			excludeJarsFromScan.add("-org.joda.time");
-			excludeJarsFromScan.add("-org.xmlpull");
-			excludeJarsFromScan.add("-schemasMicrosoftComOfficeExcel");
-			excludeJarsFromScan.add("-schemasMicrosoftComVml");
-			excludeJarsFromScan.add("-za.co.xds.web");
-			excludeJarsFromScan.add("-com.thoughtworks.xstream");
-
-			excludeJarsFromScan.add("-bitronix");
-			excludeJarsFromScan.add("-com.fasterxml");
-			excludeJarsFromScan.add("-com.google.gson");
-			excludeJarsFromScan.add("-com.google.j2objc");
-			excludeJarsFromScan.add("-com.google.javascript");
-			excludeJarsFromScan.add("-com.google.protobuf");
-			excludeJarsFromScan.add("-com.ibm.as400");
-			excludeJarsFromScan.add("-com.ibm");
-			excludeJarsFromScan.add("-com.jcraft");
-			excludeJarsFromScan.add("-com.mchange");
-			excludeJarsFromScan.add("-com.typesafe");
-			excludeJarsFromScan.add("-com.unboundid");
-			excludeJarsFromScan.add("-mediautil");
-			excludeJarsFromScan.add("-microsoft.exchange");
-			excludeJarsFromScan.add("-org.antlr");
-			excludeJarsFromScan.add("-org.atmosphere");
-			excludeJarsFromScan.add("-org.bouncycastle");
-			excludeJarsFromScan.add("-org.datacontract");
-			excludeJarsFromScan.add("-org.drools");
-			excludeJarsFromScan.add("-org.hornetq");
-			excludeJarsFromScan.add("-org.jasypt");
-			excludeJarsFromScan.add("-org.jaxen");
-			excludeJarsFromScan.add("-org.jbpm");
-			excludeJarsFromScan.add("-org.jdom");
-			excludeJarsFromScan.add("-org.jsoup");
-			excludeJarsFromScan.add("-org.mortbay");
-			excludeJarsFromScan.add("-org.mozilla");
-			excludeJarsFromScan.add("-org.mvel2");
-			excludeJarsFromScan.add("-org.omnifaces");
-			excludeJarsFromScan.add("-org.primefaces");
-			excludeJarsFromScan.add("-org.snmp4j");
-			excludeJarsFromScan.add("-org.supercsv");
-			excludeJarsFromScan.add("-repackage");
-			excludeJarsFromScan.add("-schemaorg_apache_xmlbeans");
-			excludeJarsFromScan.add("-schemasMicrosoftComOfficeOffice");
-			excludeJarsFromScan.add("-utilities");
-			excludeJarsFromScan.add("-weblogic");
-			excludeJarsFromScan.add("-yodlee");
-			excludeJarsFromScan.add("-za.co.xds.schema");
-
-			excludeJarsFromScan.add("-org.mockito");
-			excludeJarsFromScan.add("-org.jsr107");
-			excludeJarsFromScan.add("-org.h2");
-			excludeJarsFromScan.add("-org.codehaus");
-			excludeJarsFromScan.add("-org.assertj");
-			excludeJarsFromScan.add("-lombok");
-
-			excludeJarsFromScan.add("-com.intellij");
-			excludeJarsFromScan.add("-org.intellij");
-			excludeJarsFromScan.add("-org.jetbrains");
-			excludeJarsFromScan.add("-com.microsoft");
-			excludeJarsFromScan.add("-com.nimbusds");
-			excludeJarsFromScan.add("-groovy");
-			excludeJarsFromScan.add("-groovyjarjarantlr");
-			excludeJarsFromScan.add("-groovyjarjarasm");
-			excludeJarsFromScan.add("-org.objenesis");
-			excludeJarsFromScan.add("-net.minidev");
-			excludeJarsFromScan.add("-microsoft.sql");
-			excludeJarsFromScan.add("-org.opentest4j");
-			excludeJarsFromScan.add("-com.oracle.jaxb.jaxb");
-			excludeJarsFromScan.add("-eft");
-			excludeJarsFromScan.add("-Driver");
-			excludeJarsFromScan.add("-FormPreviewFrame");
-
-			excludeJarsFromScan.add("-com.beust.jcommander");
-			excludeJarsFromScan.add("-__redirected");
-			excludeJarsFromScan.add("-com.github.jaiimageio");
-			excludeJarsFromScan.add("-com.google.zxing");
-			excludeJarsFromScan.add("-net.sf.ehcache");
-			excludeJarsFromScan.add("-generated");
-
-			excludeJarsFromScan.add("-*.jpg");
-			excludeJarsFromScan.add("-*.jpeg");
-			excludeJarsFromScan.add("-*.gif");
-			excludeJarsFromScan.add("-*.png");
-			excludeJarsFromScan.add("-*.xhtml");
-			excludeJarsFromScan.add("-*.jsf");
-			excludeJarsFromScan.add("-*.jsp");
-			excludeJarsFromScan.add("-*.svg");
-			excludeJarsFromScan.add("-*.txt");
-			excludeJarsFromScan.add("-*.js");
-			excludeJarsFromScan.add("-*.css");
-			excludeJarsFromScan.add("-*.scss");
-			excludeJarsFromScan.add("-*.pdf");
-			excludeJarsFromScan.add("-*.xsd");
-
-			excludeJarsFromScan.add("-*pom.xml");
-			excludeJarsFromScan.add("-*pom.properties");
-			excludeJarsFromScan.add("-*jboss.xml");
-			excludeJarsFromScan.add("-*jboss-app.xml");
+			ServiceLoader<PackageContentsScanner> exclusions = ServiceLoader.load(PackageContentsScanner.class);
+			for (PackageContentsScanner exclusion : exclusions)
+			{
+				excludeJarsFromScan.addAll(exclusion.searchFor());
+			}
 		}
-
 		String[] exclusions = new String[excludeJarsFromScan.size()];
+		log.config("Package Monitoring complete. Total Packages registered for scan [" + exclusions.length + "].");
 		return excludeJarsFromScan.toArray(exclusions);
 	}
 
@@ -585,29 +433,15 @@ public class GuiceContext extends GuiceServletContextListener
 	@SuppressWarnings("unchecked")
 	private void registerScanQuickFiles(FastClasspathScanner scanner)
 	{
-		log.config("Starting simple scanner");
-		FastClasspathScanner fcs = new FastClasspathScanner();
-		ScanResult simpleResult = fcs.scan(Runtime.getRuntime().availableProcessors());
-		log.config("Completed nested scanning for scanning properties");
-		Set<Class<? extends FileContentsScanner>> returnable = new HashSet<>();
-		List<String> subtypes = simpleResult.getNamesOfClassesImplementing(FileContentsScanner.class);
-		for (String subtype : subtypes)
+		log.config("Starting File Contents Scanner. Services registered with FileContentsScanner will be found.");
+		ServiceLoader<FileContentsScanner> fileScanners = ServiceLoader.load(FileContentsScanner.class);
+		int found = 0;
+		for (FileContentsScanner fileScanner : fileScanners)
 		{
-			Class<FileContentsScanner> subType = (Class<FileContentsScanner>) simpleResult.classNameToClassRef(subtype);
-			returnable.add(subType);
+			fileScanner.onMatch().forEach(scanner::matchFilenamePathLeaf);
+			found++;
 		}
-		for (Class<? extends FileContentsScanner> otherScanner : returnable)
-		{
-			try
-			{
-				FileContentsScanner s = otherScanner.newInstance();
-				s.onMatch().forEach(scanner::matchFilenamePathLeaf);
-			}
-			catch (InstantiationException | IllegalAccessException e)
-			{
-				log.log(Level.SEVERE, "Unable to load custom scanner", e);
-			}
-		}
+		log.config("File Contents Scanner Matchers have been registered. Total Content Scanners [" + found + "].");
 	}
 
 	/**

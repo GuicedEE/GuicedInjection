@@ -3,10 +3,8 @@ package za.co.mmagon.guiceinjection.scanners;
 import com.oracle.jaxb21.Persistence;
 import io.github.lukehutch.fastclasspathscanner.matchprocessor.FileMatchContentsProcessorWithContext;
 import za.co.mmagon.guiceinjection.GuiceContext;
-import za.co.mmagon.guiceinjection.interfaces.FileContentsScanner;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,7 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @SuppressWarnings("unused")
-public class PersistenceFileHandler implements FileContentsScanner
+public class PersistenceFileHandler implements FileContentsScanner, PackageContentsScanner
 {
 	private static final Logger log = Logger.getLogger("PersistenceFileHandler");
 	private static final Set<Persistence.PersistenceUnit> persistenceUnits = new HashSet<>();
@@ -30,6 +28,7 @@ public class PersistenceFileHandler implements FileContentsScanner
 		log.config("Persistence Units Loading... ");
 		FileMatchContentsProcessorWithContext processor = (classpathElt, relativePath, fileContents) ->
 		{
+			log.config("Found " + relativePath + " - " + classpathElt.getCanonicalPath());
 			if (!GuiceContext.getAsynchronousPersistenceFileLoader().isShutdown())
 			{
 				GuiceContext.getAsynchronousPersistenceFileLoader().shutdown();
@@ -68,7 +67,7 @@ public class PersistenceFileHandler implements FileContentsScanner
 				units.add(persistenceUnit);
 			}
 		}
-		catch (JAXBException e)
+		catch (Exception e)
 		{
 			log.log(Level.SEVERE, "Unable to get the persistence xsd object", e);
 		}
@@ -83,5 +82,11 @@ public class PersistenceFileHandler implements FileContentsScanner
 	public static Set<Persistence.PersistenceUnit> getPersistenceUnits()
 	{
 		return persistenceUnits;
+	}
+
+	@Override
+	public Set<String> searchFor()
+	{
+		return new HashSet<>();
 	}
 }

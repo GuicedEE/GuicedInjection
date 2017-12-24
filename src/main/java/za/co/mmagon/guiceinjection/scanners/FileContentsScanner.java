@@ -1,4 +1,4 @@
-package za.co.mmagon.guiceinjection.interfaces;
+package za.co.mmagon.guiceinjection.scanners;
 
 import io.github.lukehutch.fastclasspathscanner.matchprocessor.FileMatchContentsProcessorWithContext;
 
