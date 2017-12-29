@@ -1,2 +1,2 @@
 za.co.mmagon.guiceinjection.scanners.GuiceInjectionPackageScanner
-za.co.mmagon.guiceinjection.scanners.GuiceInjectionPackageDefaultExclusions
+za.co.mmagon.guiceinjection.scanners.GuiceInjectionPackageDefaultInclusions

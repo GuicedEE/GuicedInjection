@@ -36,7 +36,7 @@
         <maven.resources.version>3.0.2</maven.resources.version>
 
         <maven.jackson.version>2.9.2</maven.jackson.version>
-        <maven.fastclasspath.version>2.9.3</maven.fastclasspath.version>
+        <maven.fastclasspath.version>2.9.4</maven.fastclasspath.version>
         <maven.guice.version>4.1.0</maven.guice.version>
 
         <maven.hibernate.version>5.2.12.Final</maven.hibernate.version>
