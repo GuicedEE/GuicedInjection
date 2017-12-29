@@ -164,7 +164,7 @@ See https://github.com/google/guice/wiki/AOP for the complete supported operatio
 module.bindInterceptor$(Matchers.any(), Matchers.annotatedWith(SiteInterception.class),
 		                        new SiteIntercepters());
 ```
-# Site & Url Binding (Servlet 3^)
+# Site & Url Binding
 Servlets, Filters and the Servlet 3.x API completely supported using the guice-servlet structure. Paired with the persistence layer you are free to enabled request levelled transactions across multiple persistence units.
 The entire guice-servlet api is supported out the box. https://github.com/google/guice/wiki/Servlets
 ```
@@ -173,7 +173,7 @@ module.serveRegex$("(" + JAVASCRIPT_LOCATION + ")" + QUERY_PARAMETERS_REGEX).wit
 ```
 
 
-# Persistence Unit Bindings (JPA2.1) 
+# Persistence Unit Bindings 
 This framework comes built in with the BTM Transaction Manager, and a complete JPA 2.1 Persistence Unit with *JNDI*. This ensures that your production and your testing environment all run and operate on the same level.
 Completely supporting JCache and second level caching. 
 
