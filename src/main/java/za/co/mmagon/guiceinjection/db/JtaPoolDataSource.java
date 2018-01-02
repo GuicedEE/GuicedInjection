@@ -57,7 +57,7 @@ public class JtaPoolDataSource implements Provider<DataSource>, CustomPoolDataSo
 		pds.setAcquireIncrement(5);
 		pds.setEnableJdbc4ConnectionTest(true);
 		pds.setShareTransactionConnections(true);
-		
+
 		if (cbi.getDatabaseName() != null)
 		{
 			pds.getDriverProperties().setProperty("DatabaseName", cbi.getDatabaseName());
