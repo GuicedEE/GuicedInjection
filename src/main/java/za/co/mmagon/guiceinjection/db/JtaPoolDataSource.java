@@ -99,8 +99,13 @@ public class JtaPoolDataSource implements Provider<DataSource>, CustomPoolDataSo
 		pds.setClassName("bitronix.tm.resource.jdbc.lrc.LrcXADataSource");
 		pds.setUniqueName(cbi.getJndiName());
 		pds.setMinPoolSize(5);
-		pds.setMaxPoolSize(50);
+		pds.setMaxPoolSize(200);
+		pds.setPreparedStatementCacheSize(50);
 		pds.setAllowLocalTransactions(true);
+
+		pds.setAcquireIncrement(5);
+		pds.setEnableJdbc4ConnectionTest(true);
+		pds.setShareTransactionConnections(true);
 
 		if (cbi.getDriverClass() != null)
 		{
