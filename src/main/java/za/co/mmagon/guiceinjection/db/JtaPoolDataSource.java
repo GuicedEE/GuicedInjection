@@ -44,20 +44,20 @@ public class JtaPoolDataSource implements Provider<DataSource>, CustomPoolDataSo
 		if (cbi.getTransactionIsolation() != null)
 		{
 			pds.setIsolationLevel(cbi.getTransactionIsolation());
+			pds.setIsolationLevel("READ_UNCOMMITTED");
 		}
 
 		pds.setAllowLocalTransactions(true);
 		pds.setUniqueName(cbi.getJndiName());
 		pds.setClassName(cbi.getDriverClass());
 		pds.setMinPoolSize(5);
-		pds.setMaxPoolSize(150);
+		pds.setMaxPoolSize(200);
 		pds.setPreparedStatementCacheSize(50);
 
 		pds.setAcquireIncrement(5);
 		pds.setEnableJdbc4ConnectionTest(true);
 		pds.setShareTransactionConnections(true);
-
-
+		
 		if (cbi.getDatabaseName() != null)
 		{
 			pds.getDriverProperties().setProperty("DatabaseName", cbi.getDatabaseName());
