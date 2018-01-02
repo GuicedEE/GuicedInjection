@@ -53,6 +53,11 @@ public class JtaPoolDataSource implements Provider<DataSource>, CustomPoolDataSo
 		pds.setMaxPoolSize(150);
 		pds.setPreparedStatementCacheSize(50);
 
+		pds.setAcquireIncrement(5);
+		pds.setEnableJdbc4ConnectionTest(true);
+		pds.setShareTransactionConnections(true);
+
+
 		if (cbi.getDatabaseName() != null)
 		{
 			pds.getDriverProperties().setProperty("DatabaseName", cbi.getDatabaseName());
