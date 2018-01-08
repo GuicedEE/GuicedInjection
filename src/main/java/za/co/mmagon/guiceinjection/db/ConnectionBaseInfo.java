@@ -8,6 +8,7 @@ import java.io.Serializable;
 public class ConnectionBaseInfo implements Serializable
 {
 	private static final long serialVersionUID = 1L;
+
 	private boolean xa;
 	private String url;
 	private String serverName;
@@ -22,9 +23,12 @@ public class ConnectionBaseInfo implements Serializable
 	private String jndiName;
 	private String jdbcIdentifier;
 
+	private String serverInstanceNameProperty;
+
 	public ConnectionBaseInfo()
 	{
 		//No config needed
+		serverInstanceNameProperty = "Instance";
 	}
 
 	/**
@@ -299,6 +303,29 @@ public class ConnectionBaseInfo implements Serializable
 	public ConnectionBaseInfo setJdbcIdentifier(String jdbcIdentifier)
 	{
 		this.jdbcIdentifier = jdbcIdentifier;
+		return this;
+	}
+
+	/**
+	 * Gets the service instance name property to use
+	 *
+	 * @return
+	 */
+	public String getServerInstanceNameProperty()
+	{
+		return serverInstanceNameProperty;
+	}
+
+	/**
+	 * Sets the instance property name to use to specify the instance
+	 *
+	 * @param serverInstanceNameProperty
+	 *
+	 * @return
+	 */
+	public ConnectionBaseInfo setServerInstanceNameProperty(String serverInstanceNameProperty)
+	{
+		this.serverInstanceNameProperty = serverInstanceNameProperty;
 		return this;
 	}
 }

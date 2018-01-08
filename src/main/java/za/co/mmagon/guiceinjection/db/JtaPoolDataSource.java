@@ -80,7 +80,7 @@ public class JtaPoolDataSource implements Provider<DataSource>, CustomPoolDataSo
 		}
 		if (cbi.getInstanceName() != null)
 		{
-			pds.getDriverProperties().setProperty("ServerName", cbi.getServerName() + "\\" + cbi.getInstanceName());
+			pds.getDriverProperties().setProperty(cbi.getServerInstanceNameProperty(), cbi.getInstanceName());
 		}
 
 		pds.init();
