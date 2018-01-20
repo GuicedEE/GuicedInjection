@@ -24,7 +24,7 @@ public class DBStartupAsync
 
 		try
 		{
-			GuiceContext.getAsynchronousFileLoader().submit(asyncStartup);
+			GuiceContext.getAsynchronousFileLoaderExectionsService().submit(asyncStartup);
 		}
 		catch (Exception e)
 		{

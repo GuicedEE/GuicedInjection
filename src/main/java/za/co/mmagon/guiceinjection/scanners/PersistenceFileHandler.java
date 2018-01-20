@@ -29,12 +29,12 @@ public class PersistenceFileHandler implements FileContentsScanner, PackageConte
 		FileMatchContentsProcessorWithContext processor = (classpathElt, relativePath, fileContents) ->
 		{
 			log.config("Found " + relativePath + " - " + classpathElt.getCanonicalPath());
-			if (!GuiceContext.getAsynchronousPersistenceFileLoader().isShutdown())
+			if (!GuiceContext.getAsynchronousPersistenceFileLoaderExecutionService().isShutdown())
 			{
-				GuiceContext.getAsynchronousPersistenceFileLoader().shutdown();
+				GuiceContext.getAsynchronousPersistenceFileLoaderExecutionService().shutdown();
 				try
 				{
-					GuiceContext.getAsynchronousPersistenceFileLoader().awaitTermination(5, TimeUnit.SECONDS);
+					GuiceContext.getAsynchronousPersistenceFileLoaderExecutionService().awaitTermination(5, TimeUnit.SECONDS);
 				}
 				catch (InterruptedException e)
 				{
