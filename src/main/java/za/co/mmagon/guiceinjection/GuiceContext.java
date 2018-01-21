@@ -18,14 +18,12 @@ package za.co.mmagon.guiceinjection;
 
 import com.google.inject.*;
 import com.google.inject.servlet.GuiceServletContextListener;
-import com.oracle.jaxb21.Persistence;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 import za.co.mmagon.guiceinjection.abstractions.GuiceSiteInjectorModule;
 import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
 import za.co.mmagon.guiceinjection.annotations.GuicePreStartup;
-import za.co.mmagon.guiceinjection.annotations.JaxbContext;
 import za.co.mmagon.guiceinjection.logging.LogSingleLineFormatter;
 import za.co.mmagon.guiceinjection.scanners.FileContentsScanner;
 import za.co.mmagon.guiceinjection.scanners.PackageContentsScanner;
@@ -33,8 +31,6 @@ import za.co.mmagon.guiceinjection.scanners.PackageContentsScanner;
 import javax.annotation.Nullable;
 import javax.servlet.ServletContextEvent;
 import javax.validation.constraints.NotNull;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import java.lang.reflect.Modifier;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
@@ -58,19 +54,12 @@ import java.util.logging.Logger;
  */
 public class GuiceContext extends GuiceServletContextListener
 {
-	public static final Key<JAXBContext> PERSISTENCE_CONTEXT_KEY = Key.get(JAXBContext.class, JaxbContext.class);
 	private static final Logger log = Logger.getLogger("GuiceContext");
 	/**
 	 * This particular instance of the class
 	 */
 	private static GuiceContext instance;
-	/**
-	 * A list of all the specifically excluded jar files (to skip unzip)
-	 */
-
-	private static ExecutorService asynchronousFileLoaderExectionsService = Executors.newWorkStealingPool();
-	private static ExecutorService asynchronousPersistenceFileLoaderExecutionService = Executors.newWorkStealingPool();
-	private static ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool();
+	private static ExecutorService postLoaderExecutionService;
 
 	/**
 	 * The building injector
@@ -80,7 +69,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 * If the references are built or not
 	 */
 	private static boolean built = false;
-	private static JAXBContext persistenceContext;
+
 
 	static
 	{
@@ -122,20 +111,6 @@ public class GuiceContext extends GuiceServletContextListener
 		if (instance == null)
 		{
 			instance = this;
-			log.info("Starting up JAXB Persistence");
-			Runnable loadAsync = () ->
-			{
-				try
-				{
-					persistenceContext = JAXBContext.newInstance(Persistence.class);
-				}
-				catch (JAXBException e)
-				{
-					log.log(Level.SEVERE, "Unable to load Persistence Context JPA 2.1", e);
-					persistenceContext = null;
-				}
-			};
-			asynchronousPersistenceFileLoaderExecutionService.submit(loadAsync);
 		}
 	}
 
@@ -212,6 +187,7 @@ public class GuiceContext extends GuiceServletContextListener
 			cModules = customModules.toArray(cModules);
 
 			context().injector = Guice.createInjector(cModules);
+
 			buildingInjector = false;
 			log.info("Post Startup Executions....");
 			Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
@@ -238,12 +214,11 @@ public class GuiceContext extends GuiceServletContextListener
 				                                   {
 					                                   postLoaderExecutionService.awaitTermination(20, TimeUnit.SECONDS);
 				                                   }
-				                                   catch (InterruptedException e)
+				                                   catch (Exception e)
 				                                   {
 					                                   log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
 				                                   }
 			                                   });
-			postStartups.forEach(GuicePostStartup::postLoad);
 			log.info("Finished Post Startup Execution");
 			log.info("System Ready");
 			built = true;
@@ -349,37 +324,6 @@ public class GuiceContext extends GuiceServletContextListener
 	public static boolean isBuildingInjector()
 	{
 		return buildingInjector;
-	}
-
-	/**
-	 * Returns an asychronous file load Execution Service (work steal)
-	 *
-	 * @return
-	 */
-	public static ExecutorService getAsynchronousFileLoaderExectionsService()
-	{
-		return asynchronousFileLoaderExectionsService;
-	}
-
-	/**
-	 * Returns a threaded loader specifically for persistence units Execution Service (work steal)
-	 * Allows you to load models asynchronously to your application
-	 *
-	 * @return
-	 */
-	public static ExecutorService getAsynchronousPersistenceFileLoaderExecutionService()
-	{
-		return asynchronousPersistenceFileLoaderExecutionService;
-	}
-
-	/**
-	 * Returns the instance of the JAXB Context
-	 *
-	 * @return
-	 */
-	public static JAXBContext getPersistenceContext()
-	{
-		return persistenceContext;
 	}
 
 	/**

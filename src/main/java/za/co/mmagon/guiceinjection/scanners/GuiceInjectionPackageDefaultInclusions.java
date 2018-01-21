@@ -9,7 +9,6 @@ public class GuiceInjectionPackageDefaultInclusions implements PackageContentsSc
 	public Set<String> searchFor()
 	{
 		Set<String> strings = new HashSet<>();
-		strings.add("META-INF");
 		strings.add("za.co.mmagon");
 		return strings;
 	}
