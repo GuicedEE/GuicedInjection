@@ -228,15 +228,15 @@ public class GuiceContext extends GuiceServletContextListener
 			postStartupGroups.keySet().forEach(integer ->
 			                                   {
 				                                   postLoaderExecutionService = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
-				                                   postLoaderExecutionService.execute(() ->
-				                                                                      {
-					                                                                      List<GuicePostStartup> st = postStartupGroups.get(integer);
-					                                                                      st.forEach(GuicePostStartup::postLoad);
-				                                                                      });
+				                                   List<GuicePostStartup> st = postStartupGroups.get(integer);
+				                                   st.forEach(a ->
+				                                              {
+					                                              postLoaderExecutionService.execute(a::postLoad);
+				                                              });
 				                                   postLoaderExecutionService.shutdown();
 				                                   try
 				                                   {
-					                                   postLoaderExecutionService.awaitTermination(10, TimeUnit.SECONDS);
+					                                   postLoaderExecutionService.awaitTermination(20, TimeUnit.SECONDS);
 				                                   }
 				                                   catch (InterruptedException e)
 				                                   {
