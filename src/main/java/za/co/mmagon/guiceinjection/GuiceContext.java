@@ -191,6 +191,7 @@ public class GuiceContext extends GuiceServletContextListener
 			buildingInjector = false;
 			log.info("Post Startup Executions....");
 			Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
+			closingPres.removeIf(a->Modifier.isAbstract(a.getModifiers()));
 			List<GuicePostStartup> postStartups = new ArrayList<>();
 			Map<Integer, List<GuicePostStartup>> postStartupGroups = new TreeMap<>();
 			closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
