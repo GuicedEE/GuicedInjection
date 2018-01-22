@@ -129,6 +129,7 @@ public class GuiceContext extends GuiceServletContextListener
 			log.info("Starting up Injections");
 			log.config("Startup Executions....");
 			Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
+			pres.removeIf(a->Modifier.isAbstract(a.getModifiers()));
 			List<GuicePreStartup> startups = new ArrayList<>();
 			for (Class<? extends GuicePreStartup> pre : pres)
 			{
@@ -136,12 +137,12 @@ public class GuiceContext extends GuiceServletContextListener
 				try
 				{
 					pr = pre.newInstance();
+					startups.add(pr);
 				}
 				catch (InstantiationException | IllegalAccessException e)
 				{
 					log.log(Level.SEVERE, "Error trying to create Pre Startup Class (newInstance) - " + pre.getCanonicalName(), e);
 				}
-				startups.add(pr);
 			}
 			startups.sort(Comparator.comparing(GuicePreStartup::sortOrder));
 			log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
