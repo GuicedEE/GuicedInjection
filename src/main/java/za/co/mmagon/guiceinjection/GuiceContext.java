@@ -189,12 +189,23 @@ public class GuiceContext extends GuiceServletContextListener
 			context().injector = Guice.createInjector(cModules);
 
 			buildingInjector = false;
+
 			log.info("Post Startup Executions....");
 			Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
 			closingPres.removeIf(a->Modifier.isAbstract(a.getModifiers()));
 			List<GuicePostStartup> postStartups = new ArrayList<>();
 			Map<Integer, List<GuicePostStartup>> postStartupGroups = new TreeMap<>();
-			closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
+
+			//Load without any injection to get the sorting order, will inject during async stage
+			closingPres.forEach(closingPre -> {
+				GuicePostStartup gps = null;
+				try {
+					gps = closingPre.newInstance();
+					postStartups.add(gps);
+				} catch (Exception e) {
+					log.log(Level.SEVERE, "No default constructor found in Guice Post Startup [" + closingPre.getCanonicalName() + "]. Startup Skipped.", e);
+				}
+			});
 			postStartups.sort(Comparator.comparing(GuicePostStartup::sortOrder));
 			log.log(Level.CONFIG, "Total of [{0}] startup modules.", postStartups.size());
 			postStartups.forEach(a ->
@@ -206,10 +217,14 @@ public class GuiceContext extends GuiceServletContextListener
 			                                   {
 				                                   postLoaderExecutionService = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
 				                                   List<GuicePostStartup> st = postStartupGroups.get(integer);
+				                                   List<Runnable> runnables = new ArrayList<>();
 				                                   st.forEach(a ->
 				                                              {
-					                                              postLoaderExecutionService.execute(a::postLoad);
+					                                              runnables.add(new PostStartupRunnable(a));
 				                                              });
+				                                   for (Runnable runnable : runnables) {
+					                                   postLoaderExecutionService.execute(runnable);
+				                                   }
 				                                   postLoaderExecutionService.shutdown();
 				                                   try
 				                                   {
