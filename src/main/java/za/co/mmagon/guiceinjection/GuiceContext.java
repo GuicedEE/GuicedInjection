@@ -216,24 +216,25 @@ public class GuiceContext extends GuiceServletContextListener
 			                     });
 			postStartupGroups.keySet().forEach(integer ->
 			                                   {
-				                                   postLoaderExecutionService = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
 				                                   List<GuicePostStartup> st = postStartupGroups.get(integer);
 				                                   List<Runnable> runnables = new ArrayList<>();
-				                                   st.forEach(a ->
-				                                              {
-					                                              runnables.add(new PostStartupRunnable(a));
-				                                              });
-				                                   for (Runnable runnable : runnables) {
-					                                   postLoaderExecutionService.execute(runnable);
-				                                   }
-				                                   postLoaderExecutionService.shutdown();
-				                                   try
-				                                   {
-					                                   postLoaderExecutionService.awaitTermination(20, TimeUnit.SECONDS);
-				                                   }
-				                                   catch (Exception e)
-				                                   {
-					                                   log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
+				                                   if (st.size() == 1)
+					                                   st.get(0).postLoad();
+				                                   else {
+					                                   postLoaderExecutionService = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
+					                                   st.forEach(a ->
+					                                   {
+						                                   runnables.add(new PostStartupRunnable(a));
+					                                   });
+					                                   for (Runnable runnable : runnables) {
+						                                   postLoaderExecutionService.execute(runnable);
+					                                   }
+					                                   postLoaderExecutionService.shutdown();
+					                                   try {
+						                                   postLoaderExecutionService.awaitTermination(20, TimeUnit.SECONDS);
+					                                   } catch (Exception e) {
+						                                   log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
+					                                   }
 				                                   }
 			                                   });
 			log.info("Finished Post Startup Execution");
