@@ -17,5 +17,6 @@ public class PostStartupRunnable implements Runnable, Serializable {
 	public void run() {
 		GuicePostStartup gps = GuiceContext.getInstance(startup.getClass());
 		gps.postLoad();
+		startup = null;
 	}
 }
