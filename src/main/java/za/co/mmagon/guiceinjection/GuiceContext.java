@@ -31,6 +31,7 @@ import za.co.mmagon.guiceinjection.scanners.PackageContentsScanner;
 import javax.annotation.Nullable;
 import javax.servlet.ServletContextEvent;
 import javax.validation.constraints.NotNull;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
@@ -201,7 +202,9 @@ public class GuiceContext extends GuiceServletContextListener
 			closingPres.forEach(closingPre -> {
 				GuicePostStartup gps = null;
 				try {
-					gps = closingPre.newInstance();
+					Constructor<? extends GuicePostStartup> construct = closingPre.getDeclaredConstructor();
+					construct.setAccessible(true);
+					gps = construct.newInstance();
 					postStartups.add(gps);
 				} catch (Exception e) {
 					log.log(Level.SEVERE, "No default constructor found in Guice Post Startup [" + closingPre.getCanonicalName() + "]. Startup Skipped.", e);
