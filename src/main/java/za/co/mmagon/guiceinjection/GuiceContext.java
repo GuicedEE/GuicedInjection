@@ -20,6 +20,7 @@ import com.google.inject.*;
 import com.google.inject.servlet.GuiceServletContextListener;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
+import sun.reflect.ReflectionFactory;
 import za.co.mmagon.guiceinjection.abstractions.GuiceSiteInjectorModule;
 import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
@@ -202,10 +203,9 @@ public class GuiceContext extends GuiceServletContextListener
 			closingPres.forEach(closingPre -> {
 				GuicePostStartup gps = null;
 				try {
-					Constructor<? extends GuicePostStartup> construct = closingPre.getDeclaredConstructor();
-					construct.setAccessible(true);
-					gps = construct.newInstance();
-					postStartups.add(gps);
+					Constructor c = ReflectionFactory.getReflectionFactory().newConstructorForSerialization(closingPre, Object.class.getDeclaredConstructor());
+					GuicePostStartup c1 = (GuicePostStartup) c.newInstance();
+					postStartups.add(c1);
 				} catch (Exception e) {
 					log.log(Level.SEVERE, "No default constructor found in Guice Post Startup [" + closingPre.getCanonicalName() + "]. Startup Skipped.", e);
 				}
@@ -215,7 +215,7 @@ public class GuiceContext extends GuiceServletContextListener
 			postStartups.forEach(a ->
 			                     {
 				                     Integer sortOrder = a.sortOrder();
-				                     postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>());
+				                     postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>()).add(a);
 			                     });
 			postStartupGroups.keySet().forEach(integer ->
 			                                   {
@@ -234,7 +234,7 @@ public class GuiceContext extends GuiceServletContextListener
 					                                   }
 					                                   postLoaderExecutionService.shutdown();
 					                                   try {
-						                                   postLoaderExecutionService.awaitTermination(20, TimeUnit.SECONDS);
+						                                   postLoaderExecutionService.awaitTermination(1, TimeUnit.SECONDS);
 					                                   } catch (Exception e) {
 						                                   log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
 					                                   }
