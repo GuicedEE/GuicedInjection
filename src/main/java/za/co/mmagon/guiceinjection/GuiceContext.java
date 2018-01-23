@@ -226,7 +226,7 @@ public class GuiceContext extends GuiceServletContextListener
 					}
 					postLoaderExecutionService.shutdown();
 					try {
-						postLoaderExecutionService.awaitTermination(5, TimeUnit.SECONDS);
+						postLoaderExecutionService.awaitTermination(60, TimeUnit.SECONDS);
 					} catch (Exception e) {
 						log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
 					}
