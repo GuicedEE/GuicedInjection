@@ -20,7 +20,6 @@ import com.google.inject.*;
 import com.google.inject.servlet.GuiceServletContextListener;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
-import sun.reflect.ReflectionFactory;
 import za.co.mmagon.guiceinjection.abstractions.GuiceSiteInjectorModule;
 import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
@@ -32,7 +31,6 @@ import za.co.mmagon.guiceinjection.scanners.PackageContentsScanner;
 import javax.annotation.Nullable;
 import javax.servlet.ServletContextEvent;
 import javax.validation.constraints.NotNull;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
@@ -61,7 +59,6 @@ public class GuiceContext extends GuiceServletContextListener
 	 * This particular instance of the class
 	 */
 	private static GuiceContext instance;
-	private static ExecutorService postLoaderExecutionService;
 
 	/**
 	 * The building injector
@@ -201,14 +198,7 @@ public class GuiceContext extends GuiceServletContextListener
 
 			//Load without any injection to get the sorting order, will inject during async stage
 			closingPres.forEach(closingPre -> {
-				GuicePostStartup gps = null;
-				try {
-					Constructor c = ReflectionFactory.getReflectionFactory().newConstructorForSerialization(closingPre, Object.class.getDeclaredConstructor());
-					GuicePostStartup c1 = (GuicePostStartup) c.newInstance();
-					postStartups.add(c1);
-				} catch (Exception e) {
-					log.log(Level.SEVERE, "No default constructor found in Guice Post Startup [" + closingPre.getCanonicalName() + "]. Startup Skipped.", e);
-				}
+				postStartups.add(GuiceContext.getInstance(closingPre));
 			});
 			postStartups.sort(Comparator.comparing(GuicePostStartup::sortOrder));
 			log.log(Level.CONFIG, "Total of [{0}] startup modules.", postStartups.size());
@@ -217,34 +207,31 @@ public class GuiceContext extends GuiceServletContextListener
 				                     Integer sortOrder = a.sortOrder();
 				                     postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>()).add(a);
 			                     });
-			postStartupGroups.keySet().forEach(integer ->
-			                                   {
-				                                   List<GuicePostStartup> st = postStartupGroups.get(integer);
-				                                   Collection<PostStartupRunnable> runnables = new ArrayList<>();
-				                                   if (st.size() == 1)
-					                                   st.get(0).postLoad();
-				                                   else {
-					                                   postLoaderExecutionService = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
-					                                   st.forEach(a ->
-					                                   {
-						                                   runnables.add(new PostStartupRunnable(a));
-					                                   });
-					                                   runnables.forEach(a -> {
-						                                   try {
-							                                   postLoaderExecutionService.submit((Runnable) a);
-						                                   } catch (Exception e) {
-							                                   log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
-						                                   }
-					                                   });
-					                                   postLoaderExecutionService.shutdown();
-					                                   try {
-						                                   if (!postLoaderExecutionService.isShutdown())
-							                                   postLoaderExecutionService.awaitTermination(5, TimeUnit.SECONDS);
-					                                   } catch (Exception e) {
-						                                   log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
-					                                   }
-				                                   }
-			                                   });
+			for (Integer integer : postStartupGroups.keySet()) {
+				List<GuicePostStartup> st = postStartupGroups.get(integer);
+				List<PostStartupRunnable> runnables = new ArrayList<>();
+				if (st.size() == 1)
+					st.get(0).postLoad();
+				else {
+					ExecutorService postLoaderExecutionService = Executors.newCachedThreadPool();
+					for (GuicePostStartup guicePostStartup : st) {
+						runnables.add(new PostStartupRunnable(guicePostStartup));
+					}
+					for (PostStartupRunnable a : runnables) {
+						try {
+							postLoaderExecutionService.submit((Runnable) a);
+						} catch (Exception e) {
+							log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
+						}
+					}
+					postLoaderExecutionService.shutdown();
+					try {
+						postLoaderExecutionService.awaitTermination(5, TimeUnit.SECONDS);
+					} catch (Exception e) {
+						log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
+					}
+				}
+			}
 			log.info("Finished Post Startup Execution");
 			log.info("System Ready");
 			built = true;

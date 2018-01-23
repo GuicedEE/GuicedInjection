@@ -16,8 +16,7 @@ public class PostStartupRunnable implements Runnable, Callable<PostStartupRunnab
 
 	@Override
 	public void run() {
-		GuicePostStartup gps = GuiceContext.getInstance(startup.getClass());
-		gps.postLoad();
+		startup.postLoad();
 		startup = null;
 	}
 

@@ -1,16 +1,20 @@
 package za.co.mmagon.externalpackage;
 
+import com.google.inject.Inject;
 import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
 
-class PostConstructHiddenTest implements GuicePostStartup {
+public class PostConstructHiddenTest implements GuicePostStartup {
 
-	PostConstructHiddenTest(String s) {
-		System.out.println("Found");
+	public PostConstructHiddenTest() {
+	}
+
+	public PostConstructHiddenTest(String s) {
+
 	}
 
 	@Override
 	public void postLoad() {
-
+		System.out.println("Check 2");
 	}
 
 	@Override
