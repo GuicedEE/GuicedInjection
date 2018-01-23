@@ -220,7 +220,7 @@ public class GuiceContext extends GuiceServletContextListener
 			postStartupGroups.keySet().forEach(integer ->
 			                                   {
 				                                   List<GuicePostStartup> st = postStartupGroups.get(integer);
-				                                   List<Runnable> runnables = new ArrayList<>();
+				                                   Collection<PostStartupRunnable> runnables = new ArrayList<>();
 				                                   if (st.size() == 1)
 					                                   st.get(0).postLoad();
 				                                   else {
@@ -229,12 +229,17 @@ public class GuiceContext extends GuiceServletContextListener
 					                                   {
 						                                   runnables.add(new PostStartupRunnable(a));
 					                                   });
-					                                   for (Runnable runnable : runnables) {
-						                                   postLoaderExecutionService.execute(runnable);
-					                                   }
+					                                   runnables.forEach(a -> {
+						                                   try {
+							                                   postLoaderExecutionService.submit((Runnable) a);
+						                                   } catch (Exception e) {
+							                                   log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
+						                                   }
+					                                   });
 					                                   postLoaderExecutionService.shutdown();
 					                                   try {
-						                                   postLoaderExecutionService.awaitTermination(1, TimeUnit.SECONDS);
+						                                   if (!postLoaderExecutionService.isShutdown())
+							                                   postLoaderExecutionService.awaitTermination(5, TimeUnit.SECONDS);
 					                                   } catch (Exception e) {
 						                                   log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
 					                                   }
