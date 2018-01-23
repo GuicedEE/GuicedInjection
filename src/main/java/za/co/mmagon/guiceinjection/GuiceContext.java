@@ -213,7 +213,7 @@ public class GuiceContext extends GuiceServletContextListener
 				if (st.size() == 1)
 					st.get(0).postLoad();
 				else {
-					ExecutorService postLoaderExecutionService = Executors.newCachedThreadPool();
+					ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
 					for (GuicePostStartup guicePostStartup : st) {
 						runnables.add(new PostStartupRunnable(guicePostStartup));
 					}
