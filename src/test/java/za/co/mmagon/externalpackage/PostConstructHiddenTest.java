@@ -3,7 +3,7 @@ package za.co.mmagon.externalpackage;
 import com.google.inject.Inject;
 import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
 
-class PostConstructHiddenTest implements GuicePostStartup {
+public class PostConstructHiddenTest implements GuicePostStartup {
 
 	public PostConstructHiddenTest() {
 	}
