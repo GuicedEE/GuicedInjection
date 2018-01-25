@@ -24,7 +24,6 @@ import za.co.mmagon.guiceinjection.abstractions.GuiceSiteInjectorModule;
 import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
 import za.co.mmagon.guiceinjection.annotations.GuicePreStartup;
-import za.co.mmagon.guiceinjection.logging.LogSingleLineFormatter;
 import za.co.mmagon.guiceinjection.scanners.FileContentsScanner;
 import za.co.mmagon.guiceinjection.scanners.PackageContentsScanner;
 
@@ -38,9 +37,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -68,15 +65,6 @@ public class GuiceContext extends GuiceServletContextListener
 	 * If the references are built or not
 	 */
 	private static boolean built = false;
-
-
-	static
-	{
-		for (Handler handler : LogManager.getLogManager().getLogger("").getHandlers())
-		{
-			handler.setFormatter(new LogSingleLineFormatter());
-		}
-	}
 
 	/**
 	 * The physical injector for the JVM container

@@ -107,7 +107,7 @@ public class LogColourFormatter extends LogFormatter
 	{
 		if (record.getMessage() == null || record.getMessage().trim().isEmpty())
 		{
-			return "";
+			return null;
 		}
 
 		String output = "";
