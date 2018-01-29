@@ -16,6 +16,7 @@
  */
 package za.co.mmagon.guiceinjection;
 
+import com.google.common.base.Stopwatch;
 import com.google.inject.*;
 import com.google.inject.servlet.GuiceServletContextListener;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
@@ -31,8 +32,6 @@ import javax.annotation.Nullable;
 import javax.servlet.ServletContextEvent;
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.Modifier;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoField;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,6 +64,10 @@ public class GuiceContext extends GuiceServletContextListener
 	 * If the references are built or not
 	 */
 	private static boolean built = false;
+	private static int threadCount = Runtime.getRuntime()
+			                                 .availableProcessors() * 2;
+	private static long asyncTerminationWait = 60L;
+	private static TimeUnit asyncTerminationTimeUnit = TimeUnit.SECONDS;
 
 	/**
 	 * The physical injector for the JVM container
@@ -116,7 +119,7 @@ public class GuiceContext extends GuiceServletContextListener
 			log.info("Starting up Injections");
 			log.config("Startup Executions....");
 			Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
-			pres.removeIf(a->Modifier.isAbstract(a.getModifiers()));
+			pres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
 			List<GuicePreStartup> startups = new ArrayList<>();
 			for (Class<? extends GuicePreStartup> pre : pres)
 			{
@@ -145,7 +148,8 @@ public class GuiceContext extends GuiceServletContextListener
 			GuiceSiteInjectorModule siteInjection;
 			siteInjection = new GuiceSiteInjectorModule();
 
-			int customModuleSize = reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class).size();
+			int customModuleSize = reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class)
+					                       .size();
 			log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
 			ArrayList<Module> customModules = new ArrayList<>();
 			Module[] cModules;
@@ -165,7 +169,8 @@ public class GuiceContext extends GuiceServletContextListener
 					{
 						continue;
 					}
-					Logger.getLogger(GuiceContext.class.getName()).log(Level.SEVERE, null, ex);
+					Logger.getLogger(GuiceContext.class.getName())
+							.log(Level.SEVERE, null, ex);
 				}
 			}
 			customModules.add(0, siteInjection);
@@ -180,46 +185,34 @@ public class GuiceContext extends GuiceServletContextListener
 
 			log.info("Post Startup Executions....");
 			Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
-			closingPres.removeIf(a->Modifier.isAbstract(a.getModifiers()));
+			closingPres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
 			List<GuicePostStartup> postStartups = new ArrayList<>();
 			Map<Integer, List<GuicePostStartup>> postStartupGroups = new TreeMap<>();
 
 			//Load without any injection to get the sorting order, will inject during async stage
-			closingPres.forEach(closingPre -> {
-				postStartups.add(GuiceContext.getInstance(closingPre));
-			});
+			closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
 			postStartups.sort(Comparator.comparing(GuicePostStartup::sortOrder));
 			log.log(Level.CONFIG, "Total of [{0}] startup modules.", postStartups.size());
 			postStartups.forEach(a ->
 			                     {
 				                     Integer sortOrder = a.sortOrder();
-				                     postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>()).add(a);
+				                     postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
+						                     .add(a);
 			                     });
-			for (Integer integer : postStartupGroups.keySet()) {
-				List<GuicePostStartup> st = postStartupGroups.get(integer);
-				List<PostStartupRunnable> runnables = new ArrayList<>();
-				if (st.size() == 1)
-					st.get(0).postLoad();
-				else {
-					ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
-					for (GuicePostStartup guicePostStartup : st) {
-						runnables.add(new PostStartupRunnable(guicePostStartup));
-					}
-					for (PostStartupRunnable a : runnables) {
-						try {
-							postLoaderExecutionService.submit((Runnable) a);
-						} catch (Exception e) {
-							log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
-						}
-					}
-					postLoaderExecutionService.shutdown();
-					try {
-						postLoaderExecutionService.awaitTermination(60, TimeUnit.SECONDS);
-					} catch (Exception e) {
-						log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
-					}
-				}
-			}
+			postStartupGroups.forEach((key, value) ->
+			                          {
+				                          List<GuicePostStartup> st = postStartupGroups.get(key);
+				                          List<PostStartupRunnable> runnables = new ArrayList<>();
+				                          if (st.size() == 1)
+				                          {
+					                          st.get(0)
+							                          .postLoad();
+				                          }
+				                          else
+				                          {
+					                          configureWorkStealingPool(st, runnables);
+				                          }
+			                          });
 			log.info("Finished Post Startup Execution");
 			log.info("System Ready");
 			built = true;
@@ -231,6 +224,41 @@ public class GuiceContext extends GuiceServletContextListener
 
 		buildingInjector = false;
 		return context().injector;
+	}
+
+	/**
+	 * Builds an asynchronous running pool to execute with a termination waiter
+	 *
+	 * @param st
+	 * @param runnables
+	 */
+	private static void configureWorkStealingPool(List<GuicePostStartup> st, List<PostStartupRunnable> runnables)
+	{
+		ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(threadCount);
+		for (GuicePostStartup guicePostStartup : st)
+		{
+			runnables.add(new PostStartupRunnable(guicePostStartup));
+		}
+		for (PostStartupRunnable a : runnables)
+		{
+			try
+			{
+				postLoaderExecutionService.submit((Runnable) a);
+			}
+			catch (Exception e)
+			{
+				log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
+			}
+		}
+		postLoaderExecutionService.shutdown();
+		try
+		{
+			postLoaderExecutionService.awaitTermination(asyncTerminationWait, asyncTerminationTimeUnit);
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
+		}
 	}
 
 	/**
@@ -353,24 +381,13 @@ public class GuiceContext extends GuiceServletContextListener
 	}
 
 	/**
-	 * Starts up Guice and the scanner
+	 * Returns the assigned logger for changing the level of output or adding handlers
+	 *
+	 * @return
 	 */
-	public void loadScanner()
+	public static Logger getLog()
 	{
-		log.info("Starting up classpath scanner");
-		LocalDateTime start = LocalDateTime.now();
-		scanner = new FastClasspathScanner(getPackagesList());
-		scanner.enableFieldInfo();
-		scanner.enableFieldAnnotationIndexing();
-		scanner.enableFieldTypeIndexing();
-		scanner.enableMethodAnnotationIndexing();
-		scanner.enableMethodInfo();
-		scanner.ignoreFieldVisibility();
-		scanner.ignoreMethodVisibility();
-		registerScanQuickFiles(scanner);
-		scanResult = scanner.scan(Runtime.getRuntime().availableProcessors());
-		LocalDateTime finish = LocalDateTime.now();
-		log.info("Classpath Scanner Completed. Took [" + (finish.getLong(ChronoField.MILLI_OF_SECOND) - start.getLong(ChronoField.MILLI_OF_SECOND)) + "] millis.");
+		return log;
 	}
 
 	/**
@@ -396,22 +413,14 @@ public class GuiceContext extends GuiceServletContextListener
 	}
 
 	/**
-	 * Registers the quick scan files
+	 * Gets the number of threads to use when processing
+	 * Default processors * 2
 	 *
-	 * @param scanner
+	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	private void registerScanQuickFiles(FastClasspathScanner scanner)
+	public static int getThreadCount()
 	{
-		log.config("Starting File Contents Scanner. Services registered with FileContentsScanner will be found.");
-		ServiceLoader<FileContentsScanner> fileScanners = ServiceLoader.load(FileContentsScanner.class);
-		int found = 0;
-		for (FileContentsScanner fileScanner : fileScanners)
-		{
-			fileScanner.onMatch().forEach(scanner::matchFilenamePathLeaf);
-			found++;
-		}
-		log.config("File Contents Scanner Matchers have been registered. Total Content Scanners [" + found + "].");
+		return threadCount;
 	}
 
 	/**
@@ -488,5 +497,96 @@ public class GuiceContext extends GuiceServletContextListener
 			context().reflections = new Reflections();
 		}
 		return context().reflections;
+	}
+
+	/**
+	 * Sets the thread count to use
+	 *
+	 * @param threadCount
+	 */
+	public static void setThreadCount(int threadCount)
+	{
+		GuiceContext.threadCount = threadCount;
+	}
+
+	/**
+	 * Returns the async termination wait period Default 60
+	 *
+	 * @return
+	 */
+	public static long getAsyncTerminationWait()
+	{
+		return asyncTerminationWait;
+	}
+
+	/**
+	 * Sets the termination asynchronous wait period (60)
+	 *
+	 * @param asyncTerminationWait
+	 */
+	public static void setAsyncTerminationWait(long asyncTerminationWait)
+	{
+		GuiceContext.asyncTerminationWait = asyncTerminationWait;
+	}
+
+	/**
+	 * Gets the termination waiting period (Defualt sesonds)
+	 *
+	 * @return
+	 */
+	public static TimeUnit getAsyncTerminationTimeUnit()
+	{
+		return asyncTerminationTimeUnit;
+	}
+
+	/**
+	 * Sets teh asynchronous termination waiting period
+	 *
+	 * @param asyncTerminationTimeUnit
+	 */
+	public static void setAsyncTerminationTimeUnit(TimeUnit asyncTerminationTimeUnit)
+	{
+		GuiceContext.asyncTerminationTimeUnit = asyncTerminationTimeUnit;
+	}
+
+	/**
+	 * Starts up Guice and the scanner
+	 */
+	public void loadScanner()
+	{
+		log.info("Starting up classpath scanner");
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		scanner = new FastClasspathScanner(getPackagesList());
+		scanner.enableFieldInfo();
+		scanner.enableFieldAnnotationIndexing();
+		scanner.enableFieldTypeIndexing();
+		scanner.enableMethodAnnotationIndexing();
+		scanner.enableMethodInfo();
+		scanner.ignoreFieldVisibility();
+		scanner.ignoreMethodVisibility();
+		registerScanQuickFiles(scanner);
+		scanResult = scanner.scan(threadCount);
+		stopwatch.stop();
+		log.info("Classpath Scanner Completed. Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
+	}
+
+	/**
+	 * Registers the quick scan files
+	 *
+	 * @param scanner
+	 */
+	@SuppressWarnings("unchecked")
+	private void registerScanQuickFiles(FastClasspathScanner scanner)
+	{
+		log.config("Starting File Contents Scanner. Services registered with FileContentsScanner will be found.");
+		ServiceLoader<FileContentsScanner> fileScanners = ServiceLoader.load(FileContentsScanner.class);
+		int found = 0;
+		for (FileContentsScanner fileScanner : fileScanners)
+		{
+			fileScanner.onMatch()
+					.forEach(scanner::matchFilenamePathLeaf);
+			found++;
+		}
+		log.config("File Contents Scanner Matchers have been registered. Total Content Scanners [" + found + "].");
 	}
 }
