@@ -64,10 +64,18 @@ public class Reflections
 	public <T> Set<Class<? extends T>> getSubTypesOf(@CacheKey final Class<T> type)
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
-		List<String> subtypes = type.isInterface() ? GuiceContext.context().getScanResult().getNamesOfClassesImplementing(type) : GuiceContext.context().getScanResult().getNamesOfSubclassesOf(type);
+		List<String> subtypes = type.isInterface()
+		                        ? GuiceContext.context()
+				                          .getScanResult()
+				                          .getNamesOfClassesImplementing(type)
+		                        : GuiceContext.context()
+				                          .getScanResult()
+				                          .getNamesOfSubclassesOf(type);
 		for (String subtype : subtypes)
 		{
-			Class<T> subType = (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype);
+			Class<T> subType = (Class<T>) GuiceContext.context()
+					                              .getScanResult()
+					                              .classNameToClassRef(subtype);
 			returnable.add(subType);
 		}
 		return returnable;
@@ -87,10 +95,14 @@ public class Reflections
 	public <T> Set<Class<? extends T>> getTypesAnnotatedWith(@CacheKey final Class<? extends Annotation> annotation)
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
-		List<String> subtypes = GuiceContext.context().getScanResult().getNamesOfClassesWithAnnotation(annotation);
+		List<String> subtypes = GuiceContext.context()
+				                        .getScanResult()
+				                        .getNamesOfClassesWithAnnotation(annotation);
 		for (String subtype : subtypes)
 		{
-			Class<T> subType = (Class<T>) GuiceContext.context().getScanResult().classNameToClassRef(subtype);
+			Class<T> subType = (Class<T>) GuiceContext.context()
+					                              .getScanResult()
+					                              .classNameToClassRef(subtype);
 			returnable.add(subType);
 		}
 		return returnable;
@@ -113,8 +125,8 @@ public class Reflections
 		Field[] allFields = in.getFields();
 		for (Field f : allFields)
 		{
-
-			if (f.getAnnotationsByType(annotation) != null && f.getAnnotationsByType(annotation).length > 0 && f.getType().equals(type))
+			if (f.getAnnotationsByType(annotation) != null && f.getAnnotationsByType(annotation).length > 0 && f.getType()
+					                                                                                                   .equals(type))
 			{
 				field = f;
 				break;
