@@ -159,9 +159,11 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 		{
 			objects.forEach(obj ->
 			                {
-				                log.log(Level.INFO, "Loading Guice Servlet Configuration {0}", obj.getClass().getSimpleName());
+				                log.log(Level.CONFIG, "Loading Guice Servlet Configuration {0}", obj.getClass()
+						                                                                                 .getSimpleName());
 				                obj.onBind(this);
-				                log.log(Level.INFO, "Loaded Guice Servlet Configuration {0}", obj.getClass().getSimpleName());
+				                log.log(Level.FINE, "Loaded Guice Servlet Configuration {0}", obj.getClass()
+						                                                                              .getSimpleName());
 			                });
 		}
 	}
