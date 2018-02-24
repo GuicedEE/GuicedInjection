@@ -27,6 +27,7 @@ import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
 import za.co.mmagon.guiceinjection.annotations.GuicePreStartup;
 import za.co.mmagon.guiceinjection.scanners.FileContentsScanner;
 import za.co.mmagon.guiceinjection.scanners.PackageContentsScanner;
+import za.co.mmagon.logger.LogFactory;
 
 import javax.annotation.Nullable;
 import javax.servlet.ServletContextEvent;
@@ -50,7 +51,7 @@ import java.util.logging.Logger;
  */
 public class GuiceContext extends GuiceServletContextListener
 {
-	private static final Logger log = Logger.getLogger("GuiceContext");
+	private static final Logger log = LogFactory.getLog("GuiceContext");
 	/**
 	 * This particular instance of the class
 	 */
@@ -113,9 +114,8 @@ public class GuiceContext extends GuiceServletContextListener
 	@SuppressWarnings("unchecked")
 	public static synchronized Injector inject()
 	{
-		if (!built && !buildingInjector && context().injector == null)
+		if (!built || context().injector == null)
 		{
-			buildingInjector = true;
 			log.info("Starting up Injections");
 			log.config("Startup Executions....");
 			Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
@@ -137,7 +137,7 @@ public class GuiceContext extends GuiceServletContextListener
 			startups.sort(Comparator.comparing(GuicePreStartup::sortOrder));
 			log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
 			startups.forEach(GuicePreStartup::onStartup);
-			log.info("Finished Startup Execution");
+			log.config("Finished Startup Execution");
 
 			log.info("Loading All Default Binders (that extend GuiceDefaultBinder)");
 
@@ -213,15 +213,10 @@ public class GuiceContext extends GuiceServletContextListener
 					                          configureWorkStealingPool(st, runnables);
 				                          }
 			                          });
-			log.info("Finished Post Startup Execution");
-			log.info("System Ready");
+			log.fine("Finished Post Startup Execution");
+			log.config("System Ready");
 			built = true;
 		}
-		else
-		{
-			log.fine("Premature call to GuiceContext.inject. Injector is still currently building, are you calling guice context from a constructor? consider using init() or preconfigure()");
-		}
-
 		buildingInjector = false;
 		return context().injector;
 	}
@@ -397,7 +392,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 */
 	private String[] getPackagesList()
 	{
-		log.config("Starting scan for package monitors. Services registered with PackageContentsScanner will be found.");
+		log.fine("Starting scan for package monitors. Services registered with PackageContentsScanner will be found.");
 		if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
 		{
 			excludeJarsFromScan = new HashSet<>();
@@ -578,7 +573,7 @@ public class GuiceContext extends GuiceServletContextListener
 	@SuppressWarnings("unchecked")
 	private void registerScanQuickFiles(FastClasspathScanner scanner)
 	{
-		log.config("Starting File Contents Scanner. Services registered with FileContentsScanner will be found.");
+		log.fine("Starting File Contents Scanner. Services registered with FileContentsScanner will be found.");
 		ServiceLoader<FileContentsScanner> fileScanners = ServiceLoader.load(FileContentsScanner.class);
 		int found = 0;
 		for (FileContentsScanner fileScanner : fileScanners)
