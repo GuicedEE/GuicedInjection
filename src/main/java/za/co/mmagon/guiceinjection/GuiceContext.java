@@ -49,8 +49,7 @@ import java.util.logging.Logger;
  * @version 1.0
  * @since Nov 14, 2016
  */
-public class GuiceContext extends GuiceServletContextListener
-{
+public class GuiceContext extends GuiceServletContextListener {
 	private static final Logger log = LogFactory.getLog("GuiceContext");
 	/**
 	 * This particular instance of the class
@@ -66,7 +65,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 */
 	private static boolean built = false;
 	private static int threadCount = Runtime.getRuntime()
-			                                 .availableProcessors() * 2;
+			.availableProcessors() * 2;
 	private static long asyncTerminationWait = 60L;
 	private static TimeUnit asyncTerminationTimeUnit = TimeUnit.SECONDS;
 
@@ -97,10 +96,8 @@ public class GuiceContext extends GuiceServletContextListener
 	/**
 	 * Creates a new Guice context. Not necessary
 	 */
-	private GuiceContext()
-	{
-		if (instance == null)
-		{
+	private GuiceContext() {
+		if (instance == null) {
 			instance = this;
 		}
 	}
@@ -112,25 +109,25 @@ public class GuiceContext extends GuiceServletContextListener
 	 */
 	@NotNull
 	@SuppressWarnings("unchecked")
-	public static synchronized Injector inject()
-	{
-		if (!built || context().injector == null)
-		{
+	public static synchronized Injector inject() {
+		if (buildingInjector) {
+			while (buildingInjector) {
+
+			}
+		}
+		if (context().injector == null) {
+			buildingInjector = true;
 			log.info("Starting up Injections");
-			log.config("Startup Executions....");
+			log.config("Pre Startup Executions....");
 			Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
 			pres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
 			List<GuicePreStartup> startups = new ArrayList<>();
-			for (Class<? extends GuicePreStartup> pre : pres)
-			{
+			for (Class<? extends GuicePreStartup> pre : pres) {
 				GuicePreStartup pr = null;
-				try
-				{
+				try {
 					pr = pre.newInstance();
 					startups.add(pr);
-				}
-				catch (InstantiationException | IllegalAccessException e)
-				{
+				} catch (InstantiationException | IllegalAccessException e) {
 					log.log(Level.SEVERE, "Error trying to create Pre Startup Class (newInstance) - " + pre.getCanonicalName(), e);
 				}
 			}
@@ -149,24 +146,19 @@ public class GuiceContext extends GuiceServletContextListener
 			siteInjection = new GuiceSiteInjectorModule();
 
 			int customModuleSize = reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class)
-					                       .size();
+					.size();
 			log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
 			ArrayList<Module> customModules = new ArrayList<>();
 			Module[] cModules;
 
-			for (Class<?> aClass : reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class))
-			{
-				try
-				{
+			for (Class<?> aClass : reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class)) {
+				try {
 					Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) aClass;
 					log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
 					Module moduleInstance = next.newInstance();
 					customModules.add(moduleInstance);
-				}
-				catch (InstantiationException | IllegalAccessException ex)
-				{
-					if (Modifier.isAbstract(aClass.getModifiers()))
-					{
+				} catch (InstantiationException | IllegalAccessException ex) {
+					if (Modifier.isAbstract(aClass.getModifiers())) {
 						continue;
 					}
 					Logger.getLogger(GuiceContext.class.getName())
@@ -180,41 +172,38 @@ public class GuiceContext extends GuiceServletContextListener
 			cModules = customModules.toArray(cModules);
 
 			context().injector = Guice.createInjector(cModules);
-
-			buildingInjector = false;
-
 			log.info("Post Startup Executions....");
 			Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
 			closingPres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
 			List<GuicePostStartup> postStartups = new ArrayList<>();
 			Map<Integer, List<GuicePostStartup>> postStartupGroups = new TreeMap<>();
 
+			buildingInjector = false;
+
 			//Load without any injection to get the sorting order, will inject during async stage
 			closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
 			postStartups.sort(Comparator.comparing(GuicePostStartup::sortOrder));
 			log.log(Level.CONFIG, "Total of [{0}] startup modules.", postStartups.size());
 			postStartups.forEach(a ->
-			                     {
-				                     Integer sortOrder = a.sortOrder();
-				                     postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
-						                     .add(a);
-			                     });
+			{
+				Integer sortOrder = a.sortOrder();
+				postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
+						.add(a);
+			});
 			postStartupGroups.forEach((key, value) ->
-			                          {
-				                          List<GuicePostStartup> st = postStartupGroups.get(key);
-				                          List<PostStartupRunnable> runnables = new ArrayList<>();
-				                          if (st.size() == 1)
-				                          {
-					                          st.get(0)
-							                          .postLoad();
-				                          }
-				                          else
-				                          {
-					                          configureWorkStealingPool(st, runnables);
-				                          }
-			                          });
+			{
+				List<GuicePostStartup> st = postStartupGroups.get(key);
+				List<PostStartupRunnable> runnables = new ArrayList<>();
+				if (st.size() == 1) {
+					st.get(0)
+							.postLoad();
+				} else {
+					configureWorkStealingPool(st, runnables);
+				}
+			});
 			log.fine("Finished Post Startup Execution");
 			log.config("System Ready");
+
 			built = true;
 		}
 		buildingInjector = false;
@@ -227,31 +216,22 @@ public class GuiceContext extends GuiceServletContextListener
 	 * @param st
 	 * @param runnables
 	 */
-	private static void configureWorkStealingPool(List<GuicePostStartup> st, List<PostStartupRunnable> runnables)
-	{
+	private static void configureWorkStealingPool(List<GuicePostStartup> st, List<PostStartupRunnable> runnables) {
 		ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(threadCount);
-		for (GuicePostStartup guicePostStartup : st)
-		{
+		for (GuicePostStartup guicePostStartup : st) {
 			runnables.add(new PostStartupRunnable(guicePostStartup));
 		}
-		for (PostStartupRunnable a : runnables)
-		{
-			try
-			{
+		for (PostStartupRunnable a : runnables) {
+			try {
 				postLoaderExecutionService.submit((Runnable) a);
-			}
-			catch (Exception e)
-			{
+			} catch (Exception e) {
 				log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
 			}
 		}
 		postLoaderExecutionService.shutdown();
-		try
-		{
+		try {
 			postLoaderExecutionService.awaitTermination(asyncTerminationWait, asyncTerminationTimeUnit);
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
 		}
 	}
@@ -259,8 +239,7 @@ public class GuiceContext extends GuiceServletContextListener
 	/**
 	 * Execute on Destroy
 	 */
-	public static void destroy()
-	{
+	public static void destroy() {
 		context().reflections = null;
 		context().scanResult = null;
 		context().scanner = null;
@@ -273,10 +252,8 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	public static GuiceContext context()
-	{
-		if (instance == null)
-		{
+	public static GuiceContext context() {
+		if (instance == null) {
 			instance = new GuiceContext();
 		}
 		return instance;
@@ -287,12 +264,10 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @param <T>
 	 * @param type
-	 *
 	 * @return
 	 */
 	@NotNull
-	public static <T> T getInstance(Class<T> type)
-	{
+	public static <T> T getInstance(Class<T> type) {
 		return inject().getInstance(type);
 	}
 
@@ -301,12 +276,10 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @param <T>
 	 * @param type
-	 *
 	 * @return
 	 */
 	@NotNull
-	public static <T> T getInstance(Key<T> type)
-	{
+	public static <T> T getInstance(Key<T> type) {
 		return inject().getInstance(type);
 	}
 
@@ -315,8 +288,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	public static boolean isReady()
-	{
+	public static boolean isReady() {
 		return isBuilt() && isBuildingInjector();
 	}
 
@@ -325,8 +297,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	public static boolean isBuilt()
-	{
+	public static boolean isBuilt() {
 		return built;
 	}
 
@@ -335,8 +306,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @param built
 	 */
-	public static void setBuilt(boolean built)
-	{
+	public static void setBuilt(boolean built) {
 		GuiceContext.built = built;
 	}
 
@@ -345,8 +315,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	public static boolean isBuildingInjector()
-	{
+	public static boolean isBuildingInjector() {
 		return buildingInjector;
 	}
 
@@ -356,10 +325,8 @@ public class GuiceContext extends GuiceServletContextListener
 	 * @return
 	 */
 	@Nullable
-	public ScanResult getScanResult()
-	{
-		if (scanResult == null)
-		{
+	public ScanResult getScanResult() {
+		if (scanResult == null) {
 			loadScanner();
 		}
 		return scanResult;
@@ -370,8 +337,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @param scanResult
 	 */
-	public void setScanResult(ScanResult scanResult)
-	{
+	public void setScanResult(ScanResult scanResult) {
 		GuiceContext.context().scanResult = scanResult;
 	}
 
@@ -380,8 +346,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	public static Logger getLog()
-	{
+	public static Logger getLog() {
 		return log;
 	}
 
@@ -390,15 +355,12 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	private String[] getPackagesList()
-	{
+	private String[] getPackagesList() {
 		log.fine("Starting scan for package monitors. Services registered with PackageContentsScanner will be found.");
-		if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
-		{
+		if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty()) {
 			excludeJarsFromScan = new HashSet<>();
 			ServiceLoader<PackageContentsScanner> exclusions = ServiceLoader.load(PackageContentsScanner.class);
-			for (PackageContentsScanner exclusion : exclusions)
-			{
+			for (PackageContentsScanner exclusion : exclusions) {
 				excludeJarsFromScan.addAll(exclusion.searchFor());
 			}
 		}
@@ -413,8 +375,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	public static int getThreadCount()
-	{
+	public static int getThreadCount() {
 		return threadCount;
 	}
 
@@ -423,8 +384,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	public FastClasspathScanner getScanner()
-	{
+	public FastClasspathScanner getScanner() {
 		return scanner;
 	}
 
@@ -433,8 +393,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @param scanner
 	 */
-	public static void setScanner(FastClasspathScanner scanner)
-	{
+	public static void setScanner(FastClasspathScanner scanner) {
 		context().scanner = scanner;
 	}
 
@@ -444,8 +403,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 * @param servletContextEvent
 	 */
 	@Override
-	public void contextInitialized(ServletContextEvent servletContextEvent)
-	{
+	public void contextInitialized(ServletContextEvent servletContextEvent) {
 		inject();
 	}
 
@@ -455,8 +413,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 * @return
 	 */
 	@Override
-	public Injector getInjector()
-	{
+	public Injector getInjector() {
 		return inject();
 	}
 
@@ -465,8 +422,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @param injector
 	 */
-	public void setInjector(Injector injector)
-	{
+	public void setInjector(Injector injector) {
 		this.injector = injector;
 	}
 
@@ -475,8 +431,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	public Reflections getReflections()
-	{
+	public Reflections getReflections() {
 		return reflect();
 	}
 
@@ -485,10 +440,8 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	public static Reflections reflect()
-	{
-		if (context().reflections == null)
-		{
+	public static Reflections reflect() {
+		if (context().reflections == null) {
 			context().reflections = new Reflections();
 		}
 		return context().reflections;
@@ -499,8 +452,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @param threadCount
 	 */
-	public static void setThreadCount(int threadCount)
-	{
+	public static void setThreadCount(int threadCount) {
 		GuiceContext.threadCount = threadCount;
 	}
 
@@ -509,8 +461,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	public static long getAsyncTerminationWait()
-	{
+	public static long getAsyncTerminationWait() {
 		return asyncTerminationWait;
 	}
 
@@ -519,8 +470,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @param asyncTerminationWait
 	 */
-	public static void setAsyncTerminationWait(long asyncTerminationWait)
-	{
+	public static void setAsyncTerminationWait(long asyncTerminationWait) {
 		GuiceContext.asyncTerminationWait = asyncTerminationWait;
 	}
 
@@ -529,8 +479,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @return
 	 */
-	public static TimeUnit getAsyncTerminationTimeUnit()
-	{
+	public static TimeUnit getAsyncTerminationTimeUnit() {
 		return asyncTerminationTimeUnit;
 	}
 
@@ -539,16 +488,14 @@ public class GuiceContext extends GuiceServletContextListener
 	 *
 	 * @param asyncTerminationTimeUnit
 	 */
-	public static void setAsyncTerminationTimeUnit(TimeUnit asyncTerminationTimeUnit)
-	{
+	public static void setAsyncTerminationTimeUnit(TimeUnit asyncTerminationTimeUnit) {
 		GuiceContext.asyncTerminationTimeUnit = asyncTerminationTimeUnit;
 	}
 
 	/**
 	 * Starts up Guice and the scanner
 	 */
-	public void loadScanner()
-	{
+	public void loadScanner() {
 		log.info("Starting up classpath scanner");
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		scanner = new FastClasspathScanner(getPackagesList());
@@ -571,13 +518,11 @@ public class GuiceContext extends GuiceServletContextListener
 	 * @param scanner
 	 */
 	@SuppressWarnings("unchecked")
-	private void registerScanQuickFiles(FastClasspathScanner scanner)
-	{
+	private void registerScanQuickFiles(FastClasspathScanner scanner) {
 		log.fine("Starting File Contents Scanner. Services registered with FileContentsScanner will be found.");
 		ServiceLoader<FileContentsScanner> fileScanners = ServiceLoader.load(FileContentsScanner.class);
 		int found = 0;
-		for (FileContentsScanner fileScanner : fileScanners)
-		{
+		for (FileContentsScanner fileScanner : fileScanners) {
 			fileScanner.onMatch()
 					.forEach(scanner::matchFilenamePathLeaf);
 			found++;
