@@ -49,9 +49,12 @@ import java.util.logging.Logger;
  * @version 1.0
  * @since Nov 14, 2016
  */
-public class GuiceContext extends GuiceServletContextListener
+public class GuiceContext
+		extends GuiceServletContextListener
 {
 	private static final Logger log = LogFactory.getLog("GuiceContext");
+
+	public static boolean whiteListing = false;
 	/**
 	 * This particular instance of the class
 	 */
@@ -66,7 +69,7 @@ public class GuiceContext extends GuiceServletContextListener
 	 */
 	private static boolean built = false;
 	private static int threadCount = Runtime.getRuntime()
-			                                 .availableProcessors() * 2;
+	                                        .availableProcessors() * 2;
 	private static long asyncTerminationWait = 60L;
 	private static TimeUnit asyncTerminationTimeUnit = TimeUnit.SECONDS;
 
@@ -178,7 +181,7 @@ public class GuiceContext extends GuiceServletContextListener
 						continue;
 					}
 					Logger.getLogger(GuiceContext.class.getName())
-							.log(Level.SEVERE, null, ex);
+					      .log(Level.SEVERE, null, ex);
 				}
 			}
 			customModules.add(0, siteInjection);
@@ -204,7 +207,7 @@ public class GuiceContext extends GuiceServletContextListener
 			                     {
 				                     Integer sortOrder = a.sortOrder();
 				                     postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
-						                     .add(a);
+				                                      .add(a);
 			                     });
 			postStartupGroups.forEach((key, value) ->
 			                          {
@@ -213,7 +216,7 @@ public class GuiceContext extends GuiceServletContextListener
 				                          if (st.size() == 1)
 				                          {
 					                          st.get(0)
-							                          .postLoad();
+					                            .postLoad();
 				                          }
 				                          else
 				                          {
@@ -461,7 +464,16 @@ public class GuiceContext extends GuiceServletContextListener
 	{
 		log.info("Starting up classpath scanner");
 		Stopwatch stopwatch = Stopwatch.createStarted();
-		scanner = new FastClasspathScanner(getPackagesList());
+		if (isWhiteListing())
+		{
+			scanner = new FastClasspathScanner(getPackagesList());
+		}
+		else
+		{
+			scanner = new FastClasspathScanner();
+			log.warning(
+					"Scanning may be slow because white listing is disabled. If you experience long scan times please set white listing to true before calling GuiceContext.inject();. Make sure to create the PackageContentsScanner service.");
+		}
 		scanner.enableFieldInfo();
 		scanner.enableFieldAnnotationIndexing();
 		scanner.enableFieldTypeIndexing();
@@ -473,6 +485,26 @@ public class GuiceContext extends GuiceServletContextListener
 		scanResult = scanner.scan(threadCount);
 		stopwatch.stop();
 		log.info("Classpath Scanner Completed. Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
+	}
+
+	/**
+	 * If whitelisting is set for scanner optimizations
+	 *
+	 * @return
+	 */
+	public static boolean isWhiteListing()
+	{
+		return whiteListing;
+	}
+
+	/**
+	 * Sets if whitelisting must be set
+	 *
+	 * @param whiteListing
+	 */
+	public static void setWhiteListing(boolean whiteListing)
+	{
+		GuiceContext.whiteListing = whiteListing;
 	}
 
 	/**
@@ -511,7 +543,7 @@ public class GuiceContext extends GuiceServletContextListener
 		for (FileContentsScanner fileScanner : fileScanners)
 		{
 			fileScanner.onMatch()
-					.forEach(scanner::matchFilenamePathLeaf);
+			           .forEach(scanner::matchFilenamePathLeaf);
 			found++;
 		}
 		log.config("File Contents Scanner Matchers have been registered. Total Content Scanners [" + found + "].");
