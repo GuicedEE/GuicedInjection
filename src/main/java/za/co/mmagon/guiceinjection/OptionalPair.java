@@ -58,6 +58,10 @@ public class OptionalPair<K, V>
 	@Override
 	public K getKey()
 	{
+		if (!key.isPresent())
+		{
+			return null;
+		}
 		return key.get();
 	}
 
@@ -83,6 +87,10 @@ public class OptionalPair<K, V>
 	@Override
 	public V getValue()
 	{
+		if (!value.isPresent())
+		{
+			return null;
+		}
 		return value.get();
 	}
 
