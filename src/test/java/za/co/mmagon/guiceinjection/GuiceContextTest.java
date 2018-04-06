@@ -11,10 +11,11 @@ import za.co.mmagon.guiceinjection.abstractions.GuiceInjectorModule;
 import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.interfaces.GuiceDefaultBinder;
 import za.co.mmagon.guiceinjection.interfaces.GuiceSiteBinder;
+import za.co.mmagon.logger.LogFactory;
+import za.co.mmagon.logger.handlers.ConsoleSTDOutputHandler;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -27,20 +28,20 @@ public class GuiceContextTest
 	@BeforeAll
 	public static void pre()
 	{
-		LogManager.getLogManager()
-		          .getLogger("")
-		          .setLevel(Level.FINEST);
+		Handler[] handles = Logger.getLogger("")
+		                          .getHandlers();
+		for (Handler handle : handles)
+		{
+			handle.setLevel(Level.FINE);
+		}
+		LogFactory.setDefaultLevel(Level.FINE);
+		Logger.getLogger("")
+		      .addHandler(new ConsoleSTDOutputHandler(true));
 	}
 
 	@Test
 	public void main()
 	{
-		for (Handler handler : Logger.getLogger("")
-		                             .getHandlers())
-		{
-			handler.setLevel(Level.FINEST);
-		}
-
 		GuiceContext.inject();
 		GuiceContext.reflect()
 		            .getSubTypesOf(GuiceDefaultBinder.class);
