@@ -20,27 +20,34 @@ import java.util.logging.Logger;
 /**
  * @author GedMarc
  */
-public class GuiceContextTest extends GuiceDefaultBinder
+public class GuiceContextTest
+		extends GuiceDefaultBinder
 {
 
 	@BeforeAll
 	public static void pre()
 	{
-		LogManager.getLogManager().getLogger("").setLevel(Level.FINEST);
+		LogManager.getLogManager()
+		          .getLogger("")
+		          .setLevel(Level.FINEST);
 	}
 
 	@Test
 	public void main()
 	{
-		for (Handler handler : Logger.getLogger("").getHandlers())
+		for (Handler handler : Logger.getLogger("")
+		                             .getHandlers())
 		{
-			handler.setLevel(Level.CONFIG);
+			handler.setLevel(Level.FINEST);
 		}
 
 		GuiceContext.inject();
-		GuiceContext.reflect().getSubTypesOf(GuiceDefaultBinder.class);
-		GuiceContext.reflect().getSubTypesOf(GuiceSiteBinder.class);
-		GuiceContext.reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class);
+		GuiceContext.reflect()
+		            .getSubTypesOf(GuiceDefaultBinder.class);
+		GuiceContext.reflect()
+		            .getSubTypesOf(GuiceSiteBinder.class);
+		GuiceContext.reflect()
+		            .getTypesAnnotatedWith(GuiceInjectorModuleMarker.class);
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import za.co.mmagon.guiceinjection.abstractions.GuiceSiteInjectorModule;
 import za.co.mmagon.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
 import za.co.mmagon.guiceinjection.annotations.GuicePreStartup;
+import za.co.mmagon.guiceinjection.interfaces.IGuiceConfigurator;
 import za.co.mmagon.guiceinjection.scanners.FileContentsScanner;
 import za.co.mmagon.guiceinjection.scanners.PackageContentsScanner;
 import za.co.mmagon.logger.LogFactory;
@@ -54,7 +55,6 @@ public class GuiceContext
 {
 	private static final Logger log = LogFactory.getLog("GuiceContext");
 
-	public static boolean whiteListing = false;
 	/**
 	 * This particular instance of the class
 	 */
@@ -70,6 +70,7 @@ public class GuiceContext
 	private static boolean built = false;
 	private static int threadCount = Runtime.getRuntime()
 	                                        .availableProcessors() * 2;
+
 	private static long asyncTerminationWait = 60L;
 	private static TimeUnit asyncTerminationTimeUnit = TimeUnit.SECONDS;
 
@@ -96,6 +97,10 @@ public class GuiceContext
 	 * A list of jars to exclude from the scan file for the application
 	 */
 	private Set<String> excludeJarsFromScan;
+	/**
+	 * The configuration object
+	 */
+	private GuiceConfig<?> config;
 
 	/**
 	 * Creates a new Guice context. Not necessary
@@ -121,7 +126,7 @@ public class GuiceContext
 		{
 			while (buildingInjector)
 			{
-
+				//Wait until it is finished
 			}
 		}
 		if (context().injector == null)
@@ -464,7 +469,22 @@ public class GuiceContext
 	{
 		log.info("Starting up classpath scanner");
 		Stopwatch stopwatch = Stopwatch.createStarted();
-		if (isWhiteListing())
+		log.fine("Loading the Guice Config.");
+
+
+		ServiceLoader<IGuiceConfigurator> guiceConfigurators = ServiceLoader.load(IGuiceConfigurator.class);
+		if (config == null)
+		{
+			config = new GuiceConfig<>();
+		}
+		for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
+		{
+			config = guiceConfigurator.configure(config);
+		}
+
+		log.config("Using Configuration : " + config.toString());
+
+		if (config.isWhiteList())
 		{
 			scanner = new FastClasspathScanner(getPackagesList());
 		}
@@ -472,39 +492,40 @@ public class GuiceContext
 		{
 			scanner = new FastClasspathScanner();
 			log.warning(
-					"Scanning may be slow because white listing is disabled. If you experience long scan times please set white listing to true before calling GuiceContext.inject();. Make sure to create the PackageContentsScanner service.");
+					"Scanning may be slow because white listing is disabled. If you experience long scan times, you can configure using META-INF/services/za.co.mmagon.guiceinjection.interfaces.IGuiceConfigurator. White List the packages to be scanned with META-INF/services/za.co.mmagon.guiceinjection.scanners.PackageContentsScanner");
 		}
-		scanner.enableFieldInfo();
-		scanner.enableFieldAnnotationIndexing();
-		scanner.enableFieldTypeIndexing();
-		scanner.enableMethodAnnotationIndexing();
-		scanner.enableMethodInfo();
-		scanner.ignoreFieldVisibility();
-		scanner.ignoreMethodVisibility();
+		if (config.isFieldInfo())
+		{
+			scanner.enableFieldInfo();
+		}
+		if (config.isFieldAnnotationScanning())
+		{
+			scanner.enableFieldAnnotationIndexing();
+		}
+		if (config.isFieldTypeIndexing())
+		{
+			scanner.enableFieldTypeIndexing();
+		}
+		if (config.isMethodAnnotationIndexing())
+		{
+			scanner.enableMethodAnnotationIndexing();
+		}
+		if (config.isMethodInfo())
+		{
+			scanner.enableMethodInfo();
+		}
+		if (config.isIgnoreFieldVisibility())
+		{
+			scanner.ignoreFieldVisibility();
+		}
+		if (config.isIgnoreMethodVisibility())
+		{
+			scanner.ignoreMethodVisibility();
+		}
 		registerScanQuickFiles(scanner);
 		scanResult = scanner.scan(threadCount);
 		stopwatch.stop();
-		log.info("Classpath Scanner Completed. Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
-	}
-
-	/**
-	 * If whitelisting is set for scanner optimizations
-	 *
-	 * @return
-	 */
-	public static boolean isWhiteListing()
-	{
-		return whiteListing;
-	}
-
-	/**
-	 * Sets if whitelisting must be set
-	 *
-	 * @param whiteListing
-	 */
-	public static void setWhiteListing(boolean whiteListing)
-	{
-		GuiceContext.whiteListing = whiteListing;
+		log.info("Classpath Scanner Completed with [" + threadCount + "] threads. Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
 	}
 
 	/**
