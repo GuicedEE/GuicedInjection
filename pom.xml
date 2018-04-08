@@ -36,8 +36,8 @@
         <maven.resources.version>3.0.2</maven.resources.version>
 
         <maven.jackson.version>2.9.2</maven.jackson.version>
-        <maven.fastclasspath.version>2.9.4</maven.fastclasspath.version>
-        <maven.guice.version>4.1.0</maven.guice.version>
+        <maven.fastclasspath.version>2.18.1</maven.fastclasspath.version>
+        <maven.guice.version>4.2.0</maven.guice.version>
 
         <maven.hibernate.version>5.2.12.Final</maven.hibernate.version>
         <maven.hibernate.validator.version>5.4.2.Final</maven.hibernate.validator.version>
@@ -366,7 +366,7 @@
     </distributionManagement>
     <organization>
         <name>Marc Magon</name>
-        <url>http://jwebswing.com</url>
+        <url>http://jwebmp.com</url>
     </organization>
     <scm>
         <url>https://github.com/GedMarc?tab=repositories</url>
@@ -378,7 +378,7 @@
     </issueManagement>
     <ciManagement>
         <system>TeamCity</system>
-        <url>http://jwebswing.com/teamcity</url>
+        <url>http://jwebmp.com/teamcity</url>
     </ciManagement>
     <reporting>
         <plugins>

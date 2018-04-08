@@ -14,7 +14,6 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	private boolean fieldInfo;
 	private boolean fieldScanning;
 	private boolean fieldAnnotationScanning;
-	private boolean fieldTypeIndexing;
 	private boolean methodAnnotationIndexing;
 	private boolean methodInfo;
 	private boolean ignoreFieldVisibility;
@@ -76,31 +75,6 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	public J setFieldAnnotationScanning(boolean fieldAnnotationScanning)
 	{
 		this.fieldAnnotationScanning = fieldAnnotationScanning;
-		return (J) this;
-	}
-
-	/**
-	 * Enables the scanning of field types and indexing
-	 *
-	 * @return
-	 */
-	public boolean isFieldTypeIndexing()
-	{
-		return fieldTypeIndexing;
-	}
-
-	/**
-	 * Enables field type indexing
-	 *
-	 * @param fieldTypeIndexing
-	 *
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	@NotNull
-	public J setFieldTypeIndexing(boolean fieldTypeIndexing)
-	{
-		this.fieldTypeIndexing = fieldTypeIndexing;
 		return (J) this;
 	}
 
@@ -247,6 +221,6 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	@Override
 	public String toString()
 	{
-		return "GuiceConfig{" + "fieldScanning=" + fieldScanning + ", fieldAnnotationScanning=" + fieldAnnotationScanning + ", fieldTypeIndexing=" + fieldTypeIndexing + ", methodAnnotationIndexing=" + methodAnnotationIndexing + ", methodInfo=" + methodInfo + ", ignoreFieldVisibility=" + ignoreFieldVisibility + ", ignoreMethodVisibility=" + ignoreMethodVisibility + ", whiteList=" + whiteList + '}';
+		return "GuiceConfig{" + "fieldScanning=" + fieldScanning + ", fieldAnnotationScanning=" + fieldAnnotationScanning + ", methodAnnotationIndexing=" + methodAnnotationIndexing + ", methodInfo=" + methodInfo + ", ignoreFieldVisibility=" + ignoreFieldVisibility + ", ignoreMethodVisibility=" + ignoreMethodVisibility + ", whiteList=" + whiteList + '}';
 	}
 }

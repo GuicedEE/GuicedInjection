@@ -69,7 +69,7 @@ public class GuiceContext
 	 */
 	private static boolean built = false;
 	private static int threadCount = Runtime.getRuntime()
-	                                        .availableProcessors() * 2;
+	                                        .availableProcessors();
 
 	private static long asyncTerminationWait = 60L;
 	private static TimeUnit asyncTerminationTimeUnit = TimeUnit.SECONDS;
@@ -377,27 +377,6 @@ public class GuiceContext
 	}
 
 	/**
-	 * Gets the number of threads to use when processing
-	 * Default processors * 2
-	 *
-	 * @return
-	 */
-	public static int getThreadCount()
-	{
-		return threadCount;
-	}
-
-	/**
-	 * Sets the thread count to use
-	 *
-	 * @param threadCount
-	 */
-	public static void setThreadCount(int threadCount)
-	{
-		GuiceContext.threadCount = threadCount;
-	}
-
-	/**
 	 * Returns the async termination wait period Default 60
 	 *
 	 * @return
@@ -471,7 +450,6 @@ public class GuiceContext
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		log.fine("Loading the Guice Config.");
 
-
 		ServiceLoader<IGuiceConfigurator> guiceConfigurators = ServiceLoader.load(IGuiceConfigurator.class);
 		if (config == null)
 		{
@@ -502,10 +480,6 @@ public class GuiceContext
 		{
 			scanner.enableFieldAnnotationIndexing();
 		}
-		if (config.isFieldTypeIndexing())
-		{
-			scanner.enableFieldTypeIndexing();
-		}
 		if (config.isMethodAnnotationIndexing())
 		{
 			scanner.enableMethodAnnotationIndexing();
@@ -523,9 +497,9 @@ public class GuiceContext
 			scanner.ignoreMethodVisibility();
 		}
 		registerScanQuickFiles(scanner);
-		scanResult = scanner.scan(threadCount);
+		scanResult = scanner.scan(getThreadCount());
 		stopwatch.stop();
-		log.info("Classpath Scanner Completed with [" + threadCount + "] threads. Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
+		log.info("Classpath Scanner Completed with [" + getThreadCount() + "] threads. Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
 	}
 
 	/**
@@ -568,6 +542,27 @@ public class GuiceContext
 			found++;
 		}
 		log.config("File Contents Scanner Matchers have been registered. Total Content Scanners [" + found + "].");
+	}
+
+	/**
+	 * Gets the number of threads to use when processing
+	 * Default processors * 2
+	 *
+	 * @return
+	 */
+	public static int getThreadCount()
+	{
+		return threadCount;
+	}
+
+	/**
+	 * Sets the thread count to use
+	 *
+	 * @param threadCount
+	 */
+	public static void setThreadCount(int threadCount)
+	{
+		GuiceContext.threadCount = threadCount;
 	}
 
 	/**
