@@ -131,106 +131,112 @@ public class GuiceContext
 		}
 		if (context().injector == null)
 		{
-			buildingInjector = true;
-			log.info("Starting up Injections");
-			log.config("Pre Startup Executions....");
-			Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
-			pres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
-			List<GuicePreStartup> startups = new ArrayList<>();
-			for (Class<? extends GuicePreStartup> pre : pres)
+			try
 			{
-				GuicePreStartup pr = null;
-				try
+				buildingInjector = true;
+				log.info("Starting up Injections");
+				log.config("Pre Startup Executions....");
+				Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
+				pres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
+				List<GuicePreStartup> startups = new ArrayList<>();
+				for (Class<? extends GuicePreStartup> pre : pres)
 				{
-					pr = pre.newInstance();
-					startups.add(pr);
-				}
-				catch (InstantiationException | IllegalAccessException e)
-				{
-					log.log(Level.SEVERE, "Error trying to create Pre Startup Class (newInstance) - " + pre.getCanonicalName(), e);
-				}
-			}
-			startups.sort(Comparator.comparing(GuicePreStartup::sortOrder));
-			log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
-			startups.forEach(GuicePreStartup::onStartup);
-			log.config("Finished Startup Execution");
-
-			log.info("Loading All Default Binders (that extend GuiceDefaultBinder)");
-
-			za.co.mmagon.guiceinjection.abstractions.GuiceInjectorModule defaultInjection;
-			defaultInjection = new za.co.mmagon.guiceinjection.abstractions.GuiceInjectorModule();
-			log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
-
-			GuiceSiteInjectorModule siteInjection;
-			siteInjection = new GuiceSiteInjectorModule();
-
-			Set<Class<?>> aClass = reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class);
-			aClass.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
-			int customModuleSize = aClass.size();
-			log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
-			ArrayList<Module> customModules = new ArrayList<>();
-			Module[] cModules;
-			for (Class<?> clazz : aClass)
-			{
-				try
-				{
-					Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) clazz;
-					log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
-					Module moduleInstance = next.newInstance();
-					customModules.add(moduleInstance);
-				}
-				catch (InstantiationException | IllegalAccessException ex)
-				{
-					if (Modifier.isAbstract(clazz.getModifiers()))
+					GuicePreStartup pr = null;
+					try
 					{
-						continue;
+						pr = pre.newInstance();
+						startups.add(pr);
 					}
-					Logger.getLogger(GuiceContext.class.getName())
-					      .log(Level.SEVERE, null, ex);
+					catch (InstantiationException | IllegalAccessException e)
+					{
+						log.log(Level.SEVERE, "Error trying to create Pre Startup Class (newInstance) - " + pre.getCanonicalName(), e);
+					}
 				}
+				startups.sort(Comparator.comparing(GuicePreStartup::sortOrder));
+				log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
+				startups.forEach(GuicePreStartup::onStartup);
+				log.config("Finished Startup Execution");
+
+				log.info("Loading All Default Binders (that extend GuiceDefaultBinder)");
+
+				za.co.mmagon.guiceinjection.abstractions.GuiceInjectorModule defaultInjection;
+				defaultInjection = new za.co.mmagon.guiceinjection.abstractions.GuiceInjectorModule();
+				log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
+
+				GuiceSiteInjectorModule siteInjection;
+				siteInjection = new GuiceSiteInjectorModule();
+
+				Set<Class<?>> aClass = reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class);
+				aClass.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
+				int customModuleSize = aClass.size();
+				log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
+				ArrayList<Module> customModules = new ArrayList<>();
+				Module[] cModules;
+				for (Class<?> clazz : aClass)
+				{
+					try
+					{
+						Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) clazz;
+						log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
+						Module moduleInstance = next.newInstance();
+						customModules.add(moduleInstance);
+					}
+					catch (InstantiationException | IllegalAccessException ex)
+					{
+						if (Modifier.isAbstract(clazz.getModifiers()))
+						{
+							continue;
+						}
+						Logger.getLogger(GuiceContext.class.getName())
+						      .log(Level.SEVERE, null, ex);
+					}
+				}
+				customModules.add(0, siteInjection);
+				customModules.add(0, defaultInjection);
+
+				cModules = new Module[customModules.size()];
+				cModules = customModules.toArray(cModules);
+
+				context().injector = Guice.createInjector(cModules);
+				log.info("Post Startup Executions....");
+				Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
+				closingPres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
+				List<GuicePostStartup> postStartups = new ArrayList<>();
+				Map<Integer, List<GuicePostStartup>> postStartupGroups = new TreeMap<>();
+
+				buildingInjector = false;
+
+				//Load without any injection to get the sorting order, will inject during async stage
+				closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
+				postStartups.sort(Comparator.comparing(GuicePostStartup::sortOrder));
+				log.log(Level.CONFIG, "Total of [{0}] startup modules.", postStartups.size());
+				postStartups.forEach(a ->
+				                     {
+					                     Integer sortOrder = a.sortOrder();
+					                     postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
+					                                      .add(a);
+				                     });
+				postStartupGroups.forEach((key, value) ->
+				                          {
+					                          List<GuicePostStartup> st = postStartupGroups.get(key);
+					                          List<PostStartupRunnable> runnables = new ArrayList<>();
+					                          if (st.size() == 1)
+					                          {
+						                          st.get(0)
+						                            .postLoad();
+					                          }
+					                          else
+					                          {
+						                          configureWorkStealingPool(st, runnables);
+					                          }
+				                          });
+				log.fine("Finished Post Startup Execution");
+				log.config("System Ready");
 			}
-			customModules.add(0, siteInjection);
-			customModules.add(0, defaultInjection);
-
-			cModules = new Module[customModules.size()];
-			cModules = customModules.toArray(cModules);
-
-			context().injector = Guice.createInjector(cModules);
-			log.info("Post Startup Executions....");
-			Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
-			closingPres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
-			List<GuicePostStartup> postStartups = new ArrayList<>();
-			Map<Integer, List<GuicePostStartup>> postStartupGroups = new TreeMap<>();
-
-			buildingInjector = false;
-
-			//Load without any injection to get the sorting order, will inject during async stage
-			closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
-			postStartups.sort(Comparator.comparing(GuicePostStartup::sortOrder));
-			log.log(Level.CONFIG, "Total of [{0}] startup modules.", postStartups.size());
-			postStartups.forEach(a ->
-			                     {
-				                     Integer sortOrder = a.sortOrder();
-				                     postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
-				                                      .add(a);
-			                     });
-			postStartupGroups.forEach((key, value) ->
-			                          {
-				                          List<GuicePostStartup> st = postStartupGroups.get(key);
-				                          List<PostStartupRunnable> runnables = new ArrayList<>();
-				                          if (st.size() == 1)
-				                          {
-					                          st.get(0)
-					                            .postLoad();
-				                          }
-				                          else
-				                          {
-					                          configureWorkStealingPool(st, runnables);
-				                          }
-			                          });
-			log.fine("Finished Post Startup Execution");
-			log.config("System Ready");
-
+			catch (Exception e)
+			{
+				log.log(Level.SEVERE, "Exception creating Injector : " + e.getMessage(), e);
+			}
 			built = true;
 		}
 		buildingInjector = false;
@@ -509,7 +515,7 @@ public class GuiceContext
 	 */
 	private String[] getPackagesList()
 	{
-		log.fine("Starting scan for package monitors. Services registered with PackageContentsScanner will be found.");
+		log.fine("Starting scan for package monitors. Services registered with " + PackageContentsScanner.class.getCanonicalName() + " will be found.");
 		if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
 		{
 			excludeJarsFromScan = new HashSet<>();
@@ -532,7 +538,7 @@ public class GuiceContext
 	@SuppressWarnings("unchecked")
 	private void registerScanQuickFiles(FastClasspathScanner scanner)
 	{
-		log.fine("Starting File Contents Scanner. Services registered with FileContentsScanner will be found.");
+		log.fine("Starting File Contents Scanner. Services registered with " + FileContentsScanner.class.getCanonicalName() + " will be found.");
 		ServiceLoader<FileContentsScanner> fileScanners = ServiceLoader.load(FileContentsScanner.class);
 		int found = 0;
 		for (FileContentsScanner fileScanner : fileScanners)
