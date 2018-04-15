@@ -28,7 +28,7 @@ A Java Guice Assistant that allows you to perform multiple and dynamic binding, 
 ```
 ```
 <dependency>
-    <groupId>za.co.mmagon</groupId>
+    <groupId>com.jwebmp</groupId>
     <artifactId>guice-injection</artifactId>
     <version>LATEST</version>
 </dependency>

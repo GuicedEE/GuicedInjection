@@ -4,7 +4,7 @@
                       https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>za.co.mmagon</groupId>
+    <groupId>com.jwebmp</groupId>
     <artifactId>guice-injection</artifactId>
     <version>0.0.0_0</version>
     <packaging>jar</packaging>
@@ -162,7 +162,7 @@
 
 
         <dependency>
-            <groupId>za.co.mmagon</groupId>
+            <groupId>com.jwebmp</groupId>
             <artifactId>log-master</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
