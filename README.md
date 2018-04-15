@@ -36,8 +36,6 @@ A Java Guice Assistant that allows you to perform multiple and dynamic binding, 
 
 
 # Complete CI
-I track every bit of this development very closely.
-
 Teamcity :  https://jwebswing.com/teamcity/viewType.html?buildTypeId=JWebSwingCore_BuildGuiceInjection
 
 SonarQube Quality Gate : https://jwebswing.com/sonar/overview?id=1
@@ -52,11 +50,8 @@ This is due to the convertor pattern being standardized in JPA 2.1 as well as a 
  
  https://www.thoughts-on-java.org/jpa-21-overview/ 
 
-# Mandatories
-From version 0.16, With the vast performance increase in the class scanner (https://github.com/lukehutch/fast-classpath-scanner) in Version 2.9.4, it is now required to whitelist your packages for truly optimized performance.
-
 # Libraries
-* Google Guice 4.1 (guice-servlet,guice-persist,guice-jndi,guice-jms)
+* Google Guice 4.2 (guice-servlet,guice-persist,guice-jndi,guice-jms)
 * Fast-Classpath-Scanner 2.9.4 
 * JPA 2.1
 * H2 (testing)
