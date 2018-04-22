@@ -35,13 +35,9 @@
         <maven.source.version>2.1.2</maven.source.version>
         <maven.resources.version>3.0.2</maven.resources.version>
 
-        <maven.jackson.version>2.9.2</maven.jackson.version>
+        <maven.jackson.version>2.9.5</maven.jackson.version>
         <maven.fastclasspath.version>2.18.1</maven.fastclasspath.version>
         <maven.guice.version>4.2.0</maven.guice.version>
-
-        <maven.hibernate.version>5.2.12.Final</maven.hibernate.version>
-        <maven.hibernate.validator.version>5.4.2.Final</maven.hibernate.validator.version>
-        <maven.hibernate.annotations.version>5.0.1.Final</maven.hibernate.annotations.version>
 
         <netbeans.hint.license>gpl30</netbeans.hint.license>
 
@@ -49,7 +45,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
 
 
-        <sonar.host.url>https://jwebswing.com/sonar</sonar.host.url>
+        <sonar.host.url>https://jwebmp.com/sonar</sonar.host.url>
         <sonar.exclusions>**bower_components</sonar.exclusions>
     </properties>
 
@@ -198,13 +194,6 @@
             <type>jar</type>
         </dependency>
 
-        <dependency>
-            <groupId>javax.persistence</groupId>
-            <artifactId>javax.persistence-api</artifactId>
-            <version>2.2</version>
-            <type>jar</type>
-        </dependency>
-
         <!-- Jackson JDK 8 Support-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -289,68 +278,6 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
-
-        <dependency>
-            <groupId>javax.transaction</groupId>
-            <artifactId>jta</artifactId>
-            <version>1.1</version>
-            <type>jar</type>
-        </dependency>
-
-        <dependency>
-            <groupId>org.codehaus.btm</groupId>
-            <artifactId>btm</artifactId>
-            <version>2.1.4</version>
-            <type>jar</type>
-        </dependency>
-
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.4.195</version>
-            <type>jar</type>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>${maven.hibernate.version}</version>
-            <type>jar</type>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>${maven.hibernate.validator.version}</version>
-            <type>jar</type>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-jpamodelgen</artifactId>
-            <version>${maven.hibernate.version}</version>
-            <type>jar</type>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate.common</groupId>
-            <artifactId>hibernate-commons-annotations</artifactId>
-            <version>${maven.hibernate.annotations.version}</version>
-            <type>jar</type>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate.javax.persistence</groupId>
-            <artifactId>hibernate-jpa-2.1-api</artifactId>
-            <version>1.0.0.Final</version>
-            <type>jar</type>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
     <distributionManagement>
         <snapshotRepository>
