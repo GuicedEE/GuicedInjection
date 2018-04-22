@@ -142,15 +142,8 @@ public class GuiceContext
 				for (Class<? extends GuicePreStartup> pre : pres)
 				{
 					GuicePreStartup pr = null;
-					try
-					{
-						pr = pre.newInstance();
-						startups.add(pr);
-					}
-					catch (InstantiationException | IllegalAccessException e)
-					{
-						log.log(Level.SEVERE, "Error trying to create Pre Startup Class (newInstance) - " + pre.getCanonicalName(), e);
-					}
+					pr = pre.newInstance();
+					startups.add(pr);
 				}
 				startups.sort(Comparator.comparing(GuicePreStartup::sortOrder));
 				log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
@@ -174,22 +167,14 @@ public class GuiceContext
 				Module[] cModules;
 				for (Class<?> clazz : aClass)
 				{
-					try
+					Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) clazz;
+					if (Modifier.isAbstract(clazz.getModifiers()))
 					{
-						Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) clazz;
-						log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
-						Module moduleInstance = next.newInstance();
-						customModules.add(moduleInstance);
+						continue;
 					}
-					catch (InstantiationException | IllegalAccessException ex)
-					{
-						if (Modifier.isAbstract(clazz.getModifiers()))
-						{
-							continue;
-						}
-						Logger.getLogger(GuiceContext.class.getName())
-						      .log(Level.SEVERE, null, ex);
-					}
+					log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
+					Module moduleInstance = next.newInstance();
+					customModules.add(moduleInstance);
 				}
 				customModules.add(0, siteInjection);
 				customModules.add(0, defaultInjection);
@@ -203,9 +188,7 @@ public class GuiceContext
 				closingPres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
 				List<GuicePostStartup> postStartups = new ArrayList<>();
 				Map<Integer, List<GuicePostStartup>> postStartupGroups = new TreeMap<>();
-
 				buildingInjector = false;
-
 				//Load without any injection to get the sorting order, will inject during async stage
 				closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
 				postStartups.sort(Comparator.comparing(GuicePostStartup::sortOrder));
