@@ -168,10 +168,6 @@ public class GuiceContext
 				for (Class<?> clazz : aClass)
 				{
 					Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) clazz;
-					if (Modifier.isAbstract(clazz.getModifiers()))
-					{
-						continue;
-					}
 					log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
 					Module moduleInstance = next.newInstance();
 					customModules.add(moduleInstance);

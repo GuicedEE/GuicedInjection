@@ -5,24 +5,29 @@ import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
 import java.io.Serializable;
 import java.util.concurrent.Callable;
 
-public class PostStartupRunnable implements Runnable, Callable<PostStartupRunnable>, Serializable {
+public class PostStartupRunnable
+		implements Runnable, Callable<PostStartupRunnable>, Serializable
+{
 	private static final long serialVersionUID = 1L;
 
-	private GuicePostStartup startup;
+	private transient GuicePostStartup startup;
 
-	public PostStartupRunnable(GuicePostStartup startup) {
+	public PostStartupRunnable(GuicePostStartup startup)
+	{
 		this.startup = startup;
 	}
 
 	@Override
-	public void run() {
-		startup.postLoad();
-		startup = null;
+	public PostStartupRunnable call() throws Exception
+	{
+		run();
+		return null;
 	}
 
 	@Override
-	public PostStartupRunnable call() throws Exception {
-		run();
-		return null;
+	public void run()
+	{
+		startup.postLoad();
+		startup = null;
 	}
 }
