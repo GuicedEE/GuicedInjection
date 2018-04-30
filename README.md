@@ -36,7 +36,7 @@ A Java Guice Assistant that allows you to perform multiple and dynamic binding, 
 
 
 # Complete CI
-Teamcity :  https://jwebswing.com/teamcity/viewType.html?buildTypeId=JWebSwingCore_BuildGuiceInjection
+Teamcity :  https://jwebswing.com/teamcity/viewType.html?buildTypeId=JWebMPCore_BuildGuiceInjection
 
 SonarQube Quality Gate : https://jwebswing.com/sonar/overview?id=1
 
