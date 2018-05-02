@@ -16,8 +16,15 @@
     </description>
     <url>https://github.com/GedMarc/GuiceInjection</url>
 
-    <repositories>
+    <licenses>
+        <license>
+            <name>GPL 3</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.en.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
+    <repositories>
         <repository>
             <id>jwebswing-snapshot</id>
             <name>JWebSwingArtifactory-snapshots</name>
@@ -39,6 +46,7 @@
         <maven.guice.version>4.2.0</maven.guice.version>
 
         <netbeans.hint.license>gpl30</netbeans.hint.license>
+        <license.dir>${basedir}</license.dir>
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
