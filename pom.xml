@@ -26,9 +26,9 @@
 
     <repositories>
         <repository>
-            <id>jwebswing-snapshot</id>
-            <name>JWebSwingArtifactory-snapshots</name>
-            <url>https://jwebswing.com/artifactory/libs-snapshot</url>
+            <id>jwebmp-snapshot</id>
+            <name>JWebMPArtifactory-snapshots</name>
+            <url>https://jwebmp.com/artifactory/libs-snapshot</url>
         </repository>
     </repositories>
 
@@ -41,9 +41,14 @@
         <maven.source.version>2.1.2</maven.source.version>
         <maven.resources.version>3.0.2</maven.resources.version>
 
-        <maven.jackson.version>2.9.5</maven.jackson.version>
-        <maven.fastclasspath.version>2.18.1</maven.fastclasspath.version>
-        <maven.guice.version>4.2.0</maven.guice.version>
+        <jackson.version>2.9.5</jackson.version>
+        <fastclasspath.version>2.18.1</fastclasspath.version>
+        <guice.version>4.2.0</guice.version>
+        <sonarqube.version>3.3.0.603</sonarqube.version>
+        <jacoco.version>0.7.9</jacoco.version>
+        <guava.version>23.4-jre</guava.version>
+        <servlet.api.version>3.1.0</servlet.api.version>
+        <javassist.version>3.22.0-CR1</javassist.version>
 
         <netbeans.hint.license>gpl30</netbeans.hint.license>
         <license.dir>${basedir}</license.dir>
@@ -78,7 +83,7 @@
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
-                <version>3.3.0.603</version>
+                <version>${sonarqube.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -88,7 +93,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
+                <version>${jacoco.version}</version>
             </plugin>
         </plugins>
     </build>
@@ -97,7 +102,7 @@
         <dependency>
             <groupId>io.github.lukehutch</groupId>
             <artifactId>fast-classpath-scanner</artifactId>
-            <version>${maven.fastclasspath.version}</version>
+            <version>${fastclasspath.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -111,7 +116,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>23.4-jre</version>
+            <version>${guava.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -119,7 +124,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava-gwt</artifactId>
-            <version>23.4-jre</version>
+            <version>${guava.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -127,7 +132,7 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>${maven.guice.version}</version>
+            <version>${guice.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -135,7 +140,7 @@
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-servlet</artifactId>
-            <version>${maven.guice.version}</version>
+            <version>${guice.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -143,7 +148,7 @@
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-multibindings</artifactId>
-            <version>${maven.guice.version}</version>
+            <version>${guice.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -151,7 +156,7 @@
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-persist</artifactId>
-            <version>${maven.guice.version}</version>
+            <version>${guice.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -159,7 +164,7 @@
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-jndi</artifactId>
-            <version>${maven.guice.version}</version>
+            <version>${guice.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -175,14 +180,14 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
+            <version>${servlet.api.version}</version>
             <type>jar</type>
         </dependency>
 
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>3.22.0-CR1</version>
+            <version>${javassist.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -205,46 +210,46 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${maven.jackson.version}</version>
+            <version>${jackson.version}</version>
             <type>jar</type>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${maven.jackson.version}</version>
+            <version>${jackson.version}</version>
             <type>jar</type>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${maven.jackson.version}</version>
+            <version>${jackson.version}</version>
             <type>jar</type>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-parameter-names</artifactId>
-            <version>${maven.jackson.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
-            <version>${maven.jackson.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${maven.jackson.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-guice</artifactId>
-            <version>${maven.jackson.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
@@ -285,17 +290,19 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
+
     </dependencies>
+    
     <distributionManagement>
         <snapshotRepository>
             <id>snapshot</id>
-            <name>JWebSwingArtifactory-snapshots</name>
-            <url>https://jwebswing.com/artifactory/libs-snapshot-local</url>
+            <name>JWebMPArtifactory-snapshots</name>
+            <url>https://jwebmp.com/artifactory/libs-snapshot-local</url>
         </snapshotRepository>
         <repository>
             <id>central</id>
-            <name>JWebSwingArtifactory-releases</name>
-            <url>https://jwebswing.com/artifactory/libs-release-local</url>
+            <name>JWebMPArtifactory-releases</name>
+            <url>https://jwebmp.com/artifactory/libs-release-local</url>
         </repository>
     </distributionManagement>
     <organization>
@@ -319,7 +326,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
+                <version>${jacoco.version}</version>
                 <reportSets>
                     <reportSet>
                         <reports>
