@@ -42,11 +42,12 @@
         <maven.resources.version>3.0.2</maven.resources.version>
 
         <jackson.version>2.9.5</jackson.version>
-        <fastclasspath.version>2.18.1</fastclasspath.version>
+        <fastclasspath.version>2.21</fastclasspath.version>
         <guice.version>4.2.0</guice.version>
         <sonarqube.version>3.3.0.603</sonarqube.version>
         <jacoco.version>0.7.9</jacoco.version>
-        <guava.version>23.4-jre</guava.version>
+        <guava.version>25.0-jre</guava.version>
+        <jsr311.version>1.1.1</jsr311.version>
         <servlet.api.version>3.1.0</servlet.api.version>
         <javassist.version>3.22.0-CR1</javassist.version>
 
@@ -202,7 +203,7 @@
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>jsr311-api</artifactId>
-            <version>1.1.1</version>
+            <version>${jsr311.version}</version>
             <type>jar</type>
         </dependency>
 
@@ -292,7 +293,7 @@
         </dependency>
 
     </dependencies>
-    
+
     <distributionManagement>
         <snapshotRepository>
             <id>snapshot</id>

@@ -298,6 +298,20 @@ public class GuiceContext
 	}
 
 	/**
+	 * Gets a new injected instance of a class
+	 *
+	 * @param <T>
+	 * @param type
+	 *
+	 * @return
+	 */
+	@NotNull
+	public static <T> T get(Class<T> type)
+	{
+		return inject().getInstance(type);
+	}
+
+	/**
 	 * Gets a new specified instance from a give key
 	 *
 	 * @param <T>
@@ -307,6 +321,20 @@ public class GuiceContext
 	 */
 	@NotNull
 	public static <T> T getInstance(Key<T> type)
+	{
+		return inject().getInstance(type);
+	}
+
+	/**
+	 * Gets a new specified instance from a give key
+	 *
+	 * @param <T>
+	 * @param type
+	 *
+	 * @return
+	 */
+	@NotNull
+	public static <T> T get(Key<T> type)
 	{
 		return inject().getInstance(type);
 	}
