@@ -33,6 +33,7 @@ import za.co.mmagon.logger.LogFactory;
 import javax.annotation.Nullable;
 import javax.servlet.ServletContextEvent;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -52,8 +53,11 @@ import java.util.logging.Logger;
  */
 public class GuiceContext
 		extends GuiceServletContextListener
+		implements Serializable
 {
+
 	private static final Logger log = LogFactory.getLog("GuiceContext");
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * This particular instance of the class
@@ -77,21 +81,21 @@ public class GuiceContext
 	/**
 	 * The physical injector for the JVM container
 	 */
-	private Injector injector;
+	private transient Injector injector;
 
 	/**
 	 * The actual scanner
 	 */
-	private FastClasspathScanner scanner;
+	private transient FastClasspathScanner scanner;
 	/**
 	 * The scan result built from everything - the core scanner.
 	 */
-	private ScanResult scanResult;
+	private transient ScanResult scanResult;
 
 	/**
 	 * Facade layer for backwards compatibility
 	 */
-	private Reflections reflections;
+	private transient Reflections reflections;
 
 	/**
 	 * A list of jars to exclude from the scan file for the application
@@ -529,7 +533,9 @@ public class GuiceContext
 			ServiceLoader<PackageContentsScanner> exclusions = ServiceLoader.load(PackageContentsScanner.class);
 			for (PackageContentsScanner exclusion : exclusions)
 			{
-				excludeJarsFromScan.addAll(exclusion.searchFor());
+				Set<String> searches = exclusion.searchFor();
+				log.log(Level.CONFIG, "Added to Scanned Packages : " + searches);
+				excludeJarsFromScan.addAll(searches);
 			}
 		}
 		String[] exclusions = new String[excludeJarsFromScan.size()];

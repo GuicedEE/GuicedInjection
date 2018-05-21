@@ -27,7 +27,9 @@ import za.co.mmagon.guiceinjection.GuiceContext;
 import za.co.mmagon.guiceinjection.Reflections;
 import za.co.mmagon.guiceinjection.interfaces.DefaultModuleMethods;
 import za.co.mmagon.guiceinjection.interfaces.GuiceDefaultBinder;
+import za.co.mmagon.logger.LogFactory;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -43,10 +45,13 @@ import java.util.logging.Logger;
  * @author GedMarc
  * @since 12 Dec 2016
  */
-public class GuiceInjectorModule extends AbstractModule implements DefaultModuleMethods
+public class GuiceInjectorModule
+		extends AbstractModule
+		implements DefaultModuleMethods, Serializable
 {
 
-	private static final Logger log = Logger.getLogger("GuiceInjectorModule");
+	private static final Logger log = LogFactory.getLog("GuiceInjectorModule");
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Constructs a new instance of the module
@@ -89,9 +94,11 @@ public class GuiceInjectorModule extends AbstractModule implements DefaultModule
 			Collections.sort(objects, objects.get(0));
 			objects.forEach(obj ->
 			                {
-				                log.log(Level.CONFIG, "Loading Guice Configuration {0}", obj.getClass().getSimpleName());
+				                log.log(Level.CONFIG, "Loading Guice Configuration {0}", obj.getClass()
+				                                                                            .getSimpleName());
 				                obj.onBind(this);
-				                log.log(Level.CONFIG, "Finished Guice Configuration {0}", obj.getClass().getSimpleName());
+				                log.log(Level.CONFIG, "Finished Guice Configuration {0}", obj.getClass()
+				                                                                             .getSimpleName());
 			                });
 		}
 	}
@@ -133,6 +140,12 @@ public class GuiceInjectorModule extends AbstractModule implements DefaultModule
 	}
 
 	@Override
+	public void bindInterceptor(Matcher<? super Class<?>> classMatcher, Matcher<? super Method> methodMatcher, org.aopalliance.intercept.MethodInterceptor... interceptors)
+	{
+		binder().bindInterceptor(classMatcher, methodMatcher, interceptors);
+	}
+
+	@Override
 	public void bindListener(Matcher<? super TypeLiteral<?>> typeMatcher, TypeListener listener)
 	{
 		super.bindListener(typeMatcher, listener);
@@ -142,14 +155,6 @@ public class GuiceInjectorModule extends AbstractModule implements DefaultModule
 	public void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener)
 	{
 		super.bindListener(bindingMatcher, listener);
-	}
-
-	@Override
-	public void bindInterceptor(Matcher<? super Class<?>> classMatcher,
-	                            Matcher<? super Method> methodMatcher,
-	                            org.aopalliance.intercept.MethodInterceptor... interceptors)
-	{
-		binder().bindInterceptor(classMatcher, methodMatcher, interceptors);
 	}
 
 }

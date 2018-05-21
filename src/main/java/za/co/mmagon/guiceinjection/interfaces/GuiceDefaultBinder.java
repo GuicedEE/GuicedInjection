@@ -18,6 +18,7 @@ package za.co.mmagon.guiceinjection.interfaces;
 
 import za.co.mmagon.guiceinjection.abstractions.GuiceInjectorModule;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
@@ -27,9 +28,10 @@ import java.util.Comparator;
  * @since 12 Dec 2016
  */
 public abstract class GuiceDefaultBinder
-		implements Comparator<GuiceDefaultBinder>, DefaultBinder<GuiceInjectorModule>
+		implements Comparator<GuiceDefaultBinder>, DefaultBinder<GuiceInjectorModule>, Serializable
 {
 
+	private static final long serialVersionUID = 1L;
 	private int DefaultSortOrder = 100;
 
 	/**
@@ -52,7 +54,8 @@ public abstract class GuiceDefaultBinder
 		{
 			return -1;
 		}
-		return o1.sortOrder().compareTo(o2.sortOrder());
+		return o1.sortOrder()
+		         .compareTo(o2.sortOrder());
 	}
 
 	/**

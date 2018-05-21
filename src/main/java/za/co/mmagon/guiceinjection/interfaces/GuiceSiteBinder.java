@@ -19,6 +19,7 @@ package za.co.mmagon.guiceinjection.interfaces;
 
 import za.co.mmagon.guiceinjection.abstractions.GuiceSiteInjectorModule;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
@@ -27,8 +28,11 @@ import java.util.Comparator;
  * @author GedMarc
  * @since 12 Dec 2016
  */
-public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, DefaultBinder<GuiceSiteInjectorModule>
+public abstract class GuiceSiteBinder
+		implements Comparator<GuiceSiteBinder>, DefaultBinder<GuiceSiteInjectorModule>, Serializable
 {
+
+	private static final long serialVersionUID = 1L;
 	/**
 	 * Default order 100
 	 */
@@ -67,7 +71,8 @@ public abstract class GuiceSiteBinder implements Comparator<GuiceSiteBinder>, De
 		{
 			return -1;
 		}
-		return o1.sortOrder().compareTo(o2.sortOrder());
+		return o1.sortOrder()
+		         .compareTo(o2.sortOrder());
 	}
 
 	/**

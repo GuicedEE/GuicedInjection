@@ -25,8 +25,12 @@ import za.co.mmagon.guiceinjection.interfaces.GuiceDefaultBinder;
  * @author Marc Magon
  * @since 08 Jul 2017
  */
-public class GuiceDefaultBinding extends GuiceDefaultBinder
+public class GuiceDefaultBinding
+		extends GuiceDefaultBinder
 {
+
+
+	private static final long serialVersionUID = 1L;
 
 	/*
 	 * Constructs a new GuiceDefaultBinding
@@ -44,6 +48,7 @@ public class GuiceDefaultBinding extends GuiceDefaultBinder
 	@Override
 	public void onBind(GuiceInjectorModule module)
 	{
-		module.bind(Globals.class).asEagerSingleton();
+		module.bind(Globals.class)
+		      .asEagerSingleton();
 	}
 }

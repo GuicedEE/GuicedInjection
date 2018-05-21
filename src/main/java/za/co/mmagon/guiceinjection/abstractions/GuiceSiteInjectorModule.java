@@ -28,7 +28,9 @@ import za.co.mmagon.guiceinjection.GuiceContext;
 import za.co.mmagon.guiceinjection.Reflections;
 import za.co.mmagon.guiceinjection.interfaces.DefaultModuleMethods;
 import za.co.mmagon.guiceinjection.interfaces.GuiceSiteBinder;
+import za.co.mmagon.logger.LogFactory;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -43,10 +45,14 @@ import java.util.logging.Logger;
  * @author GedMarc
  * @since 12 Dec 2016
  */
-public class GuiceSiteInjectorModule extends ServletModule implements DefaultModuleMethods
+public class GuiceSiteInjectorModule
+		extends ServletModule
+		implements DefaultModuleMethods, Serializable
 {
 
-	private static final Logger log = Logger.getLogger("GuiceSiteInjectorModule");
+
+	private static final Logger log = LogFactory.getLog("GuiceSiteInjectorModule");
+	private static final long serialVersionUID = 1L;
 
 	private int sortOrder = 100;
 
@@ -160,10 +166,10 @@ public class GuiceSiteInjectorModule extends ServletModule implements DefaultMod
 			objects.forEach(obj ->
 			                {
 				                log.log(Level.CONFIG, "Loading Guice Servlet Configuration {0}", obj.getClass()
-						                                                                                 .getSimpleName());
+				                                                                                    .getSimpleName());
 				                obj.onBind(this);
 				                log.log(Level.FINE, "Loaded Guice Servlet Configuration {0}", obj.getClass()
-						                                                                              .getSimpleName());
+				                                                                                 .getSimpleName());
 			                });
 		}
 	}
