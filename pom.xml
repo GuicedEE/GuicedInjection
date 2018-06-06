@@ -20,6 +20,14 @@
     </description>
     <url>https://github.com/GedMarc/GuiceInjection</url>
 
+    <repositories>
+        <repository>
+            <id>jwebmp-snapshot</id>
+            <name>JWebMPArtifactory-snapshots</name>
+            <url>https://jwebmp.com/artifactory/libs-snapshot</url>
+        </repository>
+    </repositories>
+
     <dependencies>
 
         <dependency>
