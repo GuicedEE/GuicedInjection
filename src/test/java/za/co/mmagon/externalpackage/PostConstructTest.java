@@ -1,6 +1,6 @@
 package za.co.mmagon.externalpackage;
 
-import za.co.mmagon.guiceinjection.annotations.GuicePostStartup;
+import com.jwebmp.guiceinjection.annotations.GuicePostStartup;
 
 public class PostConstructTest implements GuicePostStartup {
 

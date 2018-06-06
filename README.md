@@ -79,7 +79,7 @@ public class GuiceInjectionPackageDefaultInclusions implements PackageContentsSc
 	{
 		Set<String> strings = new HashSet<>();
 		strings.add("META-INF");
-		strings.add("za.co.mmagon.guiceinjection");
+		strings.add("com.jwebmp.guiceinjection");
 		return strings;
 	}
 }
