@@ -129,10 +129,8 @@ public class GuiceContext
 	{
 		if (buildingInjector)
 		{
-			while (buildingInjector)
-			{
-				//Wait until it is finished
-			}
+			throw new RuntimeException(
+					"The injector is being called recursively during build. Place such actions in a GuicePostStartup or use the GuicePreStartup Service Loader.");
 		}
 		if (context().injector == null)
 		{
