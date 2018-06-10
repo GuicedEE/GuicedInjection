@@ -1,10 +1,6 @@
 /build/
 /dist/
 Thumbs.db
-nbproject/build-native.xml~
-JWebSwingComplete.zip
-javadoc.zip
-/src/META-INF/resources/bower_components/vertical-timeline-jwebswing/nbproject/private/
 /javadoc/
 /.jacocoverage/
 /build
@@ -14,5 +10,9 @@ javadoc.zip
 **.jacocoverage/
 **/*.iml
 *.iml
-*.tloh
-*.tlog
+**/*.tloh
+**/*.tlog
+**/*.db
+**/*.project
+**/*.factorypath
+**/*.classpath

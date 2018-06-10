@@ -159,8 +159,7 @@ public class GuiceContext
 				defaultInjection = new GuiceInjectorModule();
 				log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
 
-				GuiceSiteInjectorModule siteInjection;
-				siteInjection = new GuiceSiteInjectorModule();
+				GuiceSiteInjectorModule siteInjection = new GuiceSiteInjectorModule();
 
 				Set<Class<?>> aClass = reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class);
 				aClass.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
@@ -188,7 +187,6 @@ public class GuiceContext
 				List<GuicePostStartup> postStartups = new ArrayList<>();
 				Map<Integer, List<GuicePostStartup>> postStartupGroups = new TreeMap<>();
 				buildingInjector = false;
-				//Load without any injection to get the sorting order, will inject during async stage
 				closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
 				postStartups.sort(Comparator.comparing(GuicePostStartup::sortOrder));
 				log.log(Level.CONFIG, "Total of [{0}] startup modules.", postStartups.size());
@@ -215,7 +213,7 @@ public class GuiceContext
 				log.fine("Finished Post Startup Execution");
 				log.config("System Ready");
 			}
-			catch (Exception e)
+			catch (Throwable e)
 			{
 				log.log(Level.SEVERE, "Exception creating Injector : " + e.getMessage(), e);
 			}
