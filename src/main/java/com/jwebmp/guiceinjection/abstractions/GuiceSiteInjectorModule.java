@@ -158,7 +158,7 @@ public class GuiceSiteInjectorModule
 			                    }
 			                    catch (InstantiationException | IllegalAccessException ex)
 			                    {
-				                    log.log(Level.SEVERE, "Couldn;t load module from sets" + siteBinders.toString(), ex);
+				                    log.log(Level.SEVERE, "Couldn't load module from sets" + siteBinders.toString(), ex);
 			                    }
 		                    });
 		if (!objects.isEmpty())

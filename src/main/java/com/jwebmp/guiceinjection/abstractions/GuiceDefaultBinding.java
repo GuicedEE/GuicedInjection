@@ -25,6 +25,7 @@ import com.jwebmp.guiceinjection.interfaces.GuiceDefaultBinder;
  * @author Marc Magon
  * @since 08 Jul 2017
  */
+@SuppressWarnings("unused")
 public class GuiceDefaultBinding
 		extends GuiceDefaultBinder
 {
