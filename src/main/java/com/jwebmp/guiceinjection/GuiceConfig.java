@@ -4,7 +4,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * The configuratoin class for Guice Context and the Classpath Scanner
+ * The configuration class for Guice Context and the Classpath Scanner
  */
 public class GuiceConfig<J extends GuiceConfig<J>>
 		implements Serializable

@@ -36,7 +36,8 @@ public class GuiceContextTest
 		}
 		LogFactory.setDefaultLevel(Level.FINE);
 		Logger.getLogger("")
-		      .addHandler(new ConsoleSTDOutputHandler(true));
+		      .addHandler(ConsoleSTDOutputHandler.getInstance()
+		                                         .setColoured(true));
 	}
 
 	@Test
