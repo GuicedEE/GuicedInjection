@@ -121,7 +121,7 @@ public class GuiceContext
 	/**
 	 * Reference the Injector Directly
 	 *
-	 * @return
+	 * @return The global Guice Injector Object, Never Null, Instantiates the Injector if not configured
 	 */
 	@NotNull
 	@SuppressWarnings("unchecked")
@@ -144,7 +144,7 @@ public class GuiceContext
 				List<GuicePreStartup> startups = new ArrayList<>();
 				for (Class<? extends GuicePreStartup> pre : pres)
 				{
-					GuicePreStartup pr = null;
+					GuicePreStartup pr;
 					pr = pre.newInstance();
 					startups.add(pr);
 				}
@@ -211,7 +211,7 @@ public class GuiceContext
 					                          }
 				                          });
 				log.fine("Finished Post Startup Execution");
-				log.config("System Ready");
+				log.config("Injection System Ready");
 			}
 			catch (Throwable e)
 			{
@@ -227,7 +227,9 @@ public class GuiceContext
 	 * Builds an asynchronous running pool to execute with a termination waiter
 	 *
 	 * @param st
+	 * 		A list of startup objects
 	 * @param runnables
+	 * 		A list of post startup threads
 	 */
 	private static void configureWorkStealingPool(List<GuicePostStartup> st, List<PostStartupRunnable> runnables)
 	{
@@ -273,7 +275,7 @@ public class GuiceContext
 	/**
 	 * Returns the actual context instance, provides access to methods existing a bit deeper
 	 *
-	 * @return
+	 * @return The singleton instance of this
 	 */
 	public static GuiceContext context()
 	{
@@ -288,12 +290,14 @@ public class GuiceContext
 	 * Gets a new injected instance of a class
 	 *
 	 * @param <T>
+	 * 		The type to retrieve
 	 * @param type
+	 * 		The physical class object
 	 *
-	 * @return
+	 * @return The scoped object
 	 */
 	@NotNull
-	public static <T> T getInstance(Class<T> type)
+	public static <T> T getInstance(@NotNull Class<T> type)
 	{
 		return inject().getInstance(type);
 	}
@@ -302,12 +306,14 @@ public class GuiceContext
 	 * Gets a new injected instance of a class
 	 *
 	 * @param <T>
+	 * 		The type to retrieve
 	 * @param type
+	 * 		The physical class object
 	 *
-	 * @return
+	 * @return The scoped object
 	 */
 	@NotNull
-	public static <T> T get(Class<T> type)
+	public static <T> T get(@NotNull Class<T> type)
 	{
 		return inject().getInstance(type);
 	}
@@ -316,12 +322,14 @@ public class GuiceContext
 	 * Gets a new specified instance from a give key
 	 *
 	 * @param <T>
+	 * 		The type to retrieve
 	 * @param type
+	 * 		The physical class object
 	 *
-	 * @return
+	 * @return The scoped object
 	 */
 	@NotNull
-	public static <T> T getInstance(Key<T> type)
+	public static <T> T getInstance(@NotNull Key<T> type)
 	{
 		return inject().getInstance(type);
 	}
@@ -330,12 +338,14 @@ public class GuiceContext
 	 * Gets a new specified instance from a give key
 	 *
 	 * @param <T>
+	 * 		The type to retrieve
 	 * @param type
+	 * 		The physical class object
 	 *
-	 * @return
+	 * @return The scoped object
 	 */
 	@NotNull
-	public static <T> T get(Key<T> type)
+	public static <T> T get(@NotNull Key<T> type)
 	{
 		return inject().getInstance(type);
 	}
@@ -343,7 +353,7 @@ public class GuiceContext
 	/**
 	 * If context can be used
 	 *
-	 * @return
+	 * @return boolean denoting if the injector is ready to be called
 	 */
 	public static boolean isReady()
 	{
@@ -353,7 +363,7 @@ public class GuiceContext
 	/**
 	 * If the context is built
 	 *
-	 * @return
+	 * @return denoting if the injector is ready to be called
 	 */
 	public static boolean isBuilt()
 	{
@@ -364,6 +374,7 @@ public class GuiceContext
 	 * If the context is built
 	 *
 	 * @param built
+	 * 		denoting if the injector is ready to be called
 	 */
 	public static void setBuilt(boolean built)
 	{
@@ -373,7 +384,7 @@ public class GuiceContext
 	/**
 	 * If the context is currently still building the injector
 	 *
-	 * @return
+	 * @return denoting if the injector is ready to be called
 	 */
 	public static boolean isBuildingInjector()
 	{
@@ -383,7 +394,7 @@ public class GuiceContext
 	/**
 	 * Returns the assigned logger for changing the level of output or adding handlers
 	 *
-	 * @return
+	 * @return This classes physical logger
 	 */
 	public static Logger getLog()
 	{
@@ -393,8 +404,9 @@ public class GuiceContext
 	/**
 	 * Returns the async termination wait period Default 60
 	 *
-	 * @return
+	 * @return The wait time for post startup operations to finish
 	 */
+	@SuppressWarnings("unused")
 	public static long getAsyncTerminationWait()
 	{
 		return asyncTerminationWait;
@@ -404,7 +416,9 @@ public class GuiceContext
 	 * Sets the termination asynchronous wait period (60)
 	 *
 	 * @param asyncTerminationWait
+	 * 		The wait time for post startup threads to finish
 	 */
+	@SuppressWarnings("unused")
 	public static void setAsyncTerminationWait(long asyncTerminationWait)
 	{
 		GuiceContext.asyncTerminationWait = asyncTerminationWait;
@@ -413,18 +427,21 @@ public class GuiceContext
 	/**
 	 * Gets the termination waiting period (Defualt sesonds)
 	 *
-	 * @return
+	 * @return The wait time for post startup object wait time
 	 */
+	@SuppressWarnings("unused")
 	public static TimeUnit getAsyncTerminationTimeUnit()
 	{
 		return asyncTerminationTimeUnit;
 	}
 
 	/**
-	 * Sets teh asynchronous termination waiting period
+	 * Sets the asynchronous termination waiting period
 	 *
 	 * @param asyncTerminationTimeUnit
+	 * 		The unit to apply for the waiting time
 	 */
+	@SuppressWarnings("unused")
 	public static void setAsyncTerminationTimeUnit(TimeUnit asyncTerminationTimeUnit)
 	{
 		GuiceContext.asyncTerminationTimeUnit = asyncTerminationTimeUnit;
@@ -433,7 +450,7 @@ public class GuiceContext
 	/**
 	 * Returns the current scan result
 	 *
-	 * @return
+	 * @return The physical Scan Result from the complete class scanner
 	 */
 	@Nullable
 	public ScanResult getScanResult()
@@ -443,16 +460,6 @@ public class GuiceContext
 			loadScanner();
 		}
 		return scanResult;
-	}
-
-	/**
-	 * Sets the current scan result
-	 *
-	 * @param scanResult
-	 */
-	public void setScanResult(ScanResult scanResult)
-	{
-		GuiceContext.context().scanResult = scanResult;
 	}
 
 	/**
@@ -519,7 +526,7 @@ public class GuiceContext
 	/**
 	 * Returns a complete list of generic exclusions
 	 *
-	 * @return
+	 * @return A string list of packages to be scanned
 	 */
 	private String[] getPackagesList()
 	{
@@ -544,6 +551,7 @@ public class GuiceContext
 	 * Registers the quick scan files
 	 *
 	 * @param scanner
+	 * 		The instance of Classpath Scanner to load with file matching
 	 */
 	@SuppressWarnings("unchecked")
 	private void registerScanQuickFiles(FastClasspathScanner scanner)
@@ -562,9 +570,9 @@ public class GuiceContext
 
 	/**
 	 * Gets the number of threads to use when processing
-	 * Default processors * 2
+	 * Default processors count
 	 *
-	 * @return
+	 * @return Default processors count
 	 */
 	public static int getThreadCount()
 	{
@@ -575,16 +583,30 @@ public class GuiceContext
 	 * Sets the thread count to use
 	 *
 	 * @param threadCount
+	 * 		The thread count to execute on
 	 */
+	@SuppressWarnings("unused")
 	public static void setThreadCount(int threadCount)
 	{
 		GuiceContext.threadCount = threadCount;
 	}
 
 	/**
+	 * Sets the current scan result
+	 *
+	 * @param scanResult
+	 * 		The physical Scan Result from the complete class scanner
+	 */
+	@SuppressWarnings("unused")
+	public void setScanResult(ScanResult scanResult)
+	{
+		GuiceContext.context().scanResult = scanResult;
+	}
+
+	/**
 	 * Returns the current classpath scanner
 	 *
-	 * @return
+	 * @return Default processors count
 	 */
 	public FastClasspathScanner getScanner()
 	{
@@ -595,6 +617,7 @@ public class GuiceContext
 	 * Sets the classpath scanner
 	 *
 	 * @param scanner
+	 * 		Sets the scanner to a specific instance
 	 */
 	public static void setScanner(FastClasspathScanner scanner)
 	{
@@ -605,6 +628,7 @@ public class GuiceContext
 	 * Initializes Guice Context post Startup Beans
 	 *
 	 * @param servletContextEvent
+	 * 		The injected servlet context event from an EE server
 	 */
 	@Override
 	public void contextInitialized(ServletContextEvent servletContextEvent)
@@ -615,7 +639,7 @@ public class GuiceContext
 	/**
 	 * Maps the injector class to the injector
 	 *
-	 * @return
+	 * @return The global Guice Injector
 	 */
 	@Override
 	public Injector getInjector()
@@ -627,6 +651,7 @@ public class GuiceContext
 	 * Sets the given injector to this context
 	 *
 	 * @param injector
+	 * 		A specific Injector instance
 	 */
 	public void setInjector(Injector injector)
 	{
@@ -636,8 +661,9 @@ public class GuiceContext
 	/**
 	 * Returns the fully populated reflections object
 	 *
-	 * @return
+	 * @return A facade of the ReflectUtils on the scan result
 	 */
+	@SuppressWarnings("unused")
 	public Reflections getReflections()
 	{
 		return reflect();
@@ -646,7 +672,7 @@ public class GuiceContext
 	/**
 	 * Builds a reflection object if one does not exist
 	 *
-	 * @return
+	 * @return A facade of the ReflectUtils on the scan result
 	 */
 	public static Reflections reflect()
 	{
