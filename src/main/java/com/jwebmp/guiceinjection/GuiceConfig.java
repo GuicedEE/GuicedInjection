@@ -1,29 +1,51 @@
 package com.jwebmp.guiceinjection;
 
+import com.google.inject.Singleton;
+
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
  * The configuration class for Guice Context and the Classpath Scanner
  */
+@Singleton
 public class GuiceConfig<J extends GuiceConfig<J>>
 		implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-
+	/**
+	 * Whether to include field information right now
+	 */
 	private boolean fieldInfo;
+	/**
+	 * Whether field scanning should be performed
+	 */
 	private boolean fieldScanning;
+	/**
+	 * Whether the field annotation scanning should occur
+	 */
 	private boolean fieldAnnotationScanning;
+	/**
+	 * If methods should be indexed
+	 */
 	private boolean methodAnnotationIndexing;
+	/**
+	 * If method information should be allowed
+	 */
 	private boolean methodInfo;
+	/**
+	 * If the field visibility should be ignored
+	 */
 	private boolean ignoreFieldVisibility;
+	/**
+	 * If the method visibility should be ignored
+	 */
 	private boolean ignoreMethodVisibility;
 
 	/**
 	 * White list the scanning. Highly Recommended
 	 */
 	private boolean whiteList;
-
 
 	/**
 	 * Configures the Guice Context and Reflection Identifier
@@ -33,6 +55,11 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		//No Config
 	}
 
+	/**
+	 * If field scanning should be enabled
+	 *
+	 * @return mandatory result
+	 */
 	public boolean isFieldScanning()
 	{
 		return fieldScanning;
@@ -42,8 +69,9 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Enables scanning of fields
 	 *
 	 * @param fieldScanning
+	 * 		If field scanning should happen
 	 *
-	 * @return
+	 * @return Mandatory field scanning
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
@@ -56,7 +84,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Enables scanning of field annotations
 	 *
-	 * @return
+	 * @return not null
 	 */
 	public boolean isFieldAnnotationScanning()
 	{
@@ -67,8 +95,9 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Enables scanning of field annotations
 	 *
 	 * @param fieldAnnotationScanning
+	 * 		if the field annotation scanning
 	 *
-	 * @return
+	 * @return the field annotation scanning
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
@@ -81,7 +110,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Enables method annotation indexing
 	 *
-	 * @return
+	 * @return boolean
 	 */
 	public boolean isMethodAnnotationIndexing()
 	{
@@ -92,8 +121,9 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Sets method annotation indexing
 	 *
 	 * @param methodAnnotationIndexing
+	 * 		if method annotation indexing should occur
 	 *
-	 * @return
+	 * @return always this
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
@@ -106,7 +136,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * If method info should be kept
 	 *
-	 * @return
+	 * @return always this
 	 */
 	public boolean isMethodInfo()
 	{
@@ -117,8 +147,9 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Sets if method info should be kept
 	 *
 	 * @param methodInfo
+	 * 		if method information should be collected
 	 *
-	 * @return
+	 * @return always this
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
@@ -131,7 +162,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Sets to ignore field visibility
 	 *
-	 * @return
+	 * @return if field visibility is being used
 	 */
 	public boolean isIgnoreFieldVisibility()
 	{
@@ -142,8 +173,9 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Sets to ignore field visibility
 	 *
 	 * @param ignoreFieldVisibility
+	 * 		if the field should be visible
 	 *
-	 * @return
+	 * @return always this
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
@@ -156,7 +188,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Sets to ignore method visibility
 	 *
-	 * @return
+	 * @return if method is visibility ignored
 	 */
 	public boolean isIgnoreMethodVisibility()
 	{
@@ -167,8 +199,9 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Sets to ignore method visibility
 	 *
 	 * @param ignoreMethodVisibility
+	 * 		the ignore method
 	 *
-	 * @return
+	 * @return always This
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
@@ -183,13 +216,23 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * <p>
 	 * Use META-INF/services/com.jwebmp.guiceinjection.scanners.PackageContentsScanner to register your packages
 	 *
-	 * @return
+	 * @return if whitelisting is enabled
 	 */
 	public boolean isWhiteList()
 	{
 		return whiteList;
 	}
 
+	/**
+	 * Sets if packages must be white listed.
+	 * * <p>
+	 * * Use META-INF/services/com.jwebmp.guiceinjection.scanners.PackageContentsScanner to register your packages
+	 *
+	 * @param whiteList
+	 * 		if packages should be white listed
+	 *
+	 * @return Always this
+	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
 	public J setWhiteList(boolean whiteList)
@@ -201,7 +244,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Returns the field information included in the scan result
 	 *
-	 * @return
+	 * @return if field info is included
 	 */
 	public boolean isFieldInfo()
 	{
@@ -212,15 +255,34 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Sets if the field info should be in the field result
 	 *
 	 * @param fieldInfo
+	 * 		if field info should be scanned
 	 */
-	public void setFieldInfo(boolean fieldInfo)
+	@SuppressWarnings("unchecked")
+	@NotNull
+	public J setFieldInfo(boolean fieldInfo)
 	{
 		this.fieldInfo = fieldInfo;
+		return (J) this;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "GuiceConfig{" + "fieldScanning=" + fieldScanning + ", fieldAnnotationScanning=" + fieldAnnotationScanning + ", methodAnnotationIndexing=" + methodAnnotationIndexing + ", methodInfo=" + methodInfo + ", ignoreFieldVisibility=" + ignoreFieldVisibility + ", ignoreMethodVisibility=" + ignoreMethodVisibility + ", whiteList=" + whiteList + '}';
+		return "GuiceConfig{" +
+		       "fieldScanning=" +
+		       fieldScanning +
+		       ", fieldAnnotationScanning=" +
+		       fieldAnnotationScanning +
+		       ", methodAnnotationIndexing=" +
+		       methodAnnotationIndexing +
+		       ", methodInfo=" +
+		       methodInfo +
+		       ", ignoreFieldVisibility=" +
+		       ignoreFieldVisibility +
+		       ", ignoreMethodVisibility=" +
+		       ignoreMethodVisibility +
+		       ", whiteList=" +
+		       whiteList +
+		       '}';
 	}
 }

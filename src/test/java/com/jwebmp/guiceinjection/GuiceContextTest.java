@@ -8,7 +8,6 @@ package com.jwebmp.guiceinjection;
 import com.jwebmp.guiceinjection.abstractions.GuiceInjectorModule;
 import com.jwebmp.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import com.jwebmp.guiceinjection.interfaces.GuiceDefaultBinder;
-import com.jwebmp.guiceinjection.interfaces.GuiceSiteBinder;
 import com.jwebmp.logger.LogFactory;
 import com.jwebmp.logger.handlers.ConsoleSTDOutputHandler;
 import org.junit.jupiter.api.BeforeAll;
@@ -46,8 +45,6 @@ public class GuiceContextTest
 		GuiceContext.inject();
 		GuiceContext.reflect()
 		            .getSubTypesOf(GuiceDefaultBinder.class);
-		GuiceContext.reflect()
-		            .getSubTypesOf(GuiceSiteBinder.class);
 		GuiceContext.reflect()
 		            .getTypesAnnotatedWith(GuiceInjectorModuleMarker.class);
 	}

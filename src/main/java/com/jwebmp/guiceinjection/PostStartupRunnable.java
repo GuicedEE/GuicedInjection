@@ -5,7 +5,11 @@ import com.jwebmp.guiceinjection.annotations.GuicePostStartup;
 import java.io.Serializable;
 import java.util.concurrent.Callable;
 
-public class PostStartupRunnable
+/**
+ * A thread type future or current to startup asynchronously during post startup execution.
+ * Executed internally.
+ */
+class PostStartupRunnable
 		implements Runnable, Callable<PostStartupRunnable>, Serializable
 {
 	private static final long serialVersionUID = 1L;
@@ -21,7 +25,7 @@ public class PostStartupRunnable
 	public PostStartupRunnable call()
 	{
 		run();
-		return null;
+		return this;
 	}
 
 	@Override

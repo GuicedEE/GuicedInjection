@@ -29,7 +29,7 @@ A Java Guice Assistant that allows you to perform multiple and dynamic binding, 
 ```
 <dependency>
     <groupId>com.jwebmp</groupId>
-    <artifactId>guice-injection</artifactId>
+    M<artifactId>guiced-injection</artifactId>
     <version>LATEST</version>
 </dependency>
 ```

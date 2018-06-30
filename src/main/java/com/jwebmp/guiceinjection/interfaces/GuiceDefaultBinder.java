@@ -18,6 +18,7 @@ package com.jwebmp.guiceinjection.interfaces;
 
 import com.jwebmp.guiceinjection.abstractions.GuiceInjectorModule;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Comparator;
 
@@ -28,11 +29,11 @@ import java.util.Comparator;
  * @since 12 Dec 2016
  */
 public abstract class GuiceDefaultBinder
-		implements Comparator<GuiceDefaultBinder>, DefaultBinder<GuiceInjectorModule>, Serializable
+		implements Comparator<GuiceDefaultBinder>, DefaultBinder<GuiceInjectorModule>, Serializable, Comparable<GuiceDefaultBinder>
 {
 
 	private static final long serialVersionUID = 1L;
-	private int DefaultSortOrder = 100;
+	private int sortOrder = 100;
 
 	/**
 	 * Blank constructor
@@ -42,9 +43,14 @@ public abstract class GuiceDefaultBinder
 		//Nothing needed to do on constructions
 	}
 
-	public void setDefaultSortOrder(int DefaultSortOrder)
+	/**
+	 * Sets this sort order
+	 *
+	 * @param DefaultSortOrder
+	 */
+	public void setSortOrder(int DefaultSortOrder)
 	{
-		this.DefaultSortOrder = DefaultSortOrder;
+		sortOrder = DefaultSortOrder;
 	}
 
 	@Override
@@ -61,11 +67,22 @@ public abstract class GuiceDefaultBinder
 	/**
 	 * The default value is 100
 	 *
-	 * @return
+	 * @return the sort order applied default 100
 	 */
 	public Integer sortOrder()
 	{
-		return DefaultSortOrder;
+		return sortOrder;
+	}
+
+	@Override
+	public int compareTo(@NotNull GuiceDefaultBinder o)
+	{
+		int output = sortOrder().compareTo(o.sortOrder());
+		if (output == 0)
+		{
+			return -1;
+		}
+		return output;
 	}
 
 }

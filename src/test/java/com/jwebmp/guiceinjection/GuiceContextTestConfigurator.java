@@ -1,9 +1,9 @@
 package com.jwebmp.guiceinjection;
 
-import com.jwebmp.guiceinjection.interfaces.IGuiceConfigurator;
+import com.jwebmp.guiceinjection.interfaces.GuiceConfigurator;
 
 public class GuiceContextTestConfigurator
-		implements IGuiceConfigurator
+		implements GuiceConfigurator
 {
 	@Override
 	public GuiceConfig configure(GuiceConfig config)

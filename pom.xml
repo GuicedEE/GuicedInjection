@@ -10,7 +10,7 @@
         <version>0.0.0_0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>guice-injection</artifactId>
+    <artifactId>guiced-injection</artifactId>
     <packaging>jar</packaging>
 
     <name>Guice Injector</name>
@@ -20,26 +20,12 @@
     </description>
     <url>https://github.com/GedMarc/GuiceInjection</url>
 
-    <repositories>
-        <repository>
-            <id>jwebmp-snapshot</id>
-            <name>JWebMPArtifactory-snapshots</name>
-            <url>https://jwebmp.com/artifactory/libs-snapshot</url>
-        </repository>
-    </repositories>
-
     <dependencies>
-
         <dependency>
             <groupId>com.jwebmp</groupId>
-            <artifactId>guiced-log-master</artifactId>
+            <artifactId>jwebmp-log-master</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.cache</groupId>
-            <artifactId>cache-api</artifactId>
         </dependency>
 
         <dependency>
@@ -65,31 +51,6 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.inject.extensions</groupId>
-            <artifactId>guice-servlet</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.inject.extensions</groupId>
-            <artifactId>guice-multibindings</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.inject.extensions</groupId>
-            <artifactId>guice-persist</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.inject.extensions</groupId>
-            <artifactId>guice-jndi</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
         </dependency>
 
         <dependency>

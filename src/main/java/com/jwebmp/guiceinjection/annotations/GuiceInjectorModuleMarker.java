@@ -19,7 +19,9 @@ package com.jwebmp.guiceinjection.annotations;
 import java.lang.annotation.*;
 
 /**
- * Defines a standard dynamic module that can be run
+ * Defines a standard dynamic module that can be run,
+ * <p>
+ * Make sure its on an instance of AbstractModule
  *
  * @author Marc Magon
  * @since 19 Mar 2017

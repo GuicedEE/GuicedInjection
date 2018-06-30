@@ -19,5 +19,6 @@ public class OptionalPairTest
 		op.setValue("value");
 		System.out.println(op);
 		Assertions.assertEquals("Key[key];Value[value]", op.toString());
+
 	}
 }

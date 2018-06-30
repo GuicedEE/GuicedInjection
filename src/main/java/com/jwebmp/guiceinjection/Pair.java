@@ -1,5 +1,8 @@
 package com.jwebmp.guiceinjection;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
 /**
  * Specifies a generic pair
  *
@@ -9,6 +12,7 @@ package com.jwebmp.guiceinjection;
  * 		Value
  */
 public class Pair<K, V>
+		implements Comparable<Pair<K, V>>
 {
 	/**
 	 * The specified key
@@ -31,9 +35,11 @@ public class Pair<K, V>
 	 * Constructs a new key value pair
 	 *
 	 * @param key
+	 * 		The key for the pair
 	 * @param value
+	 * 		The value for the pair
 	 */
-	public Pair(K key, V value)
+	public Pair(@NotNull K key, V value)
 	{
 		this.key = key;
 		this.value = value;
@@ -48,7 +54,7 @@ public class Pair<K, V>
 	/**
 	 * Gets the key for the given pair
 	 *
-	 * @return
+	 * @return The key given
 	 */
 	public K getKey()
 	{
@@ -56,22 +62,9 @@ public class Pair<K, V>
 	}
 
 	/**
-	 * Sets the key for the given pair
-	 *
-	 * @param key
-	 *
-	 * @return
-	 */
-	public Pair setKey(K key)
-	{
-		this.key = key;
-		return this;
-	}
-
-	/**
 	 * Returns the value for the given pair
 	 *
-	 * @return
+	 * @return Sets this Pairs value
 	 */
 	public V getValue()
 	{
@@ -82,12 +75,35 @@ public class Pair<K, V>
 	 * Sets the value for the given pair
 	 *
 	 * @param value
+	 * 		Sets this pairs values
 	 *
-	 * @return
+	 * @return this Pair
 	 */
-	public Pair setValue(V value)
+	public Pair setValue(@Nullable V value)
 	{
 		this.value = value;
 		return this;
+	}
+
+	/**
+	 * Sets the key for the given pair
+	 *
+	 * @param key
+	 * 		Sets this pairs key
+	 *
+	 * @return The pair
+	 */
+	public Pair setKey(@NotNull K key)
+	{
+		this.key = key;
+		return this;
+	}
+
+	@Override
+	public int compareTo(@NotNull Pair<K, V> o)
+	{
+		return getKey().toString()
+		               .compareTo(o.getKey()
+		                           .toString());
 	}
 }

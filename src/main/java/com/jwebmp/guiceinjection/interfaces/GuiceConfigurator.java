@@ -8,15 +8,16 @@ import java.io.Serializable;
  * Service Locator Interface for granular configuration of the GuiceContext and Injector
  */
 @FunctionalInterface
-public interface IGuiceConfigurator
+public interface GuiceConfigurator
 		extends Serializable
 {
 	/**
 	 * Configuers the guice instance
 	 *
 	 * @param config
+	 * 		The configuration object coming in
 	 *
-	 * @return
+	 * @return The required guice configuration
 	 */
 	GuiceConfig configure(GuiceConfig config);
 }

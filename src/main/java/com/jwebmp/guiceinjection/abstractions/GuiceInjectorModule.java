@@ -21,11 +21,11 @@ import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.AnnotatedConstantBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.matcher.Matcher;
+import com.google.inject.spi.Message;
 import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.TypeListener;
 import com.jwebmp.guiceinjection.GuiceContext;
 import com.jwebmp.guiceinjection.Reflections;
-import com.jwebmp.guiceinjection.interfaces.DefaultModuleMethods;
 import com.jwebmp.guiceinjection.interfaces.GuiceDefaultBinder;
 import com.jwebmp.logger.LogFactory;
 
@@ -33,21 +33,20 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Is a default injector module for Guice
+ * Exposes the abstract module methods as public
  *
  * @author GedMarc
  * @since 12 Dec 2016
  */
 public class GuiceInjectorModule
 		extends AbstractModule
-		implements DefaultModuleMethods, Serializable
+		implements Serializable
 {
 
 	private static final Logger log = LogFactory.getLog("GuiceInjectorModule");
@@ -61,6 +60,9 @@ public class GuiceInjectorModule
 		//Nothing Needed
 	}
 
+	/**
+	 * Executes the runBinders method
+	 */
 	@Override
 	protected void configure()
 	{
@@ -91,7 +93,7 @@ public class GuiceInjectorModule
 		             });
 		if (!objects.isEmpty())
 		{
-			Collections.sort(objects, objects.get(0));
+			objects.sort(objects.get(0));
 			objects.forEach(obj ->
 			                {
 				                log.log(Level.CONFIG, "Loading Guice Configuration {0}", obj.getClass()
@@ -103,58 +105,163 @@ public class GuiceInjectorModule
 		}
 	}
 
+	/**
+	 * Gets direct access to the underlying {@code Binder}.
+	 */
 	@Override
 	public Binder binder()
 	{
 		return super.binder();
 	}
 
+	/**
+	 * @see Binder#bindScope(Class, Scope)
+	 */
 	@Override
 	public void bindScope(Class<? extends Annotation> scopeAnnotation, Scope scope)
 	{
 		super.bindScope(scopeAnnotation, scope);
 	}
 
+	/**
+	 * @see Binder#bind(Key)
+	 */
 	@Override
 	public <T> LinkedBindingBuilder<T> bind(Key<T> key)
 	{
 		return super.bind(key);
 	}
 
+	/**
+	 * @see Binder#bind(TypeLiteral)
+	 */
 	@Override
 	public <T> AnnotatedBindingBuilder<T> bind(TypeLiteral<T> typeLiteral)
 	{
 		return super.bind(typeLiteral);
 	}
 
+	/**
+	 * @see Binder#bind(Class)
+	 */
 	@Override
 	public <T> AnnotatedBindingBuilder<T> bind(Class<T> clazz)
 	{
 		return super.bind(clazz);
 	}
 
+	/**
+	 * @see Binder#bindConstant()
+	 */
 	@Override
 	public AnnotatedConstantBindingBuilder bindConstant()
 	{
 		return super.bindConstant();
 	}
 
+	/**
+	 * @see Binder#install(Module)
+	 */
+	@Override
+	public void install(Module module)
+	{
+		super.install(module);
+	}
+
+	/**
+	 * @see Binder#addError(String, Object[])
+	 */
+	@Override
+	public void addError(String message, Object... arguments)
+	{
+		super.addError(message, arguments);
+	}
+
+	/**
+	 * @see Binder#addError(Throwable)
+	 */
+	@Override
+	public void addError(Throwable t)
+	{
+		super.addError(t);
+	}
+
+	/**
+	 * @see Binder#addError(Message)
+	 * @since 2.0
+	 */
+	@Override
+	public void addError(Message message)
+	{
+		super.addError(message);
+	}
+
+	/**
+	 * @see Binder#requestInjection(Object)
+	 * @since 2.0
+	 */
+	@Override
+	public void requestInjection(Object instance)
+	{
+		super.requestInjection(instance);
+	}
+
+	/**
+	 * @see Binder#requestStaticInjection(Class[])
+	 */
+	@Override
+	public void requestStaticInjection(Class<?>... types)
+	{
+		super.requestStaticInjection(types);
+	}
+
+	/**
+	 * @see Binder#bindInterceptor(com.google.inject.matcher.Matcher,
+	 *        com.google.inject.matcher.Matcher, org.aopalliance.intercept.MethodInterceptor[])
+	 */
 	@Override
 	public void bindInterceptor(Matcher<? super Class<?>> classMatcher, Matcher<? super Method> methodMatcher, org.aopalliance.intercept.MethodInterceptor... interceptors)
 	{
 		binder().bindInterceptor(classMatcher, methodMatcher, interceptors);
 	}
 
+	/**
+	 * @see Binder#getProvider(Key)
+	 * @since 2.0
+	 */
+	@Override
+	public <T> Provider<T> getProvider(Key<T> key)
+	{
+		return super.getProvider(key);
+	}
+
+	/**
+	 * @see Binder#getProvider(Class)
+	 * @since 2.0
+	 */
+	@Override
+	public <T> Provider<T> getProvider(Class<T> type)
+	{
+		return super.getProvider(type);
+	}
+
+	/**
+	 * @see Binder#bindListener(com.google.inject.matcher.Matcher, com.google.inject.spi.TypeListener)
+	 * @since 2.0
+	 */
 	@Override
 	public void bindListener(Matcher<? super TypeLiteral<?>> typeMatcher, TypeListener listener)
 	{
 		super.bindListener(typeMatcher, listener);
 	}
 
+	/**
+	 * @see Binder#bindListener(com.google.inject.matcher.Matcher, com.google.inject.spi.TypeListener)
+	 * @since 2.0
+	 */
 	@Override
 	public void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener)
 	{
 		super.bindListener(bindingMatcher, listener);
 	}
-
 }

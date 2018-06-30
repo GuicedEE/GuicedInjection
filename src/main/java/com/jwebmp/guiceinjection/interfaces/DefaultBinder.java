@@ -16,6 +16,8 @@
  */
 package com.jwebmp.guiceinjection.interfaces;
 
+import com.google.inject.AbstractModule;
+
 /**
  * @param <M>
  * 		The module to bind
@@ -23,13 +25,14 @@ package com.jwebmp.guiceinjection.interfaces;
  * @author GedMarc
  */
 @FunctionalInterface
-public interface DefaultBinder<M>
+public interface DefaultBinder<M extends AbstractModule>
 {
 
 	/**
 	 * Performs the binding with the injection module that is required
 	 *
 	 * @param module
+	 * 		The module being passed in
 	 */
 	void onBind(M module);
 }

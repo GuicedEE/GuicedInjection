@@ -18,21 +18,17 @@ package com.jwebmp.guiceinjection;
 
 import com.google.common.base.Stopwatch;
 import com.google.inject.*;
-import com.google.inject.servlet.GuiceServletContextListener;
 import com.jwebmp.guiceinjection.abstractions.GuiceInjectorModule;
-import com.jwebmp.guiceinjection.abstractions.GuiceSiteInjectorModule;
 import com.jwebmp.guiceinjection.annotations.GuiceInjectorModuleMarker;
 import com.jwebmp.guiceinjection.annotations.GuicePostStartup;
 import com.jwebmp.guiceinjection.annotations.GuicePreStartup;
-import com.jwebmp.guiceinjection.interfaces.IGuiceConfigurator;
+import com.jwebmp.guiceinjection.interfaces.GuiceConfigurator;
 import com.jwebmp.guiceinjection.scanners.FileContentsScanner;
 import com.jwebmp.guiceinjection.scanners.PackageContentsScanner;
 import com.jwebmp.logger.LogFactory;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 
-import javax.annotation.Nullable;
-import javax.servlet.ServletContextEvent;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
@@ -53,7 +49,6 @@ import java.util.logging.Logger;
  * @since Nov 14, 2016
  */
 public class GuiceContext
-		extends GuiceServletContextListener
 		implements Serializable
 {
 
@@ -63,7 +58,7 @@ public class GuiceContext
 	/**
 	 * This particular instance of the class
 	 */
-	private static GuiceContext instance;
+	private static final GuiceContext instance = new GuiceContext();
 
 	/**
 	 * The building injector
@@ -78,12 +73,14 @@ public class GuiceContext
 
 	private static long asyncTerminationWait = 60L;
 	private static TimeUnit asyncTerminationTimeUnit = TimeUnit.SECONDS;
-
+	/**
+	 * The configuration object
+	 */
+	private static GuiceConfig<?> config;
 	/**
 	 * The physical injector for the JVM container
 	 */
 	private transient Injector injector;
-
 	/**
 	 * The actual scanner
 	 */
@@ -92,30 +89,21 @@ public class GuiceContext
 	 * The scan result built from everything - the core scanner.
 	 */
 	private transient ScanResult scanResult;
-
 	/**
 	 * Facade layer for backwards compatibility
 	 */
 	private transient Reflections reflections;
-
 	/**
 	 * A list of jars to exclude from the scan file for the application
 	 */
 	private Set<String> excludeJarsFromScan;
-	/**
-	 * The configuration object
-	 */
-	private GuiceConfig<?> config;
 
 	/**
 	 * Creates a new Guice context. Not necessary
 	 */
 	private GuiceContext()
 	{
-		if (instance == null)
-		{
-			instance = this;
-		}
+		//No config required
 	}
 
 	/**
@@ -132,7 +120,7 @@ public class GuiceContext
 			throw new RuntimeException(
 					"The injector is being called recursively during build. Place such actions in a GuicePostStartup or use the GuicePreStartup Service Loader.");
 		}
-		if (context().injector == null)
+		if (instance().injector == null)
 		{
 			try
 			{
@@ -158,9 +146,6 @@ public class GuiceContext
 				GuiceInjectorModule defaultInjection;
 				defaultInjection = new GuiceInjectorModule();
 				log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
-
-				GuiceSiteInjectorModule siteInjection = new GuiceSiteInjectorModule();
-
 				Set<Class<?>> aClass = reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class);
 				aClass.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
 				int customModuleSize = aClass.size();
@@ -174,13 +159,12 @@ public class GuiceContext
 					Module moduleInstance = next.newInstance();
 					customModules.add(moduleInstance);
 				}
-				customModules.add(0, siteInjection);
 				customModules.add(0, defaultInjection);
 
 				cModules = new Module[customModules.size()];
 				cModules = customModules.toArray(cModules);
 
-				context().injector = Guice.createInjector(cModules);
+				instance().injector = Guice.createInjector(cModules);
 				log.info("Post Startup Executions....");
 				Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
 				closingPres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
@@ -220,7 +204,7 @@ public class GuiceContext
 			built = true;
 		}
 		buildingInjector = false;
-		return context().injector;
+		return instance().injector;
 	}
 
 	/**
@@ -258,32 +242,6 @@ public class GuiceContext
 		{
 			log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
 		}
-	}
-
-	/**
-	 * Execute on Destroy
-	 */
-	public static void destroy()
-	{
-		context().reflections = null;
-		context().scanResult = null;
-		context().scanner = null;
-		context().injector = null;
-		GuiceContext.instance = null;
-	}
-
-	/**
-	 * Returns the actual context instance, provides access to methods existing a bit deeper
-	 *
-	 * @return The singleton instance of this
-	 */
-	public static GuiceContext context()
-	{
-		if (instance == null)
-		{
-			instance = new GuiceContext();
-		}
-		return instance;
 	}
 
 	/**
@@ -448,11 +406,33 @@ public class GuiceContext
 	}
 
 	/**
+	 * Execute on Destroy
+	 */
+	public static void destroy()
+	{
+		instance().reflections = null;
+		instance().scanResult = null;
+		instance().scanner = null;
+		instance().injector = null;
+
+	}
+
+	/**
+	 * Returns the actual context instance, provides access to methods existing a bit deeper
+	 *
+	 * @return The singleton instance of this
+	 */
+	public static GuiceContext instance()
+	{
+		return instance;
+	}
+
+	/**
 	 * Returns the current scan result
 	 *
 	 * @return The physical Scan Result from the complete class scanner
 	 */
-	@Nullable
+	@NotNull
 	public ScanResult getScanResult()
 	{
 		if (scanResult == null)
@@ -471,12 +451,12 @@ public class GuiceContext
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		log.fine("Loading the Guice Config.");
 
-		ServiceLoader<IGuiceConfigurator> guiceConfigurators = ServiceLoader.load(IGuiceConfigurator.class);
+		ServiceLoader<GuiceConfigurator> guiceConfigurators = ServiceLoader.load(GuiceConfigurator.class);
 		if (config == null)
 		{
 			config = new GuiceConfig<>();
 		}
-		for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
+		for (GuiceConfigurator guiceConfigurator : guiceConfigurators)
 		{
 			config = guiceConfigurator.configure(config);
 		}
@@ -491,7 +471,7 @@ public class GuiceContext
 		{
 			scanner = new FastClasspathScanner();
 			log.warning(
-					"Scanning may be slow because white listing is disabled. If you experience long scan times, you can configure using META-INF/services/za.co.mmagon.guiceinjection.interfaces.IGuiceConfigurator. White List the packages to be scanned with META-INF/services/com.jwebmp.guiceinjection.scanners.PackageContentsScanner");
+					"Scanning may be slow because white listing is disabled. If you experience long scan times, you can configure using META-INF/services/za.co.mmagon.guiceinjection.interfaces.GuiceConfigurator. White List the packages to be scanned with META-INF/services/com.jwebmp.guiceinjection.scanners.PackageContentsScanner");
 		}
 		if (config.isFieldInfo())
 		{
@@ -600,7 +580,7 @@ public class GuiceContext
 	@SuppressWarnings("unused")
 	public void setScanResult(ScanResult scanResult)
 	{
-		GuiceContext.context().scanResult = scanResult;
+		GuiceContext.instance().scanResult = scanResult;
 	}
 
 	/**
@@ -621,19 +601,7 @@ public class GuiceContext
 	 */
 	public static void setScanner(FastClasspathScanner scanner)
 	{
-		context().scanner = scanner;
-	}
-
-	/**
-	 * Initializes Guice Context post Startup Beans
-	 *
-	 * @param servletContextEvent
-	 * 		The injected servlet context event from an EE server
-	 */
-	@Override
-	public void contextInitialized(ServletContextEvent servletContextEvent)
-	{
-		inject();
+		instance().scanner = scanner;
 	}
 
 	/**
@@ -641,7 +609,6 @@ public class GuiceContext
 	 *
 	 * @return The global Guice Injector
 	 */
-	@Override
 	public Injector getInjector()
 	{
 		return inject();
@@ -676,10 +643,20 @@ public class GuiceContext
 	 */
 	public static Reflections reflect()
 	{
-		if (context().reflections == null)
+		if (instance().reflections == null)
 		{
-			context().reflections = new Reflections();
+			instance().reflections = new Reflections();
 		}
-		return context().reflections;
+		return instance().reflections;
+	}
+
+	/**
+	 * Returns the Guice Config Instance
+	 *
+	 * @return The singleton Guice Config instance. Also available with @Inject
+	 */
+	public GuiceConfig<?> getConfig()
+	{
+		return config;
 	}
 }

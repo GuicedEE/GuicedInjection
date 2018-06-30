@@ -16,18 +16,13 @@
  */
 package com.jwebmp.guiceinjection;
 
-import com.google.common.base.Predicate;
-
-import javax.cache.annotation.CacheDefaults;
-import javax.cache.annotation.CacheKey;
-import javax.cache.annotation.CacheResult;
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Facade Method implementer for the change from the org.Reflections library to the FastClasspathScanner
@@ -36,7 +31,6 @@ import java.util.regex.Pattern;
  * @author Marc Magon
  * @since 07 Jul 2017
  */
-@CacheDefaults(cacheName = "Reflections")
 public class Reflections
 {
 
@@ -58,22 +52,21 @@ public class Reflections
 	 *
 	 * @return A set of classes matching
 	 */
-	@CacheResult
 	@NotNull
 	@SuppressWarnings("unchecked")
-	public <T> Set<Class<? extends T>> getSubTypesOf(@CacheKey Class<T> type)
+	public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type)
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
 		List<String> subtypes = type.isInterface()
-		                        ? GuiceContext.context()
+		                        ? GuiceContext.instance()
 		                                      .getScanResult()
 		                                      .getNamesOfClassesImplementing(type)
-		                        : GuiceContext.context()
+		                        : GuiceContext.instance()
 		                                      .getScanResult()
 		                                      .getNamesOfSubclassesOf(type);
 		for (String subtype : subtypes)
 		{
-			Class<T> subType = (Class<T>) GuiceContext.context()
+			Class<T> subType = (Class<T>) GuiceContext.instance()
 			                                          .getScanResult()
 			                                          .classNameToClassRef(subtype);
 			returnable.add(subType);
@@ -85,22 +78,23 @@ public class Reflections
 	 * Returns all the class types annotated with an annotation
 	 *
 	 * @param <T>
+	 * 		The type of class to annotate with
 	 * @param annotation
+	 * 		The given annotations to find
 	 *
-	 * @return
+	 * @return The set of classes that have the types annotated
 	 */
-	@CacheResult
 	@NotNull
 	@SuppressWarnings("unchecked")
-	public <T> Set<Class<? extends T>> getTypesAnnotatedWith(@CacheKey Class<? extends Annotation> annotation)
+	public <T> Set<Class<? extends T>> getTypesAnnotatedWith(Class<? extends Annotation> annotation)
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
-		List<String> subtypes = GuiceContext.context()
+		List<String> subtypes = GuiceContext.instance()
 		                                    .getScanResult()
 		                                    .getNamesOfClassesWithAnnotation(annotation);
 		for (String subtype : subtypes)
 		{
-			Class<T> subType = (Class<T>) GuiceContext.context()
+			Class<T> subType = (Class<T>) GuiceContext.instance()
 			                                          .getScanResult()
 			                                          .classNameToClassRef(subtype);
 			returnable.add(subType);
@@ -112,14 +106,16 @@ public class Reflections
 	 * Get all fields with the annotation
 	 *
 	 * @param annotation
+	 * 		The type of annotations to find within a given class
 	 * @param type
+	 * 		The type to find
 	 * @param in
+	 * 		The class to look in
 	 *
-	 * @return
+	 * @return A given field that can be used on an object. Set Accessible is not run.
 	 */
-	@CacheResult
 	@NotNull
-	public Optional<Field> getFieldAnnotatedWithOfType(@CacheKey Class<? extends Annotation> annotation, Class type, Class in)
+	public Optional<Field> getFieldAnnotatedWithOfType(Class<? extends Annotation> annotation, Class type, Class in)
 	{
 		Field field = null;
 		Field[] allFields = in.getFields();
@@ -134,105 +130,4 @@ public class Reflections
 		}
 		return Optional.ofNullable(field);
 	}
-
-	/**
-	 * Returns all the methods annotated with an annotation
-	 *
-	 * @param annotation
-	 *
-	 * @return
-	 */
-	@CacheResult
-	@NotNull
-	public Set<Method> getMethodsAnnotatedWith(@CacheKey Class<? extends Annotation> annotation)
-	{
-		return Collections.emptySet();
-	}
-
-	/**
-	 * Gets any methods with a parameter associated on it
-	 *
-	 * @param annotation
-	 *
-	 * @return
-	 */
-	@CacheResult
-	@NotNull
-	public Set<Method> getMethodsWithAnyParamAnnotated(@CacheKey Class<? extends Annotation> annotation)
-	{
-		return Collections.emptySet();
-	}
-
-	/**
-	 * Gets any methods with the annotation attached
-	 *
-	 * @param annotation
-	 *
-	 * @return
-	 */
-	@CacheResult
-	@NotNull
-	public Set<Method> getMethodsWithAnyParamAnnotated(@CacheKey Annotation annotation)
-	{
-		return Collections.emptySet();
-	}
-
-	/**
-	 * Gets all the fields annotated with an annotation
-	 *
-	 * @param annotation
-	 *
-	 * @return
-	 */
-	@CacheResult
-	@NotNull
-	public Set<Field> getFieldsAnnotatedWith(@CacheKey Class<? extends Annotation> annotation)
-	{
-		return Collections.emptySet();
-	}
-
-	/**
-	 * Gets all the resources with a given name predicate.
-	 * Operates in its own scanner, may be a little slower
-	 *
-	 * @param namePredicate
-	 *
-	 * @return
-	 */
-	@CacheResult
-	@NotNull
-	public Set<String> getResources(@CacheKey Predicate<String> namePredicate)
-	{
-		return Collections.emptySet();
-	}
-
-	/**
-	 * Gets all the resources with a given pattern
-	 * * Operates in its own scanner, may be a little slower
-	 *
-	 * @param pattern
-	 *
-	 * @return
-	 */
-	@CacheResult
-	@NotNull
-	public Set<String> getResources(@CacheKey Pattern pattern)
-	{
-		return Collections.emptySet();
-	}
-
-	/**
-	 * Returns all the members that access a particular field
-	 *
-	 * @param field
-	 *
-	 * @return
-	 */
-	@CacheResult
-	@NotNull
-	public Set<Member> getFieldUsage(@CacheKey Field field)
-	{
-		return Collections.emptySet();
-	}
-
 }

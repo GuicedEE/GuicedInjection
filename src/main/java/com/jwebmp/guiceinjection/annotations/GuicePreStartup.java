@@ -33,7 +33,7 @@ public interface GuicePreStartup
 	/**
 	 * Sort order for startup, Default 100.
 	 *
-	 * @return
+	 * @return the sort order never null
 	 */
 	Integer sortOrder();
 }

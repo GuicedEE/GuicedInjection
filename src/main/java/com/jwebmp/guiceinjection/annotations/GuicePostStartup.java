@@ -33,7 +33,7 @@ public interface GuicePostStartup
 	/**
 	 * Sets the order in which this must run, default 100.
 	 *
-	 * @return
+	 * @return the sort order to return
 	 */
 	Integer sortOrder();
 }

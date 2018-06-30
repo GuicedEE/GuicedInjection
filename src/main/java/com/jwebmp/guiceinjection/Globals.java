@@ -18,16 +18,23 @@ package com.jwebmp.guiceinjection;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jwebmp.logger.LogFactory;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
 
 /**
- * A pretty class for containing EAR or Container level global properties
+ * A pretty class for containing EAR or Container level global properties.
+ * <p>
+ * Key -> Map ID -> Property
  *
  * @author Marc Magon
  * @since 08 Jul 2017
@@ -42,7 +49,8 @@ public class Globals
 {
 
 	private static final long serialVersionUID = 1L;
-	private final Map<String, Map<Serializable, Serializable>> globalProperties;
+	private static final Logger log = LogFactory.getLog("GlobalPropertyMaps");
+	private final Map<String, Map<Object, Object>> globalProperties;
 
 	/**
 	 * Constructs a new Globals
@@ -56,9 +64,11 @@ public class Globals
 	 * Adds a key to the global application library
 	 *
 	 * @param key
+	 * 		Adds a key into the global library
 	 * @param properties
+	 * 		Puts the property map into the global settings
 	 */
-	public void addKey(String key, Map<Serializable, Serializable> properties)
+	public void addKey(String key, Map<Object, Object> properties)
 	{
 		globalProperties.put(key, properties);
 	}
@@ -67,8 +77,11 @@ public class Globals
 	 * Adds a normal string string property to the library
 	 *
 	 * @param key
+	 * 		Takes the key for the property
 	 * @param property
+	 * 		The property to apply
 	 * @param value
+	 * 		The value to apply
 	 */
 	public void addProperty(String key, String property, String value)
 	{
@@ -84,10 +97,13 @@ public class Globals
 	 * Adds a normal string string property to the library
 	 *
 	 * @param key
+	 * 		The key and property to add
 	 * @param property
+	 * 		The property to add
 	 * @param value
+	 * 		The value to add
 	 */
-	public void addProperty(String key, String property, Serializable value)
+	public void addProperty(String key, String property, Object value)
 	{
 		if (!globalProperties.containsKey(key))
 		{
@@ -101,13 +117,16 @@ public class Globals
 	 * Gets the key with the given map return type
 	 *
 	 * @param <K>
+	 * 		The key type
 	 * @param <V>
+	 * 		The value map type
 	 * @param key
+	 * 		The key
 	 *
-	 * @return
+	 * @return A map to return
 	 */
 	@SuppressWarnings("unchecked")
-	public <K extends Serializable, V extends Serializable> Map<K, V> getKey(String key)
+	public <K, V> Map<K, V> getKey(String key)
 	{
 		return (Map<K, V>) globalProperties.get(key);
 	}
@@ -116,13 +135,16 @@ public class Globals
 	 * Gets a default string key and property mapping
 	 *
 	 * @param <V>
+	 * 		The value type
 	 * @param key
+	 * 		The key
 	 * @param property
+	 * 		And properties map to retrieve from
 	 *
-	 * @return
+	 * @return The value of the mapped key and map ID
 	 */
 	@SuppressWarnings("unchecked")
-	public <V extends Serializable> V getProperty(String key, String property)
+	public <V> V getProperty(String key, String property)
 	{
 		return (V) globalProperties.get(key)
 		                           .get(property);
@@ -132,7 +154,9 @@ public class Globals
 	 * Removes a property from any list
 	 *
 	 * @param key
+	 * 		The key to remove
 	 * @param property
+	 * 		The property to remove from the assigned map
 	 */
 	public void removeProperty(String key, String property)
 	{
@@ -147,7 +171,9 @@ public class Globals
 	 * Sets the property
 	 *
 	 * @param key
+	 * 		The key to remove
 	 * @param property
+	 * 		The property to return
 	 */
 	public void emptyProperty(String key, String property)
 	{
@@ -155,6 +181,26 @@ public class Globals
 		{
 			globalProperties.get(key)
 			                .put(property, "");
+		}
+	}
+
+	/**
+	 * Returns a JSON implementation of the toString()
+	 *
+	 * @return A JSON Representation
+	 */
+	@Override
+	public String toString()
+	{
+		try
+		{
+			return GuiceContext.getInstance(ObjectMapper.class)
+			                   .writeValueAsString(this);
+		}
+		catch (JsonProcessingException e)
+		{
+			log.log(Level.SEVERE, "Non-Mappable character in Globals Map, Can't toString()", e);
+			return super.toString();
 		}
 	}
 }
