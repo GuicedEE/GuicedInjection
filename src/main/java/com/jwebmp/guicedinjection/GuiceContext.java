@@ -133,7 +133,8 @@ public class GuiceContext
 				for (Class<? extends GuicePreStartup> pre : pres)
 				{
 					GuicePreStartup pr;
-					pr = pre.newInstance();
+					pr = pre.getDeclaredConstructor()
+					        .newInstance();
 					startups.add(pr);
 				}
 				startups.sort(Comparator.comparing(GuicePreStartup::sortOrder));
@@ -156,7 +157,8 @@ public class GuiceContext
 				{
 					Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) clazz;
 					log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
-					Module moduleInstance = next.newInstance();
+					Module moduleInstance = next.getDeclaredConstructor()
+					                            .newInstance();
 					customModules.add(moduleInstance);
 				}
 				customModules.add(0, defaultInjection);

@@ -83,10 +83,11 @@ public class GuiceInjectorModule
 		             {
 			             try
 			             {
-				             GuiceDefaultBinder obj = next.newInstance();
+				             GuiceDefaultBinder obj = next.getDeclaredConstructor()
+				                                          .newInstance();
 				             objects.add(obj);
 			             }
-			             catch (InstantiationException | IllegalAccessException ex)
+			             catch (Exception ex)
 			             {
 				             log.log(Level.SEVERE, "Couldn't load module from sets" + sets.toString(), ex);
 			             }
