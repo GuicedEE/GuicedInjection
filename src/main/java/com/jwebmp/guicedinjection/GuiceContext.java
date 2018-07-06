@@ -39,6 +39,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//formatter:off
+//formatter:on
+
+//formatter:off
+//formatter:on
+
 /**
  * Provides an interface for reflection and injection in one.
  * <p>

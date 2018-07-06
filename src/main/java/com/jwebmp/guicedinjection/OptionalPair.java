@@ -1,6 +1,5 @@
 package com.jwebmp.guicedinjection;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -31,7 +30,7 @@ public class OptionalPair<K, V>
 	 * @param value
 	 * 		the value to use
 	 */
-	public OptionalPair(@Nullable K key, @Nullable V value)
+	public OptionalPair(K key, V value)
 	{
 		super(key, value);
 	}
@@ -51,7 +50,7 @@ public class OptionalPair<K, V>
 	 * @return Optional nullable of the value
 	 */
 	@Override
-	public OptionalPair<K, V> setValue(@Nullable V value)
+	public OptionalPair<K, V> setValue(V value)
 	{
 		super.setValue(value);
 		return this;
@@ -66,7 +65,7 @@ public class OptionalPair<K, V>
 	 * @return The optional pair
 	 */
 	@Override
-	public OptionalPair<K, V> setKey(@Nullable K key)
+	public OptionalPair<K, V> setKey(K key)
 	{
 		super.setKey(key);
 		return this;

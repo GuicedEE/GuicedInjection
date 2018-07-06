@@ -1,6 +1,5 @@
 package com.jwebmp.guicedinjection;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -79,7 +78,7 @@ public class Pair<K, V>
 	 *
 	 * @return this Pair
 	 */
-	public Pair setValue(@Nullable V value)
+	public Pair setValue(V value)
 	{
 		this.value = value;
 		return this;

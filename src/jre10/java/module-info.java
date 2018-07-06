@@ -3,7 +3,7 @@ module com.jwebmp.guicedinjection {
 	requires com.google.guice;
 
 	requires io.github.lukehutch.fastclasspathscanner;
-	requires validation.api;
+	requires java.validation;
 
 	requires com.fasterxml.jackson.core;
 	requires com.fasterxml.jackson.databind;
