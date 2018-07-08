@@ -18,6 +18,7 @@ package com.jwebmp.guicedinjection;
 
 import com.google.common.base.Stopwatch;
 import com.google.inject.*;
+import com.google.inject.Module;
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
 import com.jwebmp.guicedinjection.annotations.GuiceInjectorModuleMarker;
 import com.jwebmp.guicedinjection.annotations.GuicePostStartup;
@@ -39,11 +40,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
+//@formatter:off
+import com.google.inject.Module;
+//@formatter:on
 
 /**
  * Provides an interface for reflection and injection in one.
