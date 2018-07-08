@@ -453,7 +453,7 @@ public class GuiceContext
 	/**
 	 * Starts up Guice and the scanner
 	 */
-	public void loadScanner()
+	private void loadScanner()
 	{
 		log.info("Starting up classpath scanner");
 		Stopwatch stopwatch = Stopwatch.createStarted();

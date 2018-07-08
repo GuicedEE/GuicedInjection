@@ -27,5 +27,6 @@ module com.jwebmp.guicedinjection {
 	uses com.jwebmp.guicedinjection.interfaces.GuiceConfigurator;
 
 	provides com.jwebmp.guicedinjection.scanners.PackageContentsScanner with com.jwebmp.guicedinjection.scanners.GuiceInjectionPackageDefaultInclusions;
+	provides com.jwebmp.guicedinjection.interfaces.GuiceConfigurator with com.jwebmp.guicedinjection.jre10config.GuiceConfigJRE10;
 }
 

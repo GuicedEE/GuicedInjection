@@ -10,7 +10,7 @@ public class GuiceInjectionPackageDefaultInclusions
 	public Set<String> searchFor()
 	{
 		Set<String> strings = new HashSet<>();
-		strings.add("com.jwebmp");
+		strings.add("com.jwebmp.guicedinjection");
 		return strings;
 	}
 }
