@@ -1,4 +1,4 @@
-package com.jwebmp.guicedinjection;
+package com.jwebmp.guicedinjection.threading;
 
 import com.jwebmp.guicedinjection.annotations.GuicePostStartup;
 
@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
  * A thread type future or current to startup asynchronously during post startup execution.
  * Executed internally.
  */
-class PostStartupRunnable
+public class PostStartupRunnable
 		implements Runnable, Callable<PostStartupRunnable>, Serializable
 {
 	private static final long serialVersionUID = 1L;

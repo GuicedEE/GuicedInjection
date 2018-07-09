@@ -14,12 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jwebmp.guicedinjection;
+package com.jwebmp.guicedinjection.properties;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jwebmp.guicedinjection.GuiceContext;
 import com.jwebmp.logger.LogFactory;
 
 import java.io.Serializable;
@@ -44,7 +45,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
 		getterVisibility = NONE,
 		setterVisibility = NONE)
 @JsonInclude(NON_NULL)
-public class Globals
+public class GlobalProperties
 		implements Serializable
 {
 
@@ -53,9 +54,9 @@ public class Globals
 	private final Map<String, Map<Object, Object>> globalProperties;
 
 	/**
-	 * Constructs a new Globals
+	 * Constructs a new GlobalProperties
 	 */
-	public Globals()
+	public GlobalProperties()
 	{
 		globalProperties = new HashMap<>();
 	}
@@ -199,7 +200,7 @@ public class Globals
 		}
 		catch (JsonProcessingException e)
 		{
-			log.log(Level.SEVERE, "Non-Mappable character in Globals Map, Can't toString()", e);
+			log.log(Level.SEVERE, "Non-Mappable character in GlobalProperties Map, Can't toString()", e);
 			return super.toString();
 		}
 	}

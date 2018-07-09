@@ -18,7 +18,6 @@ package com.jwebmp.guicedinjection;
 
 import com.google.common.base.Stopwatch;
 import com.google.inject.*;
-import com.google.inject.Module;
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
 import com.jwebmp.guicedinjection.annotations.GuiceInjectorModuleMarker;
 import com.jwebmp.guicedinjection.annotations.GuicePostStartup;
@@ -26,6 +25,7 @@ import com.jwebmp.guicedinjection.annotations.GuicePreStartup;
 import com.jwebmp.guicedinjection.interfaces.GuiceConfigurator;
 import com.jwebmp.guicedinjection.scanners.FileContentsScanner;
 import com.jwebmp.guicedinjection.scanners.PackageContentsScanner;
+import com.jwebmp.guicedinjection.threading.PostStartupRunnable;
 import com.jwebmp.logger.LogFactory;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
@@ -316,57 +316,6 @@ public class GuiceContext
 	}
 
 	/**
-	 * If context can be used
-	 *
-	 * @return boolean denoting if the injector is ready to be called
-	 */
-	public static boolean isReady()
-	{
-		return isBuilt() && isBuildingInjector();
-	}
-
-	/**
-	 * If the context is built
-	 *
-	 * @return denoting if the injector is ready to be called
-	 */
-	public static boolean isBuilt()
-	{
-		return built;
-	}
-
-	/**
-	 * If the context is built
-	 *
-	 * @param built
-	 * 		denoting if the injector is ready to be called
-	 */
-	public static void setBuilt(boolean built)
-	{
-		GuiceContext.built = built;
-	}
-
-	/**
-	 * If the context is currently still building the injector
-	 *
-	 * @return denoting if the injector is ready to be called
-	 */
-	public static boolean isBuildingInjector()
-	{
-		return buildingInjector;
-	}
-
-	/**
-	 * Returns the assigned logger for changing the level of output or adding handlers
-	 *
-	 * @return This classes physical logger
-	 */
-	public static Logger getLog()
-	{
-		return log;
-	}
-
-	/**
 	 * Returns the async termination wait period Default 60
 	 *
 	 * @return The wait time for post startup operations to finish
@@ -415,13 +364,13 @@ public class GuiceContext
 	/**
 	 * Execute on Destroy
 	 */
+	@SuppressWarnings("unused")
 	public static void destroy()
 	{
 		instance().reflections = null;
 		instance().scanResult = null;
 		instance().scanner = null;
 		instance().injector = null;
-
 	}
 
 	/**
@@ -561,6 +510,7 @@ public class GuiceContext
 	 *
 	 * @return Default processors count
 	 */
+	@SuppressWarnings("all")
 	public static int getThreadCount()
 	{
 		return threadCount;
@@ -595,6 +545,7 @@ public class GuiceContext
 	 *
 	 * @return Default processors count
 	 */
+	@SuppressWarnings("unused")
 	public FastClasspathScanner getScanner()
 	{
 		return scanner;
@@ -606,41 +557,10 @@ public class GuiceContext
 	 * @param scanner
 	 * 		Sets the scanner to a specific instance
 	 */
+	@SuppressWarnings("unused")
 	public static void setScanner(FastClasspathScanner scanner)
 	{
 		instance().scanner = scanner;
-	}
-
-	/**
-	 * Maps the injector class to the injector
-	 *
-	 * @return The global Guice Injector
-	 */
-	public Injector getInjector()
-	{
-		return inject();
-	}
-
-	/**
-	 * Sets the given injector to this context
-	 *
-	 * @param injector
-	 * 		A specific Injector instance
-	 */
-	public void setInjector(Injector injector)
-	{
-		this.injector = injector;
-	}
-
-	/**
-	 * Returns the fully populated reflections object
-	 *
-	 * @return A facade of the ReflectUtils on the scan result
-	 */
-	@SuppressWarnings("unused")
-	public Reflections getReflections()
-	{
-		return reflect();
 	}
 
 	/**

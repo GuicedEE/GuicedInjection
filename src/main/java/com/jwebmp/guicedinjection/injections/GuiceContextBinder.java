@@ -1,7 +1,7 @@
 package com.jwebmp.guicedinjection.injections;
 
 import com.google.inject.Singleton;
-import com.jwebmp.guicedinjection.Globals;
+import com.jwebmp.guicedinjection.properties.GlobalProperties;
 import com.jwebmp.guicedinjection.GuiceConfig;
 import com.jwebmp.guicedinjection.GuiceContext;
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
@@ -27,8 +27,10 @@ public class GuiceContextBinder
 		      .toProvider(() -> GuiceContext.instance()
 		                                    .getConfig())
 		      .in(Singleton.class);
-		module.bind(Globals.class)
+
+		module.bind(GlobalProperties.class)
 		      .asEagerSingleton();
+
 		module.bind(ScanResult.class)
 		      .toProvider(() -> GuiceContext.instance()
 		                                    .getScanResult())

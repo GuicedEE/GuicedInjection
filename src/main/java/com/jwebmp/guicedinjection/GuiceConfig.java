@@ -9,6 +9,7 @@ import java.io.Serializable;
  * The configuration class for Guice Context and the Classpath Scanner
  */
 @Singleton
+@SuppressWarnings("all")
 public class GuiceConfig<J extends GuiceConfig<J>>
 		implements Serializable
 {

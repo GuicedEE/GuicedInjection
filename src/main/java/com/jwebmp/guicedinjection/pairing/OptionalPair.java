@@ -1,4 +1,4 @@
-package com.jwebmp.guicedinjection;
+package com.jwebmp.guicedinjection.pairing;
 
 import java.util.Optional;
 

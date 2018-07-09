@@ -17,7 +17,9 @@
 package com.jwebmp.guicedinjection.abstractions;
 
 import com.google.inject.*;
+//@formatter:off
 import com.google.inject.Module;
+//@formatter:on
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.AnnotatedConstantBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
@@ -38,42 +40,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
-
-//formatter:off
-//formatter:on
 
 /**
  * Exposes the abstract module methods as public

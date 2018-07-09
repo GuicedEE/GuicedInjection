@@ -22,6 +22,8 @@ module com.jwebmp.guicedinjection {
 	exports com.jwebmp.guicedinjection.interfaces;
 	exports com.jwebmp.guicedinjection.abstractions;
 	exports com.jwebmp.guicedinjection.annotations;
+	exports com.jwebmp.guicedinjection.pairing;
+	exports com.jwebmp.guicedinjection.properties;
 
 	uses com.jwebmp.guicedinjection.scanners.PackageContentsScanner;
 	uses com.jwebmp.guicedinjection.scanners.FileContentsScanner;
