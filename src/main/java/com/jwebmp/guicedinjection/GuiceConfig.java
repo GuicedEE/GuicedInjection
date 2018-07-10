@@ -257,6 +257,8 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @param fieldInfo
 	 * 		if field info should be scanned
+	 *
+	 * @return always this object
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull

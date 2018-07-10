@@ -35,7 +35,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
 /**
  * A pretty class for containing EAR or Container level global properties.
  * <p>
- * Key -> Map ID -> Property
+ * Key to Map ID to Property
  *
  * @author Marc Magon
  * @since 08 Jul 2017
@@ -46,6 +46,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
 		setterVisibility = NONE)
 @JsonInclude(NON_NULL)
 public class GlobalProperties
+
 		implements Serializable
 {
 
