@@ -26,6 +26,7 @@
             <artifactId>jwebmp-log-master</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <classifier>${jwebmp.runtime.classifier}</classifier>
         </dependency>
 
         <dependency>
@@ -36,12 +37,7 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>jsr305</artifactId>
-                    <groupId>com.google.code.findbugs</groupId>
-                </exclusion>
-            </exclusions>
+
         </dependency>
 
         <!-- Jackson Support-->
