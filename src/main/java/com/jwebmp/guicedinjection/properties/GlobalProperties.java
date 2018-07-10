@@ -52,7 +52,7 @@ public class GlobalProperties
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = LogFactory.getLog("GlobalPropertyMaps");
-	private final Map<String, Map<Object, Object>> globalProperties;
+	private transient final Map<String, Map<Object, Object>> globalProperties;
 
 	/**
 	 * Constructs a new GlobalProperties

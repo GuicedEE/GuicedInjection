@@ -404,15 +404,15 @@ public class GuiceContext
 		log.fine("Loading the Guice Config.");
 
 		ServiceLoader<GuiceConfigurator> guiceConfigurators = ServiceLoader.load(GuiceConfigurator.class);
-		if (config == null)
+		if (GuiceContext.config == null)
 		{
-			config = new GuiceConfig<>();
+			GuiceContext.config = new GuiceConfig<>();
 		}
 		for (GuiceConfigurator guiceConfigurator : guiceConfigurators)
 		{
-			config = guiceConfigurator.configure(config);
+			GuiceContext.config = guiceConfigurator.configure(config);
 		}
-		if (!config.isWhiteList())
+		if (!GuiceContext.config.isWhiteList())
 		{
 			log.warning(
 					"Scanning may be slow because white listing is disabled. If you experience long scan times.\n" +
