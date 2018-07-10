@@ -75,7 +75,7 @@ public class GuiceInjectorModule
 	/**
 	 * Executes the linked binders to perform any custom binding
 	 */
-	public void runBinders()
+	private void runBinders()
 	{
 		log.log(Level.CONFIG, "Running Default Injection Binders");
 		Reflections reflections = GuiceContext.reflect();

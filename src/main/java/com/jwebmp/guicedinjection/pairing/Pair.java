@@ -38,6 +38,7 @@ public class Pair<K, V>
 	 * @param value
 	 * 		The value for the pair
 	 */
+	@SuppressWarnings("WeakerAccess")
 	public Pair(@NotNull K key, V value)
 	{
 		this.key = key;

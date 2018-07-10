@@ -46,8 +46,9 @@ public abstract class GuiceDefaultBinder
 	/**
 	 * Sets this sort order
 	 *
-	 * @param DefaultSortOrder
+	 * @param DefaultSortOrder the sort order to use
 	 */
+	@SuppressWarnings("unused")
 	public void setSortOrder(int DefaultSortOrder)
 	{
 		sortOrder = DefaultSortOrder;
@@ -69,6 +70,7 @@ public abstract class GuiceDefaultBinder
 	 *
 	 * @return the sort order applied default 100
 	 */
+	@SuppressWarnings("WeakerAccess")
 	public Integer sortOrder()
 	{
 		return sortOrder;

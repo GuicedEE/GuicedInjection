@@ -126,7 +126,7 @@ public class GlobalProperties
 	 *
 	 * @return A map to return
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "UnusedReturnValue"})
 	public <K, V> Map<K, V> getKey(String key)
 	{
 		return (Map<K, V>) globalProperties.get(key);

@@ -110,7 +110,7 @@ public interface PackageContentsScanner
 	 * directories/jars that you do want to scan. (However, be aware that the system classloader may still return cached references to already-loaded classfiles outside this
 	 * overridden path (or won't call your custom ClassLoader), due to class caching.)
 	 *
-	 * @return
+	 * @return the set of string
 	 */
 	Set<String> searchFor();
 }

@@ -69,10 +69,7 @@ public class GuiceContext
 	 * The building injector
 	 */
 	private static boolean buildingInjector = false;
-	/**
-	 * If the references are built or not
-	 */
-	private static boolean built = false;
+
 	private static int threadCount = Runtime.getRuntime()
 	                                        .availableProcessors();
 
@@ -208,7 +205,6 @@ public class GuiceContext
 			{
 				log.log(Level.SEVERE, "Exception creating Injector : " + e.getMessage(), e);
 			}
-			built = true;
 		}
 		buildingInjector = false;
 		return instance().injector;
@@ -416,7 +412,13 @@ public class GuiceContext
 		{
 			config = guiceConfigurator.configure(config);
 		}
-
+		if (!config.isWhiteList())
+		{
+			log.warning(
+					"Scanning may be slow because white listing is disabled. If you experience long scan times.\n" +
+					"you can configure using META-INF/services/za.co.mmagon.guiceinjection.interfaces.GuiceConfigurator. " +
+					"White List the packages to be scanned with META-INF/services/com.jwebmp.guicedinjection.scanners.PackageContentsScanner");
+		}
 		log.config("Using Configuration : " + config.toString());
 
 		if (config.isWhiteList())
@@ -426,8 +428,6 @@ public class GuiceContext
 		else
 		{
 			scanner = new FastClasspathScanner();
-			log.warning(
-					"Scanning may be slow because white listing is disabled. If you experience long scan times, you can configure using META-INF/services/za.co.mmagon.guiceinjection.interfaces.GuiceConfigurator. White List the packages to be scanned with META-INF/services/com.jwebmp.guiceinjection.scanners.PackageContentsScanner");
 		}
 		if (config.isFieldInfo())
 		{

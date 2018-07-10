@@ -85,7 +85,7 @@ public class Reflections
 	 * @return The set of classes that have the types annotated
 	 */
 	@NotNull
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "WeakerAccess"})
 	public <T> Set<Class<? extends T>> getTypesAnnotatedWith(Class<? extends Annotation> annotation)
 	{
 		Set<Class<? extends T>> returnable = new HashSet<>();
@@ -115,6 +115,7 @@ public class Reflections
 	 * @return A given field that can be used on an object. Set Accessible is not run.
 	 */
 	@NotNull
+	@SuppressWarnings({"unchecked","unused"})
 	public Optional<Field> getFieldAnnotatedWithOfType(Class<? extends Annotation> annotation, Class type, Class in)
 	{
 		Field field = null;

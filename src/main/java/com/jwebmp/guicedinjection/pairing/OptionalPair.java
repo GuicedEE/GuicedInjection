@@ -1,5 +1,6 @@
 package com.jwebmp.guicedinjection.pairing;
 
+import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
 /**
@@ -65,7 +66,7 @@ public class OptionalPair<K, V>
 	 * @return The optional pair
 	 */
 	@Override
-	public OptionalPair<K, V> setKey(K key)
+	public OptionalPair<K, V> setKey(@NotNull K key)
 	{
 		super.setKey(key);
 		return this;

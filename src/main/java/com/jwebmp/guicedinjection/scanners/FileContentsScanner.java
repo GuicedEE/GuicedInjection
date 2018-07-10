@@ -13,7 +13,7 @@ public interface FileContentsScanner
 	/**
 	 * Returns a contents processer to run on match
 	 *
-	 * @return
+	 * @return the maps of file identifiers and contents
 	 */
 	Map<String, FileMatchContentsProcessorWithContext> onMatch();
 }
