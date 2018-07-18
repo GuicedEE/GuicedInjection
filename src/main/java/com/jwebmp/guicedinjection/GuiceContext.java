@@ -18,6 +18,7 @@ package com.jwebmp.guicedinjection;
 
 import com.google.common.base.Stopwatch;
 import com.google.inject.*;
+import com.google.inject.Module;
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
 import com.jwebmp.guicedinjection.annotations.GuiceInjectorModuleMarker;
 import com.jwebmp.guicedinjection.annotations.GuicePostStartup;
@@ -28,6 +29,7 @@ import com.jwebmp.guicedinjection.scanners.PackageContentsScanner;
 import com.jwebmp.guicedinjection.threading.PostStartupRunnable;
 import com.jwebmp.logger.LogFactory;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.lukehutch.fastclasspathscanner.MatchProcessorException;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 
 import javax.validation.constraints.NotNull;
@@ -41,7 +43,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 //@formatter:off
-import com.google.inject.Module;
 //@formatter:on
 
 /**
@@ -420,7 +421,7 @@ public class GuiceContext
 					"White List the packages to be scanned with META-INF/services/com.jwebmp.guicedinjection.scanners.PackageContentsScanner");
 		}
 		log.config("Using Configuration : " + config.toString());
-
+		config.setWhiteList(true);
 		if (config.isWhiteList())
 		{
 			scanner = new FastClasspathScanner(getPackagesList());
@@ -453,8 +454,25 @@ public class GuiceContext
 		{
 			scanner.ignoreMethodVisibility();
 		}
+
+		if (config.isVerbose())
+		{
+			scanner.verbose(true);
+		}
+		scanner.verbose(true);
+		scanner.createClassLoaderForMatchingClasses();
+
 		registerScanQuickFiles(scanner);
-		scanResult = scanner.scan(getThreadCount());
+		scanner.suppressMatchProcessorExceptions(false);
+		try
+		{
+			scanResult = scanner.scan(getThreadCount());
+		}
+		catch (MatchProcessorException mpe)
+		{
+			System.out.println(mpe.getExceptions());
+		}
+
 		stopwatch.stop();
 		log.info("Classpath Scanner Completed with [" + getThreadCount() + "] threads. Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
 	}

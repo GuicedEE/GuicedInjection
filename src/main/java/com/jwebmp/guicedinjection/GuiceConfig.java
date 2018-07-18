@@ -48,6 +48,8 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 */
 	private boolean whiteList;
 
+	private boolean verbose;
+
 	/**
 	 * Configures the Guice Context and Reflection Identifier
 	 */
@@ -265,6 +267,20 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	public J setFieldInfo(boolean fieldInfo)
 	{
 		this.fieldInfo = fieldInfo;
+		return (J) this;
+	}
+
+	public boolean isVerbose()
+	{
+		return verbose;
+	}
+
+	@SuppressWarnings("unchecked")
+	@NotNull
+	public J setVerbose(boolean verbose)
+	{
+		this.verbose = verbose;
+
 		return (J) this;
 	}
 
