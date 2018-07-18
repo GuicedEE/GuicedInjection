@@ -18,12 +18,11 @@ package com.jwebmp.guicedinjection;
 
 import com.google.common.base.Stopwatch;
 import com.google.inject.*;
-import com.google.inject.Module;
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
 import com.jwebmp.guicedinjection.annotations.GuiceInjectorModuleMarker;
 import com.jwebmp.guicedinjection.annotations.GuicePostStartup;
 import com.jwebmp.guicedinjection.annotations.GuicePreStartup;
-import com.jwebmp.guicedinjection.interfaces.GuiceConfigurator;
+import com.jwebmp.guicedinjection.interfaces.IGuiceConfigurator;
 import com.jwebmp.guicedinjection.scanners.FileContentsScanner;
 import com.jwebmp.guicedinjection.scanners.PackageContentsScanner;
 import com.jwebmp.guicedinjection.threading.PostStartupRunnable;
@@ -404,12 +403,12 @@ public class GuiceContext
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		log.fine("Loading the Guice Config.");
 
-		ServiceLoader<GuiceConfigurator> guiceConfigurators = ServiceLoader.load(GuiceConfigurator.class);
+		ServiceLoader<IGuiceConfigurator> guiceConfigurators = ServiceLoader.load(IGuiceConfigurator.class, getClass().getClassLoader());
 		if (GuiceContext.config == null)
 		{
 			GuiceContext.config = new GuiceConfig<>();
 		}
-		for (GuiceConfigurator guiceConfigurator : guiceConfigurators)
+		for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
 		{
 			GuiceContext.config = guiceConfigurator.configure(config);
 		}
@@ -417,11 +416,10 @@ public class GuiceContext
 		{
 			log.warning(
 					"Scanning may be slow because white listing is disabled. If you experience long scan times.\n" +
-					"you can configure using META-INF/services/za.co.mmagon.guiceinjection.interfaces.GuiceConfigurator. " +
+					"you can configure using META-INF/services/za.co.mmagon.guiceinjection.interfaces.IGuiceConfigurator. " +
 					"White List the packages to be scanned with META-INF/services/com.jwebmp.guicedinjection.scanners.PackageContentsScanner");
 		}
 		log.config("Using Configuration : " + config.toString());
-		config.setWhiteList(true);
 		if (config.isWhiteList())
 		{
 			scanner = new FastClasspathScanner(getPackagesList());
@@ -459,11 +457,7 @@ public class GuiceContext
 		{
 			scanner.verbose(true);
 		}
-		scanner.verbose(true);
-		scanner.createClassLoaderForMatchingClasses();
-
 		registerScanQuickFiles(scanner);
-		scanner.suppressMatchProcessorExceptions(false);
 		try
 		{
 			scanResult = scanner.scan(getThreadCount());

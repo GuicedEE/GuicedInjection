@@ -2,14 +2,11 @@ package com.jwebmp.guicedinjection.interfaces;
 
 import com.jwebmp.guicedinjection.GuiceConfig;
 
-import java.io.Serializable;
-
 /**
  * Service Locator Interface for granular configuration of the GuiceContext and Injector
  */
 @FunctionalInterface
-public interface GuiceConfigurator
-		extends Serializable
+public interface IGuiceConfigurator
 {
 	/**
 	 * Configuers the guice instance

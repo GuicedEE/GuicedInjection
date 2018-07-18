@@ -1,12 +1,12 @@
 package com.jwebmp.guicedinjection;
 
-import com.jwebmp.guicedinjection.interfaces.GuiceConfigurator;
+import com.jwebmp.guicedinjection.interfaces.IGuiceConfigurator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class GuiceConfigTest
-		implements GuiceConfigurator
+public class IGuiceConfigTest
+		implements IGuiceConfigurator
 {
 	@Test
 	public void testConfig()
