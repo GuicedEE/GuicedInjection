@@ -18,6 +18,7 @@ package com.jwebmp.guicedinjection;
 
 import com.google.common.base.Stopwatch;
 import com.google.inject.*;
+import com.google.inject.Module;
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
 import com.jwebmp.guicedinjection.annotations.GuiceInjectorModuleMarker;
 import com.jwebmp.guicedinjection.annotations.GuicePostStartup;
@@ -465,6 +466,11 @@ public class GuiceContext
 		catch (MatchProcessorException mpe)
 		{
 			System.out.println(mpe.getExceptions());
+			mpe.getExceptions()
+			   .forEach(a ->
+			            {
+				            log.log(Level.SEVERE, "Error running matchers", a);
+			            });
 		}
 
 		stopwatch.stop();
