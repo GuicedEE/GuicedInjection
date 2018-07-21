@@ -1,4 +1,4 @@
-package com.jwebmp.guicedinjection.scanners;
+package com.jwebmp.guicedinjection.interfaces;
 
 import io.github.lukehutch.fastclasspathscanner.matchprocessor.FileMatchContentsProcessorWithContext;
 
@@ -8,7 +8,7 @@ import java.util.Map;
  * Marks the class as a file scanner
  */
 @FunctionalInterface
-public interface FileContentsScanner
+public interface IFileContentsScanner
 {
 	/**
 	 * Returns a contents processer to run on match

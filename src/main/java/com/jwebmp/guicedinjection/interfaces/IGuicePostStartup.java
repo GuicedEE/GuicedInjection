@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jwebmp.guicedinjection.annotations;
+package com.jwebmp.guicedinjection.interfaces;
 
 /**
  * Executes immediately after Guice has been initialized
@@ -22,7 +22,7 @@ package com.jwebmp.guicedinjection.annotations;
  * @author Marc Magon
  * @since 15 May 2017
  */
-public interface GuicePostStartup
+public interface IGuicePostStartup
 {
 
 	/**

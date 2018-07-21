@@ -14,26 +14,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jwebmp.guicedinjection.annotations;
+package com.jwebmp.guicedinjection.interfaces;
+
+import com.google.inject.AbstractModule;
 
 /**
- * Initializes before Guice has been injected
+ * @param <M>
+ * 		The module to bind
  *
- * @author Marc Magon
- * @since 15 May 2017
+ * @author GedMarc
  */
-public interface GuicePreStartup
+@FunctionalInterface
+public interface IDefaultBinder<M extends AbstractModule>
 {
 
 	/**
-	 * Runs on startup
-	 */
-	void onStartup();
-
-	/**
-	 * Sort order for startup, Default 100.
+	 * Performs the binding with the injection module that is required
 	 *
-	 * @return the sort order never null
+	 * @param module
+	 * 		The module being passed in
 	 */
-	Integer sortOrder();
+	void onBind(M module);
 }

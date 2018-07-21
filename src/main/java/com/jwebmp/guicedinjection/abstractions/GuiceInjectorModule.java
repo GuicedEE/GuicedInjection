@@ -17,9 +17,6 @@
 package com.jwebmp.guicedinjection.abstractions;
 
 import com.google.inject.*;
-//@formatter:off
-import com.google.inject.Module;
-//@formatter:on
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.AnnotatedConstantBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
@@ -27,19 +24,18 @@ import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.Message;
 import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.TypeListener;
-import com.jwebmp.guicedinjection.GuiceContext;
-import com.jwebmp.guicedinjection.Reflections;
-import com.jwebmp.guicedinjection.interfaces.GuiceDefaultBinder;
+import com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder;
+import com.jwebmp.guicedinjection.interfaces.IGuiceModule;
 import com.jwebmp.logger.LogFactory;
 
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+//@formatter:off
+//@formatter:on
 
 /**
  * Exposes the abstract module methods as public
@@ -49,7 +45,7 @@ import java.util.logging.Logger;
  */
 public class GuiceInjectorModule
 		extends AbstractModule
-		implements Serializable
+		implements IGuiceModule
 {
 
 	private static final Logger log = LogFactory.getLog("GuiceInjectorModule");
@@ -67,7 +63,7 @@ public class GuiceInjectorModule
 	 * Executes the runBinders method
 	 */
 	@Override
-	protected void configure()
+	public void configure()
 	{
 		runBinders();
 	}
@@ -77,35 +73,11 @@ public class GuiceInjectorModule
 	 */
 	private void runBinders()
 	{
-		log.log(Level.CONFIG, "Running Default Injection Binders");
-		Reflections reflections = GuiceContext.reflect();
-		Set<Class<? extends GuiceDefaultBinder>> sets = reflections.getSubTypesOf(GuiceDefaultBinder.class);
-		log.log(Level.INFO, "Total number of default injectors going to call {0}", sets.size());
-		List<GuiceDefaultBinder> objects = new ArrayList<>();
-		sets.forEach(next ->
-		             {
-			             try
-			             {
-				             GuiceDefaultBinder obj = next.getDeclaredConstructor()
-				                                          .newInstance();
-				             objects.add(obj);
-			             }
-			             catch (Exception ex)
-			             {
-				             log.log(Level.SEVERE, "Couldn't load module from sets" + sets.toString(), ex);
-			             }
-		             });
-		if (!objects.isEmpty())
+		ServiceLoader<IGuiceDefaultBinder> loader = ServiceLoader.load(IGuiceDefaultBinder.class);
+		for (IGuiceDefaultBinder binder : loader)
 		{
-			objects.sort(objects.get(0));
-			objects.forEach(obj ->
-			                {
-				                log.log(Level.CONFIG, "Loading Guice Configuration {0}", obj.getClass()
-				                                                                            .getSimpleName());
-				                obj.onBind(this);
-				                log.log(Level.CONFIG, "Finished Guice Configuration {0}", obj.getClass()
-				                                                                             .getSimpleName());
-			                });
+			log.log(Level.CONFIG, "Loading IGuiceDefaultBinder - " + binder.getClass());
+			binder.onBind(this);
 		}
 	}
 

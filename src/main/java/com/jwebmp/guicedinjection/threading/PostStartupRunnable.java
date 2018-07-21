@@ -1,6 +1,6 @@
 package com.jwebmp.guicedinjection.threading;
 
-import com.jwebmp.guicedinjection.annotations.GuicePostStartup;
+import com.jwebmp.guicedinjection.interfaces.IGuicePostStartup;
 
 import java.io.Serializable;
 import java.util.concurrent.Callable;
@@ -14,9 +14,9 @@ public class PostStartupRunnable
 {
 	private static final long serialVersionUID = 1L;
 
-	private transient GuicePostStartup startup;
+	private transient IGuicePostStartup startup;
 
-	public PostStartupRunnable(GuicePostStartup startup)
+	public PostStartupRunnable(IGuicePostStartup startup)
 	{
 		this.startup = startup;
 	}

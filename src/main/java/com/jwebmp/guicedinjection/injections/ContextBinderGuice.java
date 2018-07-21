@@ -1,21 +1,21 @@
 package com.jwebmp.guicedinjection.injections;
 
 import com.google.inject.Singleton;
-import com.jwebmp.guicedinjection.properties.GlobalProperties;
 import com.jwebmp.guicedinjection.GuiceConfig;
 import com.jwebmp.guicedinjection.GuiceContext;
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
-import com.jwebmp.guicedinjection.interfaces.GuiceDefaultBinder;
+import com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder;
+import com.jwebmp.guicedinjection.properties.GlobalProperties;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 
 /**
  * Binds the basic objects for the Guice Context to be injected everywhere
  */
 @SuppressWarnings("unused")
-public class GuiceContextBinder
-		extends GuiceDefaultBinder
+public class ContextBinderGuice
+		implements IGuiceDefaultBinder<GuiceInjectorModule>
 {
-	public GuiceContextBinder()
+	public ContextBinderGuice()
 	{
 		//No config required
 	}

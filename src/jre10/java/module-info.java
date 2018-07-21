@@ -1,3 +1,8 @@
+import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
+import com.jwebmp.guicedinjection.injections.ContextBinderGuice;
+import com.jwebmp.guicedinjection.interfaces.*;
+import com.jwebmp.guicedinjection.scanners.GuiceInjectionPackageDefaultInclusions;
+
 module com.jwebmp.guicedinjection {
 
 	requires com.google.guice;
@@ -21,14 +26,20 @@ module com.jwebmp.guicedinjection {
 	exports com.jwebmp.guicedinjection;
 	exports com.jwebmp.guicedinjection.interfaces;
 	exports com.jwebmp.guicedinjection.abstractions;
-	exports com.jwebmp.guicedinjection.annotations;
 	exports com.jwebmp.guicedinjection.pairing;
 	exports com.jwebmp.guicedinjection.properties;
 
-	uses com.jwebmp.guicedinjection.scanners.PackageContentsScanner;
-	uses com.jwebmp.guicedinjection.scanners.FileContentsScanner;
-	uses com.jwebmp.guicedinjection.interfaces.IGuiceConfigurator;
+	uses IPackageContentsScanner;
+	uses IFileContentsScanner;
+	uses IGuiceConfigurator;
+	uses IGuiceDefaultBinder;
+	uses IGuicePreStartup;
+	uses IGuiceModule;
+	uses IGuicePostStartup;
 
-	provides com.jwebmp.guicedinjection.scanners.PackageContentsScanner with com.jwebmp.guicedinjection.scanners.GuiceInjectionPackageDefaultInclusions;
+	provides IPackageContentsScanner with GuiceInjectionPackageDefaultInclusions;
+
+	provides IGuiceDefaultBinder with ContextBinderGuice;
+	provides IGuiceModule with GuiceInjectorModule;
 }
 

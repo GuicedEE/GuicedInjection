@@ -14,23 +14,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jwebmp.guicedinjection.annotations;
-
-import java.lang.annotation.*;
+package com.jwebmp.guicedinjection.interfaces;
 
 /**
- * Defines a standard dynamic module that can be run,
- * <p>
- * Make sure its on an instance of AbstractModule
+ * Initializes before Guice has been injected
  *
  * @author Marc Magon
- * @since 19 Mar 2017
+ * @since 15 May 2017
  */
-@Target({ElementType.FIELD, ElementType.TYPE, ElementType.LOCAL_VARIABLE, ElementType.PACKAGE, ElementType.METHOD, ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-public @interface GuiceInjectorModuleMarker
+public interface IGuicePreStartup
 {
 
+	/**
+	 * Runs on startup
+	 */
+	void onStartup();
+
+	/**
+	 * Sort order for startup, Default 100.
+	 *
+	 * @return the sort order never null
+	 */
+	Integer sortOrder();
 }

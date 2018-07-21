@@ -1,4 +1,4 @@
-package com.jwebmp.guicedinjection.scanners;
+package com.jwebmp.guicedinjection.interfaces;
 
 import java.util.Set;
 
@@ -55,7 +55,7 @@ import java.util.Set;
  * path (or won't call your custom ClassLoader), due to class caching.)
  */
 @FunctionalInterface
-public interface PackageContentsScanner
+public interface IPackageContentsScanner
 {
 	/**
 	 * The constructor accepts a list of whitelisted package prefixes / jar names to scan, as well as blacklisted packages/jars not to scan, where blacklisted entries are prefixed

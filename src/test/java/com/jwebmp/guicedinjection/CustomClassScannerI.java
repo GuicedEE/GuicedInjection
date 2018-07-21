@@ -1,14 +1,14 @@
 package com.jwebmp.guicedinjection;
 
-import com.jwebmp.guicedinjection.scanners.FileContentsScanner;
+import com.jwebmp.guicedinjection.interfaces.IFileContentsScanner;
 import io.github.lukehutch.fastclasspathscanner.matchprocessor.FileMatchContentsProcessorWithContext;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CustomClassScanner
-		implements FileContentsScanner
+public class CustomClassScannerI
+		implements IFileContentsScanner
 {
 	@Override
 	public Map<String, FileMatchContentsProcessorWithContext> onMatch()

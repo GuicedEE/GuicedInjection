@@ -50,6 +50,8 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 
 	private boolean verbose;
 
+	private boolean classpathScanning;
+
 	/**
 	 * Configures the Guice Context and Reflection Identifier
 	 */
@@ -217,7 +219,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Sets if packages must be white listed.
 	 * <p>
-	 * Use META-INF/services/com.jwebmp.guiceinjection.scanners.PackageContentsScanner to register your packages
+	 * Use META-INF/services/com.jwebmp.guiceinjection.scanners.IPackageContentsScanner to register your packages
 	 *
 	 * @return if whitelisting is enabled
 	 */
@@ -229,7 +231,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Sets if packages must be white listed.
 	 * * <p>
-	 * * Use META-INF/services/com.jwebmp.guiceinjection.scanners.PackageContentsScanner to register your packages
+	 * * Use META-INF/services/com.jwebmp.guiceinjection.scanners.IPackageContentsScanner to register your packages
 	 *
 	 * @param whiteList
 	 * 		if packages should be white listed
@@ -284,24 +286,33 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		return (J) this;
 	}
 
+	public boolean isClasspathScanning()
+	{
+		return classpathScanning;
+	}
+
+	@SuppressWarnings("unchecked")
+	@NotNull
+	public J setClasspathScanning(boolean classpathScanning)
+	{
+		this.classpathScanning = classpathScanning;
+		return (J) this;
+	}
+
 	@Override
 	public String toString()
 	{
 		return "GuiceConfig{" +
-		       "fieldScanning=" +
-		       fieldScanning +
-		       ", fieldAnnotationScanning=" +
-		       fieldAnnotationScanning +
-		       ", methodAnnotationIndexing=" +
-		       methodAnnotationIndexing +
-		       ", methodInfo=" +
-		       methodInfo +
-		       ", ignoreFieldVisibility=" +
-		       ignoreFieldVisibility +
-		       ", ignoreMethodVisibility=" +
-		       ignoreMethodVisibility +
-		       ", whiteList=" +
-		       whiteList +
+		       "fieldInfo=" + fieldInfo +
+		       ", fieldScanning=" + fieldScanning +
+		       ", fieldAnnotationScanning=" + fieldAnnotationScanning +
+		       ", methodAnnotationIndexing=" + methodAnnotationIndexing +
+		       ", methodInfo=" + methodInfo +
+		       ", ignoreFieldVisibility=" + ignoreFieldVisibility +
+		       ", ignoreMethodVisibility=" + ignoreMethodVisibility +
+		       ", whiteList=" + whiteList +
+		       ", verbose=" + verbose +
+		       ", classpathScanning=" + classpathScanning +
 		       '}';
 	}
 }

@@ -17,15 +17,10 @@
 package com.jwebmp.guicedinjection;
 
 import com.google.common.base.Stopwatch;
-import com.google.inject.*;
-import com.google.inject.Module;
-import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
-import com.jwebmp.guicedinjection.annotations.GuiceInjectorModuleMarker;
-import com.jwebmp.guicedinjection.annotations.GuicePostStartup;
-import com.jwebmp.guicedinjection.annotations.GuicePreStartup;
-import com.jwebmp.guicedinjection.interfaces.IGuiceConfigurator;
-import com.jwebmp.guicedinjection.scanners.FileContentsScanner;
-import com.jwebmp.guicedinjection.scanners.PackageContentsScanner;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.jwebmp.guicedinjection.interfaces.*;
 import com.jwebmp.guicedinjection.threading.PostStartupRunnable;
 import com.jwebmp.logger.LogFactory;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
@@ -34,7 +29,6 @@ import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -121,85 +115,27 @@ public class GuiceContext
 		if (buildingInjector)
 		{
 			throw new RuntimeException(
-					"The injector is being called recursively during build. Place such actions in a GuicePostStartup or use the GuicePreStartup Service Loader.");
+					"The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.");
 		}
 		if (instance().injector == null)
 		{
 			try
 			{
 				buildingInjector = true;
-				log.info("Starting up Injections");
-				log.config("Pre Startup Executions....");
-				Set<Class<? extends GuicePreStartup>> pres = reflect().getSubTypesOf(GuicePreStartup.class);
-				pres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
-				List<GuicePreStartup> startups = new ArrayList<>();
-				for (Class<? extends GuicePreStartup> pre : pres)
+				log.info("Starting up Guice Context");
+				instance().loadPreStartups();
+				instance().loadConfiguration();
+				if (instance().getConfig()
+				              .isWhiteList() ||
+				    instance().getConfig()
+				              .isClasspathScanning())
 				{
-					GuicePreStartup pr;
-					pr = pre.getDeclaredConstructor()
-					        .newInstance();
-					startups.add(pr);
+					instance().loadScanner();
 				}
-				startups.sort(Comparator.comparing(GuicePreStartup::sortOrder));
-				log.log(Level.FINE, "Total of [{0}] startup modules.", startups.size());
-				startups.forEach(GuicePreStartup::onStartup);
-				log.config("Finished Startup Execution");
-
-				log.info("Loading All Default Binders (that extend GuiceDefaultBinder)");
-
-				GuiceInjectorModule defaultInjection;
-				defaultInjection = new GuiceInjectorModule();
-				log.info("Loading All Site Binders (that extend GuiceSiteBinder)");
-				Set<Class<?>> aClass = reflect().getTypesAnnotatedWith(GuiceInjectorModuleMarker.class);
-				aClass.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
-				int customModuleSize = aClass.size();
-				log.log(Level.CONFIG, "Loading [{0}] Custom Modules", customModuleSize);
-				ArrayList<Module> customModules = new ArrayList<>();
-				Module[] cModules;
-				for (Class<?> clazz : aClass)
-				{
-					Class<? extends AbstractModule> next = (Class<? extends AbstractModule>) clazz;
-					log.log(Level.CONFIG, "Adding Module [{0}]", next.getCanonicalName());
-					Module moduleInstance = next.getDeclaredConstructor()
-					                            .newInstance();
-					customModules.add(moduleInstance);
-				}
-				customModules.add(0, defaultInjection);
-
-				cModules = new Module[customModules.size()];
-				cModules = customModules.toArray(cModules);
-
+				List cModules = instance().loadDefaultBinders();
 				instance().injector = Guice.createInjector(cModules);
-				log.info("Post Startup Executions....");
-				Set<Class<? extends GuicePostStartup>> closingPres = reflect().getSubTypesOf(GuicePostStartup.class);
-				closingPres.removeIf(a -> Modifier.isAbstract(a.getModifiers()));
-				List<GuicePostStartup> postStartups = new ArrayList<>();
-				Map<Integer, List<GuicePostStartup>> postStartupGroups = new TreeMap<>();
 				buildingInjector = false;
-				closingPres.forEach(closingPre -> postStartups.add(GuiceContext.getInstance(closingPre)));
-				postStartups.sort(Comparator.comparing(GuicePostStartup::sortOrder));
-				log.log(Level.CONFIG, "Total of [{0}] startup modules.", postStartups.size());
-				postStartups.forEach(a ->
-				                     {
-					                     Integer sortOrder = a.sortOrder();
-					                     postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
-					                                      .add(a);
-				                     });
-				postStartupGroups.forEach((key, value) ->
-				                          {
-					                          List<GuicePostStartup> st = postStartupGroups.get(key);
-					                          List<PostStartupRunnable> runnables = new ArrayList<>();
-					                          if (st.size() == 1)
-					                          {
-						                          st.get(0)
-						                            .postLoad();
-					                          }
-					                          else
-					                          {
-						                          configureWorkStealingPool(st, runnables);
-					                          }
-				                          });
-				log.fine("Finished Post Startup Execution");
+				instance().loadPostStartups();
 				log.config("Injection System Ready");
 			}
 			catch (Throwable e)
@@ -211,41 +147,123 @@ public class GuiceContext
 		return instance().injector;
 	}
 
-	/**
-	 * Builds an asynchronous running pool to execute with a termination waiter
-	 *
-	 * @param st
-	 * 		A list of startup objects
-	 * @param runnables
-	 * 		A list of post startup threads
-	 */
-	private static void configureWorkStealingPool(List<GuicePostStartup> st, List<PostStartupRunnable> runnables)
+	private void loadPreStartups()
 	{
-		ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(threadCount);
-		for (GuicePostStartup guicePostStartup : st)
+		ServiceLoader<IGuicePreStartup> preStartups = ServiceLoader.load(IGuicePreStartup.class);
+		List<IGuicePreStartup> startups = new ArrayList<>();
+		for (IGuicePreStartup preStartup : preStartups)
 		{
-			runnables.add(new PostStartupRunnable(guicePostStartup));
+			startups.add(preStartup);
 		}
-		for (PostStartupRunnable a : runnables)
+		startups.sort(Comparator.comparing(IGuicePreStartup::sortOrder));
+		for (IGuicePreStartup startup : startups)
 		{
-			try
-			{
-				postLoaderExecutionService.submit((Runnable) a);
-			}
-			catch (Exception e)
-			{
-				log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
-			}
+			log.config("Loading IGuicePreStartup - " +
+			           startup.getClass()
+			                  .getCanonicalName());
+			startup.onStartup();
 		}
-		postLoaderExecutionService.shutdown();
+	}
+
+	private void loadConfiguration()
+	{
+		ServiceLoader<IGuiceConfigurator> guiceConfigurators = ServiceLoader.load(IGuiceConfigurator.class, getClass().getClassLoader());
+		if (GuiceContext.config == null)
+		{
+			GuiceContext.config = new GuiceConfig<>();
+		}
+		for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
+		{
+			log.config("Loading IGuiceConfigurator - " +
+			           guiceConfigurator.getClass()
+			                            .getCanonicalName());
+			GuiceContext.config = guiceConfigurator.configure(config);
+		}
+		log.config("IGuiceConfigurator Final Configuration : " + config.toString());
+	}
+
+	/**
+	 * Starts up Guice and the scanner
+	 */
+	private void loadScanner()
+	{
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		log.info("Loading Classpath Scanner - [" + getThreadCount() + "] threads");
+		if (config.isWhiteList())
+		{
+			scanner = new FastClasspathScanner(getPackagesList());
+		}
+		else
+		{
+			scanner = new FastClasspathScanner();
+		}
+		if (config.isFieldInfo())
+		{
+			scanner.enableFieldInfo();
+		}
+		if (config.isFieldAnnotationScanning())
+		{
+			scanner.enableFieldAnnotationIndexing();
+		}
+		if (config.isMethodAnnotationIndexing())
+		{
+			scanner.enableMethodAnnotationIndexing();
+		}
+		if (config.isMethodInfo())
+		{
+			scanner.enableMethodInfo();
+		}
+		if (config.isIgnoreFieldVisibility())
+		{
+			scanner.ignoreFieldVisibility();
+		}
+		if (config.isIgnoreMethodVisibility())
+		{
+			scanner.ignoreMethodVisibility();
+		}
+
+		if (config.isVerbose())
+		{
+			scanner.verbose(true);
+		}
+		registerScanQuickFiles(scanner);
 		try
 		{
-			postLoaderExecutionService.awaitTermination(asyncTerminationWait, asyncTerminationTimeUnit);
+			scanResult = scanner.scan(getThreadCount());
 		}
-		catch (Exception e)
+		catch (MatchProcessorException mpe)
 		{
-			log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
+			System.out.println(mpe.getExceptions());
+			mpe.getExceptions()
+			   .forEach(a ->
+			            {
+				            log.log(Level.SEVERE, "Error running matchers", a);
+			            });
 		}
+
+		stopwatch.stop();
+		log.fine("Loaded Classpath Scanner -Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
+	}
+
+	@SuppressWarnings("unchecked")
+	private List loadDefaultBinders()
+	{
+		ServiceLoader<IGuiceModule> preStartups = ServiceLoader.load(IGuiceModule.class);
+		List<IGuiceModule> startups = new ArrayList<>();
+		for (IGuiceModule preStartup : preStartups)
+		{
+			startups.add(preStartup);
+		}
+		startups.sort(Comparator.comparing(IGuiceModule::sortOrder));
+		List output = new ArrayList<>();
+		for (IGuiceModule startup : startups)
+		{
+			log.config("Loading IGuiceModule  - " +
+			           startup.getClass()
+			                  .getCanonicalName());
+			output.add(startup);
+		}
+		return output;
 	}
 
 	/**
@@ -395,86 +413,36 @@ public class GuiceContext
 		return scanResult;
 	}
 
-	/**
-	 * Starts up Guice and the scanner
-	 */
-	private void loadScanner()
+	private void loadPostStartups()
 	{
-		log.info("Starting up classpath scanner");
-		Stopwatch stopwatch = Stopwatch.createStarted();
-		log.fine("Loading the Guice Config.");
+		ServiceLoader<IGuicePostStartup> postStartups = ServiceLoader.load(IGuicePostStartup.class);
+		Map<Integer, List<IGuicePostStartup>> postStartupGroups = new TreeMap<>();
 
-		ServiceLoader<IGuiceConfigurator> guiceConfigurators = ServiceLoader.load(IGuiceConfigurator.class, getClass().getClassLoader());
-		if (GuiceContext.config == null)
+		for (IGuicePostStartup postStartup : postStartups)
 		{
-			GuiceContext.config = new GuiceConfig<>();
+			IGuicePostStartup injected = GuiceContext.getInstance(postStartup.getClass());
+			Integer sortOrder = injected.sortOrder();
+			postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
+			                 .add(injected);
 		}
-		for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
-		{
-			GuiceContext.config = guiceConfigurator.configure(config);
-		}
-		if (!GuiceContext.config.isWhiteList())
-		{
-			log.warning(
-					"Scanning may be slow because white listing is disabled. If you experience long scan times.\n" +
-					"you can configure using META-INF/services/za.co.mmagon.guiceinjection.interfaces.IGuiceConfigurator. " +
-					"White List the packages to be scanned with META-INF/services/com.jwebmp.guicedinjection.scanners.PackageContentsScanner");
-		}
-		log.config("Using Configuration : " + config.toString());
-		if (config.isWhiteList())
-		{
-			scanner = new FastClasspathScanner(getPackagesList());
-		}
-		else
-		{
-			scanner = new FastClasspathScanner();
-		}
-		if (config.isFieldInfo())
-		{
-			scanner.enableFieldInfo();
-		}
-		if (config.isFieldAnnotationScanning())
-		{
-			scanner.enableFieldAnnotationIndexing();
-		}
-		if (config.isMethodAnnotationIndexing())
-		{
-			scanner.enableMethodAnnotationIndexing();
-		}
-		if (config.isMethodInfo())
-		{
-			scanner.enableMethodInfo();
-		}
-		if (config.isIgnoreFieldVisibility())
-		{
-			scanner.ignoreFieldVisibility();
-		}
-		if (config.isIgnoreMethodVisibility())
-		{
-			scanner.ignoreMethodVisibility();
-		}
-
-		if (config.isVerbose())
-		{
-			scanner.verbose(true);
-		}
-		registerScanQuickFiles(scanner);
-		try
-		{
-			scanResult = scanner.scan(getThreadCount());
-		}
-		catch (MatchProcessorException mpe)
-		{
-			System.out.println(mpe.getExceptions());
-			mpe.getExceptions()
-			   .forEach(a ->
-			            {
-				            log.log(Level.SEVERE, "Error running matchers", a);
-			            });
-		}
-
-		stopwatch.stop();
-		log.info("Classpath Scanner Completed with [" + getThreadCount() + "] threads. Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
+		postStartupGroups.forEach((key, value) ->
+		                          {
+			                          value.sort(Comparator.comparing(IGuicePostStartup::sortOrder));
+			                          if (value.size() == 1)
+			                          {
+				                          log.config("Loading IGuicePostStartup - " +
+				                                     value.get(0)
+				                                          .getClass()
+				                                          .getCanonicalName());
+				                          value.get(0)
+				                               .postLoad();
+			                          }
+			                          else
+			                          {
+				                          List<PostStartupRunnable> runnables = new ArrayList<>();
+				                          configureWorkStealingPool(value, runnables);
+			                          }
+		                          });
 	}
 
 	/**
@@ -484,20 +452,20 @@ public class GuiceContext
 	 */
 	private String[] getPackagesList()
 	{
-		log.fine("Starting scan for package monitors. Services registered with " + PackageContentsScanner.class.getCanonicalName() + " will be found.");
 		if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
 		{
 			excludeJarsFromScan = new HashSet<>();
-			ServiceLoader<PackageContentsScanner> exclusions = ServiceLoader.load(PackageContentsScanner.class);
-			for (PackageContentsScanner exclusion : exclusions)
+			ServiceLoader<IPackageContentsScanner> exclusions = ServiceLoader.load(IPackageContentsScanner.class);
+			for (IPackageContentsScanner exclusion : exclusions)
 			{
+				log.log(Level.CONFIG, "Loading IPackageContentsScanner - " +
+				                      exclusion.getClass()
+				                               .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
-				log.log(Level.CONFIG, "Added to Scanned Packages : " + searches);
 				excludeJarsFromScan.addAll(searches);
 			}
 		}
 		String[] exclusions = new String[excludeJarsFromScan.size()];
-		log.config("Package Monitoring complete. Total Packages registered for scan [" + exclusions.length + "].");
 		return excludeJarsFromScan.toArray(exclusions);
 	}
 
@@ -510,16 +478,52 @@ public class GuiceContext
 	@SuppressWarnings("unchecked")
 	private void registerScanQuickFiles(FastClasspathScanner scanner)
 	{
-		log.fine("Starting File Contents Scanner. Services registered with " + FileContentsScanner.class.getCanonicalName() + " will be found.");
-		ServiceLoader<FileContentsScanner> fileScanners = ServiceLoader.load(FileContentsScanner.class);
-		int found = 0;
-		for (FileContentsScanner fileScanner : fileScanners)
+		ServiceLoader<IFileContentsScanner> fileScanners = ServiceLoader.load(IFileContentsScanner.class);
+		for (IFileContentsScanner fileScanner : fileScanners)
 		{
+			log.log(Level.CONFIG, "Loading IFileContentsScanner - " +
+			                      fileScanner.getClass()
+			                                 .getCanonicalName());
 			fileScanner.onMatch()
 			           .forEach(scanner::matchFilenamePathLeaf);
-			found++;
 		}
-		log.config("File Contents Scanner Matchers have been registered. Total Content Scanners [" + found + "].");
+	}
+
+	/**
+	 * Builds an asynchronous running pool to execute with a termination waiter
+	 *
+	 * @param st
+	 * 		A list of startup objects
+	 * @param runnables
+	 * 		A list of post startup threads
+	 */
+	private static void configureWorkStealingPool(List<IGuicePostStartup> st, List<PostStartupRunnable> runnables)
+	{
+		ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(threadCount);
+		for (IGuicePostStartup IGuicePostStartup : st)
+		{
+			runnables.add(new PostStartupRunnable(IGuicePostStartup));
+		}
+		for (PostStartupRunnable a : runnables)
+		{
+			try
+			{
+				postLoaderExecutionService.submit((Runnable) a);
+			}
+			catch (Exception e)
+			{
+				log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
+			}
+		}
+		postLoaderExecutionService.shutdown();
+		try
+		{
+			postLoaderExecutionService.awaitTermination(asyncTerminationWait, asyncTerminationTimeUnit);
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
+		}
 	}
 
 	/**

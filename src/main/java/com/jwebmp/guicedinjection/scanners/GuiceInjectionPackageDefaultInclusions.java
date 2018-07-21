@@ -1,10 +1,12 @@
 package com.jwebmp.guicedinjection.scanners;
 
+import com.jwebmp.guicedinjection.interfaces.IPackageContentsScanner;
+
 import java.util.HashSet;
 import java.util.Set;
 
 public class GuiceInjectionPackageDefaultInclusions
-		implements PackageContentsScanner
+		implements IPackageContentsScanner
 {
 	@Override
 	public Set<String> searchFor()
