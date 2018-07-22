@@ -465,6 +465,7 @@ public class GuiceContext
 				excludeJarsFromScan.addAll(searches);
 			}
 		}
+		log.log(Level.FINE, "IPackageScanningContentsScanner Final Configuration - " + excludeJarsFromScan.toString());
 		String[] exclusions = new String[excludeJarsFromScan.size()];
 		return excludeJarsFromScan.toArray(exclusions);
 	}
@@ -479,14 +480,21 @@ public class GuiceContext
 	private void registerScanQuickFiles(FastClasspathScanner scanner)
 	{
 		ServiceLoader<IFileContentsScanner> fileScanners = ServiceLoader.load(IFileContentsScanner.class);
+		Set<IFileContentsScanner> scanners = new HashSet<>();
 		for (IFileContentsScanner fileScanner : fileScanners)
 		{
+			if (scanners.contains(fileScanner))
+			{
+				continue;
+			}
+			scanners.add(fileScanner);
 			log.log(Level.CONFIG, "Loading IFileContentsScanner - " +
 			                      fileScanner.getClass()
 			                                 .getCanonicalName());
 			fileScanner.onMatch()
 			           .forEach(scanner::matchFilenamePathLeaf);
 		}
+		scanners.clear();
 	}
 
 	/**

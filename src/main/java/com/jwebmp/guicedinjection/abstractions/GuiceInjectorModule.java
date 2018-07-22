@@ -17,6 +17,7 @@
 package com.jwebmp.guicedinjection.abstractions;
 
 import com.google.inject.*;
+import com.google.inject.Module;
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.AnnotatedConstantBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
