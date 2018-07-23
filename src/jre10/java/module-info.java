@@ -1,7 +1,6 @@
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
 import com.jwebmp.guicedinjection.injections.ContextBinderGuice;
 import com.jwebmp.guicedinjection.interfaces.*;
-import com.jwebmp.guicedinjection.scanners.GuiceInjectionPackageDefaultInclusions;
 
 module com.jwebmp.guicedinjection {
 
@@ -22,7 +21,6 @@ module com.jwebmp.guicedinjection {
 	requires com.fasterxml.jackson.annotation;
 	requires com.google.common;
 
-	exports com.jwebmp.guicedinjection.scanners;
 	exports com.jwebmp.guicedinjection;
 	exports com.jwebmp.guicedinjection.interfaces;
 	exports com.jwebmp.guicedinjection.abstractions;
@@ -36,8 +34,6 @@ module com.jwebmp.guicedinjection {
 	uses IGuicePreStartup;
 	uses IGuiceModule;
 	uses IGuicePostStartup;
-
-	provides IPackageContentsScanner with GuiceInjectionPackageDefaultInclusions;
 
 	provides IGuiceDefaultBinder with ContextBinderGuice;
 	provides IGuiceModule with GuiceInjectorModule;
