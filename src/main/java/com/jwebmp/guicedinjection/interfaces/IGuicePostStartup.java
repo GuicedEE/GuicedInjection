@@ -35,5 +35,10 @@ public interface IGuicePostStartup
 	 *
 	 * @return the sort order to return
 	 */
-	Integer sortOrder();
+	default Integer sortOrder()
+	{
+		return 50;
+	}
+
+	;
 }
