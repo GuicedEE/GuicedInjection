@@ -33,7 +33,6 @@ import java.util.Set;
  */
 public class Reflections
 {
-
 	/*
 	 * Constructs a new Reflections
 	 */
