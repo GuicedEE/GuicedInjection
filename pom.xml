@@ -27,7 +27,6 @@
             <version>${project.version}</version>
             <type>jar</type>
             <classifier>${jwebmp.runtime.classifier}</classifier>
-            <optional>true</optional>
         </dependency>
 
         <dependency>
