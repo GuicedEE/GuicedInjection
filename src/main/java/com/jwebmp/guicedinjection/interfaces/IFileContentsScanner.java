@@ -1,6 +1,6 @@
 package com.jwebmp.guicedinjection.interfaces;
 
-import io.github.lukehutch.fastclasspathscanner.matchprocessor.FileMatchContentsProcessorWithContext;
+import io.github.classgraph.ResourceList;
 
 import java.util.Map;
 
@@ -15,5 +15,5 @@ public interface IFileContentsScanner
 	 *
 	 * @return the maps of file identifiers and contents
 	 */
-	Map<String, FileMatchContentsProcessorWithContext> onMatch();
+	Map<String, ResourceList.ByteArrayConsumer> onMatch();
 }

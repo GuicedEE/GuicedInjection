@@ -12,7 +12,7 @@ public class IGuiceConfigTest
 	public void testConfig()
 	{
 		GuiceConfig config = GuiceContext.get(GuiceConfig.class);
-		assertTrue(config.isFieldAnnotationScanning());
+		assertTrue(config.isAnnotationScanning());
 		assertTrue(config.isFieldInfo());
 		assertTrue(config.isIgnoreFieldVisibility());
 		assertTrue(config.isIgnoreMethodVisibility());
@@ -25,9 +25,8 @@ public class IGuiceConfigTest
 	public GuiceConfig configure(GuiceConfig config)
 	{
 		config.setIgnoreMethodVisibility(true)
-		      .setMethodAnnotationIndexing(true)
 		      .setWhiteList(true)
-		      .setFieldAnnotationScanning(true)
+		      .setAnnotationScanning(true)
 		      .setFieldInfo(true)
 		      .setFieldScanning(true)
 		      .setIgnoreFieldVisibility(true)

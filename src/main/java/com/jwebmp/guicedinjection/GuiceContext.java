@@ -23,9 +23,9 @@ import com.google.inject.Key;
 import com.jwebmp.guicedinjection.interfaces.*;
 import com.jwebmp.guicedinjection.threading.PostStartupRunnable;
 import com.jwebmp.logger.LogFactory;
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.MatchProcessorException;
-import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ResourceList;
+import io.github.classgraph.ScanResult;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -78,7 +78,7 @@ public class GuiceContext
 	/**
 	 * The actual scanner
 	 */
-	private transient FastClasspathScanner scanner;
+	private transient ClassGraph scanner;
 	/**
 	 * The scan result built from everything - the core scanner.
 	 */
@@ -87,10 +87,6 @@ public class GuiceContext
 	 * Facade layer for backwards compatibility
 	 */
 	private transient Reflections reflections;
-	/**
-	 * A list of jars to exclude from the scan file for the application
-	 */
-	private Set<String> excludeJarsFromScan;
 
 	/**
 	 * Creates a new Guice context. Not necessary
@@ -188,23 +184,29 @@ public class GuiceContext
 		log.info("Loading Classpath Scanner - [" + getThreadCount() + "] threads");
 		if (config.isWhiteList())
 		{
-			scanner = new FastClasspathScanner(getPackagesList());
+			scanner = new ClassGraph();
+			String[] packages = getPackagesList();
+			if (packages.length != 0)
+			{
+				scanner.whitelistPackages(packages);
+			}
+			String[] paths = getPathsList();
+			if (paths.length != 0)
+			{
+				scanner.whitelistPaths(paths);
+			}
 		}
 		else
 		{
-			scanner = new FastClasspathScanner();
+			scanner = new ClassGraph();
 		}
 		if (config.isFieldInfo())
 		{
 			scanner.enableFieldInfo();
 		}
-		if (config.isFieldAnnotationScanning())
+		if (config.isAnnotationScanning())
 		{
-			scanner.enableFieldAnnotationIndexing();
-		}
-		if (config.isMethodAnnotationIndexing())
-		{
-			scanner.enableMethodAnnotationIndexing();
+			scanner.enableAnnotationInfo();
 		}
 		if (config.isMethodInfo())
 		{
@@ -221,21 +223,21 @@ public class GuiceContext
 
 		if (config.isVerbose())
 		{
-			scanner.verbose(true);
+			scanner.verbose();
 		}
-		registerScanQuickFiles(scanner);
 		try
 		{
 			scanResult = scanner.scan(getThreadCount());
+			Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
+			fileScans.forEach((key, value) ->
+			                  {
+				                  scanResult.getResourcesWithLeafName(key)
+				                            .forEachByteArray(value);
+			                  });
 		}
-		catch (MatchProcessorException mpe)
+		catch (Exception mpe)
 		{
-			System.out.println(mpe.getExceptions());
-			mpe.getExceptions()
-			   .forEach(a ->
-			            {
-				            log.log(Level.SEVERE, "Error running matchers", a);
-			            });
+			log.log(Level.SEVERE, "Unable to run scanner", mpe);
 		}
 
 		stopwatch.stop();
@@ -449,49 +451,65 @@ public class GuiceContext
 	 */
 	private String[] getPackagesList()
 	{
-		if (excludeJarsFromScan == null || excludeJarsFromScan.isEmpty())
+		Set<String> strings = new LinkedHashSet<>();
+		ServiceLoader<IPackageContentsScanner> exclusions = ServiceLoader.load(IPackageContentsScanner.class);
+		if (exclusions.iterator()
+		              .hasNext())
 		{
-			excludeJarsFromScan = new HashSet<>();
-			ServiceLoader<IPackageContentsScanner> exclusions = ServiceLoader.load(IPackageContentsScanner.class);
 			for (IPackageContentsScanner exclusion : exclusions)
 			{
 				log.log(Level.CONFIG, "Loading IPackageContentsScanner - " +
 				                      exclusion.getClass()
 				                               .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
-				excludeJarsFromScan.addAll(searches);
+				strings.addAll(searches);
 			}
+			log.log(Level.FINE, "IPackageScanningContentsScanner Final Configuration - " + strings.toString());
 		}
-		log.log(Level.FINE, "IPackageScanningContentsScanner Final Configuration - " + excludeJarsFromScan.toString());
-		String[] exclusions = new String[excludeJarsFromScan.size()];
-		return excludeJarsFromScan.toArray(exclusions);
+		return strings.toArray(new String[0]);
+	}
+
+	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	private String[] getPathsList()
+	{
+		Set<String> strings = new LinkedHashSet<>();
+		ServiceLoader<IPathContentsScanner> exclusions = ServiceLoader.load(IPathContentsScanner.class);
+		if (exclusions.iterator()
+		              .hasNext())
+		{
+			for (IPathContentsScanner exclusion : exclusions)
+			{
+				log.log(Level.CONFIG, "Loading IPathScanningContentsScanner - " +
+				                      exclusion.getClass()
+				                               .getCanonicalName());
+				Set<String> searches = exclusion.searchFor();
+				strings.addAll(searches);
+			}
+			log.log(Level.FINE, "IPathScanningContentsScanner Final Configuration - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
 	}
 
 	/**
 	 * Registers the quick scan files
-	 *
-	 * @param scanner
-	 * 		The instance of Classpath Scanner to load with file matching
 	 */
 	@SuppressWarnings("unchecked")
-	private void registerScanQuickFiles(FastClasspathScanner scanner)
+	private Map<String, ResourceList.ByteArrayConsumer> quickScanFiles()
 	{
+		Map<String, ResourceList.ByteArrayConsumer> fileScans = new HashMap<>();
 		ServiceLoader<IFileContentsScanner> fileScanners = ServiceLoader.load(IFileContentsScanner.class);
-		Set<IFileContentsScanner> scanners = new HashSet<>();
 		for (IFileContentsScanner fileScanner : fileScanners)
 		{
-			if (scanners.contains(fileScanner))
-			{
-				continue;
-			}
-			scanners.add(fileScanner);
 			log.log(Level.CONFIG, "Loading IFileContentsScanner - " +
 			                      fileScanner.getClass()
 			                                 .getCanonicalName());
-			fileScanner.onMatch()
-			           .forEach(scanner::matchFilenamePathLeaf);
+			fileScans.putAll(fileScanner.onMatch());
 		}
-		scanners.clear();
+		return fileScans;
 	}
 
 	/**
@@ -573,7 +591,7 @@ public class GuiceContext
 	 * @return Default processors count
 	 */
 	@SuppressWarnings("unused")
-	public FastClasspathScanner getScanner()
+	public ClassGraph getScanner()
 	{
 		return scanner;
 	}
@@ -585,7 +603,7 @@ public class GuiceContext
 	 * 		Sets the scanner to a specific instance
 	 */
 	@SuppressWarnings("unused")
-	public static void setScanner(FastClasspathScanner scanner)
+	public static void setScanner(ClassGraph scanner)
 	{
 		instance().scanner = scanner;
 	}

@@ -16,6 +16,8 @@
  */
 package com.jwebmp.guicedinjection;
 
+import io.github.classgraph.ClassInfoList;
+
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -55,29 +57,15 @@ public class Reflections
 	@SuppressWarnings("unchecked")
 	public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type)
 	{
-		Set<Class<? extends T>> returnable = new HashSet<>();
-		List<String> subtypes = type.isInterface()
-		                        ? GuiceContext.instance()
-		                                      .getScanResult()
-		                                      .getNamesOfClassesImplementing(type)
-		                        : GuiceContext.instance()
-		                                      .getScanResult()
-		                                      .getNamesOfSubclassesOf(type);
-		for (String subtype : subtypes)
-		{
-			Class<T> subType = (Class<T>) GuiceContext.instance()
-			                                          .getScanResult()
-			                                          .classNameToClassRef(subtype);
-			returnable.add(subType);
-		}
-		return returnable;
+		ClassInfoList subtypes = GuiceContext.instance()
+		                                           .getScanResult()
+		                                           .getSubclasses(type.getCanonicalName());
+		return new HashSet(subtypes.loadClasses());
 	}
 
 	/**
 	 * Returns all the class types annotated with an annotation
 	 *
-	 * @param <T>
-	 * 		The type of class to annotate with
 	 * @param annotation
 	 * 		The given annotations to find
 	 *
@@ -85,20 +73,12 @@ public class Reflections
 	 */
 	@NotNull
 	@SuppressWarnings({"unchecked", "WeakerAccess"})
-	public <T> Set<Class<? extends T>> getTypesAnnotatedWith(Class<? extends Annotation> annotation)
+	public Set<Class> getTypesAnnotatedWith(Class<? extends Annotation> annotation)
 	{
-		Set<Class<? extends T>> returnable = new HashSet<>();
-		List<String> subtypes = GuiceContext.instance()
+		ClassInfoList subtypes = GuiceContext.instance()
 		                                    .getScanResult()
-		                                    .getNamesOfClassesWithAnnotation(annotation);
-		for (String subtype : subtypes)
-		{
-			Class<T> subType = (Class<T>) GuiceContext.instance()
-			                                          .getScanResult()
-			                                          .classNameToClassRef(subtype);
-			returnable.add(subType);
-		}
-		return returnable;
+		                                    .getClassesWithAnnotation(annotation.getCanonicalName());
+		return new HashSet(subtypes.loadClasses());
 	}
 
 	/**

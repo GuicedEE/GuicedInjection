@@ -6,7 +6,7 @@ module com.jwebmp.guicedinjection {
 
 	requires com.google.guice;
 
-	requires io.github.lukehutch.fastclasspathscanner;
+	requires io.github.classgraph;
 	requires java.validation;
 
 	requires com.fasterxml.jackson.core;
@@ -34,6 +34,7 @@ module com.jwebmp.guicedinjection {
 	uses IGuicePreStartup;
 	uses IGuiceModule;
 	uses IGuicePostStartup;
+	uses IPathContentsScanner;
 
 	provides IGuiceDefaultBinder with ContextBinderGuice;
 	provides IGuiceModule with GuiceInjectorModule;

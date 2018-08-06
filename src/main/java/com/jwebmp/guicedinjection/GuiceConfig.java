@@ -25,11 +25,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Whether the field annotation scanning should occur
 	 */
-	private boolean fieldAnnotationScanning;
-	/**
-	 * If methods should be indexed
-	 */
-	private boolean methodAnnotationIndexing;
+	private boolean annotationScanning;
 	/**
 	 * If method information should be allowed
 	 */
@@ -91,50 +87,24 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return not null
 	 */
-	public boolean isFieldAnnotationScanning()
+	public boolean isAnnotationScanning()
 	{
-		return fieldAnnotationScanning;
+		return annotationScanning;
 	}
 
 	/**
 	 * Enables scanning of field annotations
 	 *
-	 * @param fieldAnnotationScanning
+	 * @param annotationScanning
 	 * 		if the field annotation scanning
 	 *
 	 * @return the field annotation scanning
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setFieldAnnotationScanning(boolean fieldAnnotationScanning)
+	public J setAnnotationScanning(boolean annotationScanning)
 	{
-		this.fieldAnnotationScanning = fieldAnnotationScanning;
-		return (J) this;
-	}
-
-	/**
-	 * Enables method annotation indexing
-	 *
-	 * @return boolean
-	 */
-	public boolean isMethodAnnotationIndexing()
-	{
-		return methodAnnotationIndexing;
-	}
-
-	/**
-	 * Sets method annotation indexing
-	 *
-	 * @param methodAnnotationIndexing
-	 * 		if method annotation indexing should occur
-	 *
-	 * @return always this
-	 */
-	@SuppressWarnings("unchecked")
-	@NotNull
-	public J setMethodAnnotationIndexing(boolean methodAnnotationIndexing)
-	{
-		this.methodAnnotationIndexing = methodAnnotationIndexing;
+		this.annotationScanning = annotationScanning;
 		return (J) this;
 	}
 
@@ -305,8 +275,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		return "GuiceConfig{" +
 		       "fieldInfo=" + fieldInfo +
 		       ", fieldScanning=" + fieldScanning +
-		       ", fieldAnnotationScanning=" + fieldAnnotationScanning +
-		       ", methodAnnotationIndexing=" + methodAnnotationIndexing +
+		       ", annotationScanning=" + annotationScanning +
 		       ", methodInfo=" + methodInfo +
 		       ", ignoreFieldVisibility=" + ignoreFieldVisibility +
 		       ", ignoreMethodVisibility=" + ignoreMethodVisibility +
