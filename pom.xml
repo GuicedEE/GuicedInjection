@@ -25,8 +25,9 @@
             <groupId>com.jwebmp</groupId>
             <artifactId>jwebmp-log-master</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
             <classifier>${jwebmp.runtime.classifier}</classifier>
+            <optional>true</optional>
+            <type>jar</type>
         </dependency>
 
         <dependency>
