@@ -182,6 +182,10 @@ public class GuiceContext
 	{
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		log.info("Loading Classpath Scanner - [" + getThreadCount() + "] threads");
+		if (config == null)
+		{
+			loadConfiguration();
+		}
 		if (config.isWhiteList())
 		{
 			scanner = new ClassGraph();
