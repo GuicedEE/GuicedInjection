@@ -23,7 +23,7 @@ A Java Guice Assistant that allows you to perform multiple and dynamic binding, 
     <snapshots/>
     <id>snapshots</id>
     <name>libs-snapshot</name>
-    <url>https://jwebswing.com/artifactory/libs-snapshot</url>
+    <url>https://jwebmp/artifactory/libs-snapshot</url>
 </repository>
 ```
 ```
@@ -36,11 +36,11 @@ A Java Guice Assistant that allows you to perform multiple and dynamic binding, 
 
 
 # Complete CI
-Teamcity :  https://jwebswing.com/teamcity/viewType.html?buildTypeId=JWebMPCore_BuildGuiceInjection
+Teamcity :  https://jwebmp/teamcity/viewType.html?buildTypeId=JWebMPCore_BuildGuiceInjection
 
-SonarQube Quality Gate : https://jwebswing.com/sonar/overview?id=1
+SonarQube Quality Gate : https://jwebmp/sonar/overview?id=1
 
-Artifactory : https://jwebswing.com/artifactory/webapp/#/artifacts/browse/tree/General/libs-snapshot-local/za/co/mmagon/guice-injection
+Artifactory : https://jwebmp/artifactory/webapp/#/artifacts/browse/tree/General/libs-snapshot-local/za/co/mmagon/guice-injection
 
 # Minimums
 * JDK 8
