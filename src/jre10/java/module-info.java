@@ -35,6 +35,7 @@ module com.jwebmp.guicedinjection {
 	uses IGuiceModule;
 	uses IGuicePostStartup;
 	uses IPathContentsScanner;
+	uses IPathContentsBlacklistScanner;
 
 	provides IGuiceDefaultBinder with ContextBinderGuice;
 	provides IGuiceModule with GuiceInjectorModule;

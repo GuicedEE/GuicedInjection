@@ -186,9 +186,9 @@ public class GuiceContext
 		{
 			loadConfiguration();
 		}
+		scanner = new ClassGraph();
 		if (config.isWhiteList())
 		{
-			scanner = new ClassGraph();
 			String[] packages = getPackagesList();
 			if (packages.length != 0)
 			{
@@ -199,10 +199,7 @@ public class GuiceContext
 			{
 				scanner.whitelistPaths(paths);
 			}
-		}
-		else
-		{
-			scanner = new ClassGraph();
+			scanner.blacklistPaths(getPathsBlacklistList());
 		}
 		if (config.isFieldInfo())
 		{
@@ -234,10 +231,8 @@ public class GuiceContext
 			scanResult = scanner.scan(getThreadCount());
 			Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
 			fileScans.forEach((key, value) ->
-			                  {
-				                  scanResult.getResourcesWithLeafName(key)
-				                            .forEachByteArray(value);
-			                  });
+					                  scanResult.getResourcesWithLeafName(key)
+					                            .forEachByteArray(value));
 		}
 		catch (Exception mpe)
 		{
@@ -446,6 +441,31 @@ public class GuiceContext
 				                          configureWorkStealingPool(value, runnables);
 			                          }
 		                          });
+	}
+
+	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	private String[] getPathsBlacklistList()
+	{
+		Set<String> strings = new LinkedHashSet<>();
+		ServiceLoader<IPathContentsBlacklistScanner> exclusions = ServiceLoader.load(IPathContentsBlacklistScanner.class);
+		if (exclusions.iterator()
+		              .hasNext())
+		{
+			for (IPathContentsBlacklistScanner exclusion : exclusions)
+			{
+				log.log(Level.CONFIG, "Loading IPathContentsBlacklistScanner - " +
+				                      exclusion.getClass()
+				                               .getCanonicalName());
+				Set<String> searches = exclusion.searchFor();
+				strings.addAll(searches);
+			}
+			log.log(Level.FINE, "IPathContentsBlacklistScanner Final Configuration - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
 	}
 
 	/**

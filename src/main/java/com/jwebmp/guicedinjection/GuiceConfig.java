@@ -38,7 +38,6 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * If the method visibility should be ignored
 	 */
 	private boolean ignoreMethodVisibility;
-
 	/**
 	 * White list the scanning. Highly Recommended
 	 */
