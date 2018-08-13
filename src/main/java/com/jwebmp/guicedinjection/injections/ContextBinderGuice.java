@@ -19,6 +19,7 @@ public class ContextBinderGuice
 		implements IGuiceDefaultBinder<GuiceInjectorModule>
 {
 	private static final Logger log = LogFactory.getLog("GuiceContextBinder");
+
 	public ContextBinderGuice()
 	{
 		//No config required
@@ -27,16 +28,17 @@ public class ContextBinderGuice
 	@Override
 	public void onBind(GuiceInjectorModule module)
 	{
-		log.config("Bound GuiceConfig.class");
+		ContextBinderGuice.log.fine("Bound GuiceConfig.class");
 		module.bind(GuiceConfig.class)
 		      .toProvider(() -> GuiceContext.instance()
 		                                    .getConfig())
 		      .in(Singleton.class);
 
-		log.config("Bound GlobalProperties.class");
+		ContextBinderGuice.log.fine("Bound GlobalProperties.class");
 		module.bind(GlobalProperties.class)
 		      .asEagerSingleton();
-		log.config("Bound ScanResult.class");
+
+		ContextBinderGuice.log.fine("Bound ScanResult.class");
 		module.bind(ScanResult.class)
 		      .toProvider(() -> GuiceContext.instance()
 		                                    .getScanResult())

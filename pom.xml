@@ -89,18 +89,15 @@
 
     </dependencies>
 
-    <organization>
-        <name>Marc Magon</name>
-        <url>http://jwebmp.com</url>
-    </organization>
     <scm>
         <url>https://github.com/GedMarc?tab=repositories</url>
-        <developerConnection>Marc Magon</developerConnection>
     </scm>
+
     <issueManagement>
         <system>Github</system>
         <url>https://github.com/GedMarc/GuiceInjection/issues</url>
     </issueManagement>
+
     <ciManagement>
         <system>TeamCity</system>
         <url>http://jwebmp.com/teamcity</url>
