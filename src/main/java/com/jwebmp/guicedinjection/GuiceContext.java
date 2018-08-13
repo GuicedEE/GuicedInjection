@@ -106,39 +106,46 @@ public class GuiceContext
 	@SuppressWarnings("unchecked")
 	public static synchronized Injector inject()
 	{
-		if (buildingInjector)
+		if (GuiceContext.buildingInjector)
 		{
 			throw new RuntimeException(
 					"The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.");
 		}
-		if (instance().injector == null)
+		if (GuiceContext.instance().injector == null)
 		{
 			try
 			{
-				buildingInjector = true;
-				log.info("Starting up Guice Context");
-				instance().loadPreStartups();
-				instance().loadConfiguration();
-				if (instance().getConfig()
-				              .isWhiteList() ||
-				    instance().getConfig()
-				              .isClasspathScanning())
+				GuiceContext.buildingInjector = true;
+				GuiceContext.log.info("Starting up Guice Context");
+				GuiceContext.instance()
+				            .loadPreStartups();
+				GuiceContext.instance()
+				            .loadConfiguration();
+				if (GuiceContext.instance()
+				                .getConfig()
+				                .isWhiteList() ||
+				    GuiceContext.instance()
+				                .getConfig()
+				                .isClasspathScanning())
 				{
-					instance().loadScanner();
+					GuiceContext.instance()
+					            .loadScanner();
 				}
-				List cModules = instance().loadDefaultBinders();
-				instance().injector = Guice.createInjector(cModules);
-				buildingInjector = false;
-				instance().loadPostStartups();
-				log.config("Injection System Ready");
+				List cModules = GuiceContext.instance()
+				                            .loadDefaultBinders();
+				GuiceContext.instance().injector = Guice.createInjector(cModules);
+				GuiceContext.buildingInjector = false;
+				GuiceContext.instance()
+				            .loadPostStartups();
+				GuiceContext.log.config("Injection System Ready");
 			}
 			catch (Throwable e)
 			{
-				log.log(Level.SEVERE, "Exception creating Injector : " + e.getMessage(), e);
+				GuiceContext.log.log(Level.SEVERE, "Exception creating Injector : " + e.getMessage(), e);
 			}
 		}
-		buildingInjector = false;
-		return instance().injector;
+		GuiceContext.buildingInjector = false;
+		return GuiceContext.instance().injector;
 	}
 
 	/**
@@ -154,7 +161,8 @@ public class GuiceContext
 	@NotNull
 	public static <T> T getInstance(@NotNull Class<T> type)
 	{
-		return inject().getInstance(type);
+		return GuiceContext.inject()
+		                   .getInstance(type);
 	}
 
 	/**
@@ -170,7 +178,8 @@ public class GuiceContext
 	@NotNull
 	public static <T> T get(@NotNull Class<T> type)
 	{
-		return inject().getInstance(type);
+		return GuiceContext.inject()
+		                   .getInstance(type);
 	}
 
 	/**
@@ -186,7 +195,8 @@ public class GuiceContext
 	@NotNull
 	public static <T> T getInstance(@NotNull Key<T> type)
 	{
-		return inject().getInstance(type);
+		return GuiceContext.inject()
+		                   .getInstance(type);
 	}
 
 	/**
@@ -202,7 +212,8 @@ public class GuiceContext
 	@NotNull
 	public static <T> T get(@NotNull Key<T> type)
 	{
-		return inject().getInstance(type);
+		return GuiceContext.inject()
+		                   .getInstance(type);
 	}
 
 	/**
@@ -213,7 +224,7 @@ public class GuiceContext
 	@SuppressWarnings("unused")
 	public static long getAsyncTerminationWait()
 	{
-		return asyncTerminationWait;
+		return GuiceContext.asyncTerminationWait;
 	}
 
 	/**
@@ -236,7 +247,7 @@ public class GuiceContext
 	@SuppressWarnings("unused")
 	public static TimeUnit getAsyncTerminationTimeUnit()
 	{
-		return asyncTerminationTimeUnit;
+		return GuiceContext.asyncTerminationTimeUnit;
 	}
 
 	/**
@@ -257,10 +268,10 @@ public class GuiceContext
 	@SuppressWarnings("unused")
 	public static void destroy()
 	{
-		instance().reflections = null;
-		instance().scanResult = null;
-		instance().scanner = null;
-		instance().injector = null;
+		GuiceContext.instance().reflections = null;
+		GuiceContext.instance().scanResult = null;
+		GuiceContext.instance().scanner = null;
+		GuiceContext.instance().injector = null;
 	}
 
 	/**
@@ -270,7 +281,7 @@ public class GuiceContext
 	 */
 	public static GuiceContext instance()
 	{
-		return instance;
+		return GuiceContext.instance;
 	}
 
 	/**
@@ -280,11 +291,11 @@ public class GuiceContext
 	 */
 	public static Reflections reflect()
 	{
-		if (instance().reflections == null)
+		if (GuiceContext.instance().reflections == null)
 		{
-			instance().reflections = new Reflections();
+			GuiceContext.instance().reflections = new Reflections();
 		}
-		return instance().reflections;
+		return GuiceContext.instance().reflections;
 	}
 
 	/**
@@ -297,7 +308,7 @@ public class GuiceContext
 	 */
 	private static void configureWorkStealingPool(List<IGuicePostStartup> st, List<PostStartupRunnable> runnables)
 	{
-		ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(threadCount);
+		ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(GuiceContext.threadCount);
 		for (IGuicePostStartup IGuicePostStartup : st)
 		{
 			runnables.add(new PostStartupRunnable(IGuicePostStartup));
@@ -310,17 +321,17 @@ public class GuiceContext
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
+				GuiceContext.log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
 			}
 		}
 		postLoaderExecutionService.shutdown();
 		try
 		{
-			postLoaderExecutionService.awaitTermination(asyncTerminationWait, asyncTerminationTimeUnit);
+			postLoaderExecutionService.awaitTermination(GuiceContext.asyncTerminationWait, GuiceContext.asyncTerminationTimeUnit);
 		}
 		catch (Exception e)
 		{
-			log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
+			GuiceContext.log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
 		}
 	}
 
@@ -335,32 +346,11 @@ public class GuiceContext
 		startups.sort(Comparator.comparing(IGuicePreStartup::sortOrder));
 		for (IGuicePreStartup startup : startups)
 		{
-			log.config("Loading IGuicePreStartup - " +
-			           startup.getClass()
-			                  .getCanonicalName());
+			GuiceContext.log.config("Loading IGuicePreStartup - " +
+			                        startup.getClass()
+			                               .getCanonicalName());
 			startup.onStartup();
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private List loadDefaultBinders()
-	{
-		ServiceLoader<IGuiceModule> preStartups = ServiceLoader.load(IGuiceModule.class);
-		List<IGuiceModule> startups = new ArrayList<>();
-		for (IGuiceModule preStartup : preStartups)
-		{
-			startups.add(preStartup);
-		}
-		startups.sort(Comparator.comparing(IGuiceModule::sortOrder));
-		List output = new ArrayList<>();
-		for (IGuiceModule startup : startups)
-		{
-			log.config("Loading IGuiceModule  - " +
-			           startup.getClass()
-			                  .getCanonicalName());
-			output.add(startup);
-		}
-		return output;
 	}
 
 	/**
@@ -384,13 +374,13 @@ public class GuiceContext
 	private void loadScanner()
 	{
 		Stopwatch stopwatch = Stopwatch.createStarted();
-		log.info("Loading Classpath Scanner - [" + getThreadCount() + "] threads");
-		if (config == null)
+		GuiceContext.log.info("Loading Classpath Scanner - [" + GuiceContext.getThreadCount() + "] threads");
+		if (GuiceContext.config == null)
 		{
 			loadConfiguration();
 		}
 		scanner = new ClassGraph();
-		if (config.isWhiteList())
+		if (GuiceContext.config.isWhiteList())
 		{
 			String[] packages = getPackagesList();
 			if (packages.length != 0)
@@ -404,34 +394,34 @@ public class GuiceContext
 			}
 			scanner.blacklistPaths(getPathsBlacklistList());
 		}
-		if (config.isFieldInfo())
+		if (GuiceContext.config.isFieldInfo())
 		{
 			scanner.enableFieldInfo();
 		}
-		if (config.isAnnotationScanning())
+		if (GuiceContext.config.isAnnotationScanning())
 		{
 			scanner.enableAnnotationInfo();
 		}
-		if (config.isMethodInfo())
+		if (GuiceContext.config.isMethodInfo())
 		{
 			scanner.enableMethodInfo();
 		}
-		if (config.isIgnoreFieldVisibility())
+		if (GuiceContext.config.isIgnoreFieldVisibility())
 		{
 			scanner.ignoreFieldVisibility();
 		}
-		if (config.isIgnoreMethodVisibility())
+		if (GuiceContext.config.isIgnoreMethodVisibility())
 		{
 			scanner.ignoreMethodVisibility();
 		}
 
-		if (config.isVerbose())
+		if (GuiceContext.config.isVerbose())
 		{
 			scanner.verbose();
 		}
 		try
 		{
-			scanResult = scanner.scan(getThreadCount());
+			scanResult = scanner.scan(GuiceContext.getThreadCount());
 			Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
 			fileScans.forEach((key, value) ->
 					                  scanResult.getResourcesWithLeafName(key)
@@ -439,11 +429,11 @@ public class GuiceContext
 		}
 		catch (Exception mpe)
 		{
-			log.log(Level.SEVERE, "Unable to run scanner", mpe);
+			GuiceContext.log.log(Level.SEVERE, "Unable to run scanner", mpe);
 		}
 
 		stopwatch.stop();
-		log.fine("Loaded Classpath Scanner -Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
+		GuiceContext.log.fine("Loaded Classpath Scanner -Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
 	}
 
 	/**
@@ -467,12 +457,12 @@ public class GuiceContext
 		}
 		for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
 		{
-			log.config("Loading IGuiceConfigurator - " +
-			           guiceConfigurator.getClass()
-			                            .getCanonicalName());
-			GuiceContext.config = guiceConfigurator.configure(config);
+			GuiceContext.log.config("Loading IGuiceConfigurator - " +
+			                        guiceConfigurator.getClass()
+			                                         .getCanonicalName());
+			GuiceContext.config = guiceConfigurator.configure(GuiceContext.config);
 		}
-		log.config("IGuiceConfigurator Final Configuration : " + config.toString());
+		GuiceContext.log.config("IGuiceConfigurator Final Configuration : " + GuiceContext.config.toString());
 	}
 
 	/**
@@ -489,13 +479,13 @@ public class GuiceContext
 		{
 			for (IPackageContentsScanner exclusion : exclusions)
 			{
-				log.log(Level.CONFIG, "Loading IPackageContentsScanner - " +
-				                      exclusion.getClass()
-				                               .getCanonicalName());
+				GuiceContext.log.log(Level.CONFIG, "Loading IPackageContentsScanner - " +
+				                                   exclusion.getClass()
+				                                            .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
-			log.log(Level.FINE, "IPackageScanningContentsScanner Final Configuration - " + strings.toString());
+			GuiceContext.log.log(Level.FINE, "IPackageScanningContentsScanner Final Configuration - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}
@@ -514,13 +504,13 @@ public class GuiceContext
 		{
 			for (IPathContentsScanner exclusion : exclusions)
 			{
-				log.log(Level.CONFIG, "Loading IPathScanningContentsScanner - " +
-				                      exclusion.getClass()
-				                               .getCanonicalName());
+				GuiceContext.log.log(Level.CONFIG, "Loading IPathScanningContentsScanner - " +
+				                                   exclusion.getClass()
+				                                            .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
-			log.log(Level.FINE, "IPathScanningContentsScanner Final Configuration - " + strings.toString());
+			GuiceContext.log.log(Level.FINE, "IPathScanningContentsScanner Final Configuration - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}
@@ -539,13 +529,13 @@ public class GuiceContext
 		{
 			for (IPathContentsBlacklistScanner exclusion : exclusions)
 			{
-				log.log(Level.CONFIG, "Loading IPathContentsBlacklistScanner - " +
-				                      exclusion.getClass()
-				                               .getCanonicalName());
+				GuiceContext.log.log(Level.CONFIG, "Loading IPathContentsBlacklistScanner - " +
+				                                   exclusion.getClass()
+				                                            .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
-			log.log(Level.FINE, "IPathContentsBlacklistScanner Final Configuration - " + strings.toString());
+			GuiceContext.log.log(Level.FINE, "IPathContentsBlacklistScanner Final Configuration - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}
@@ -560,9 +550,9 @@ public class GuiceContext
 		ServiceLoader<IFileContentsScanner> fileScanners = ServiceLoader.load(IFileContentsScanner.class);
 		for (IFileContentsScanner fileScanner : fileScanners)
 		{
-			log.log(Level.CONFIG, "Loading IFileContentsScanner - " +
-			                      fileScanner.getClass()
-			                                 .getCanonicalName());
+			GuiceContext.log.log(Level.CONFIG, "Loading IFileContentsScanner - " +
+			                                   fileScanner.getClass()
+			                                              .getCanonicalName());
 			fileScans.putAll(fileScanner.onMatch());
 		}
 		return fileScans;
@@ -592,36 +582,25 @@ public class GuiceContext
 		GuiceContext.instance().scanResult = scanResult;
 	}
 
-	private void loadPostStartups()
+	@SuppressWarnings("unchecked")
+	private List loadDefaultBinders()
 	{
-		ServiceLoader<IGuicePostStartup> postStartups = ServiceLoader.load(IGuicePostStartup.class);
-		Map<Integer, List<IGuicePostStartup>> postStartupGroups = new TreeMap<>();
-
-		for (IGuicePostStartup postStartup : postStartups)
+		ServiceLoader<IGuiceModule> preStartups = ServiceLoader.load(IGuiceModule.class);
+		List<IGuiceModule> startups = new ArrayList<>();
+		for (IGuiceModule preStartup : preStartups)
 		{
-			IGuicePostStartup injected = GuiceContext.getInstance(postStartup.getClass());
-			Integer sortOrder = injected.sortOrder();
-			postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
-			                 .add(injected);
+			startups.add(preStartup);
 		}
-		postStartupGroups.forEach((key, value) ->
-		                          {
-			                          value.sort(Comparator.comparing(IGuicePostStartup::sortOrder));
-			                          if (value.size() == 1)
-			                          {
-				                          log.config("Loading IGuicePostStartup - " +
-				                                     value.get(0)
-				                                          .getClass()
-				                                          .getCanonicalName());
-				                          value.get(0)
-				                               .postLoad();
-			                          }
-			                          else
-			                          {
-				                          List<PostStartupRunnable> runnables = new ArrayList<>();
-				                          configureWorkStealingPool(value, runnables);
-			                          }
-		                          });
+		startups.sort(Comparator.comparing(IGuiceModule::sortOrder));
+		List output = new ArrayList<>();
+		for (IGuiceModule startup : startups)
+		{
+			GuiceContext.log.config("Loading IGuiceModule  - " +
+			                        startup.getClass()
+			                               .getCanonicalName());
+			output.add(startup);
+		}
+		return output;
 	}
 
 	/**
@@ -644,7 +623,39 @@ public class GuiceContext
 	@SuppressWarnings("unused")
 	public static void setScanner(ClassGraph scanner)
 	{
-		instance().scanner = scanner;
+		GuiceContext.instance().scanner = scanner;
+	}
+
+	private void loadPostStartups()
+	{
+		ServiceLoader<IGuicePostStartup> postStartups = ServiceLoader.load(IGuicePostStartup.class);
+		Map<Integer, List<IGuicePostStartup>> postStartupGroups = new TreeMap<>();
+
+		for (IGuicePostStartup postStartup : postStartups)
+		{
+			IGuicePostStartup injected = GuiceContext.getInstance(postStartup.getClass());
+			Integer sortOrder = injected.sortOrder();
+			postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
+			                 .add(injected);
+		}
+		postStartupGroups.forEach((key, value) ->
+		                          {
+			                          value.sort(Comparator.comparing(IGuicePostStartup::sortOrder));
+			                          if (value.size() == 1)
+			                          {
+				                          GuiceContext.log.config("Loading IGuicePostStartup - " +
+				                                                  value.get(0)
+				                                                       .getClass()
+				                                                       .getCanonicalName());
+				                          value.get(0)
+				                               .postLoad();
+			                          }
+			                          else
+			                          {
+				                          List<PostStartupRunnable> runnables = new ArrayList<>();
+				                          GuiceContext.configureWorkStealingPool(value, runnables);
+			                          }
+		                          });
 	}
 
 	/**
@@ -654,6 +665,6 @@ public class GuiceContext
 	 */
 	public GuiceConfig<?> getConfig()
 	{
-		return config;
+		return GuiceContext.config;
 	}
 }
