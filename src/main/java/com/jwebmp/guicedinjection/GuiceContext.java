@@ -45,6 +45,7 @@ import java.util.logging.Logger;
  * @version 1.0
  * @since Nov 14, 2016
  */
+@SuppressWarnings("MissingClassJavaDoc")
 public class GuiceContext
 		implements Serializable
 {
@@ -138,130 +139,6 @@ public class GuiceContext
 		}
 		buildingInjector = false;
 		return instance().injector;
-	}
-
-	private void loadPreStartups()
-	{
-		ServiceLoader<IGuicePreStartup> preStartups = ServiceLoader.load(IGuicePreStartup.class);
-		List<IGuicePreStartup> startups = new ArrayList<>();
-		for (IGuicePreStartup preStartup : preStartups)
-		{
-			startups.add(preStartup);
-		}
-		startups.sort(Comparator.comparing(IGuicePreStartup::sortOrder));
-		for (IGuicePreStartup startup : startups)
-		{
-			log.config("Loading IGuicePreStartup - " +
-			           startup.getClass()
-			                  .getCanonicalName());
-			startup.onStartup();
-		}
-	}
-
-	private void loadConfiguration()
-	{
-		ServiceLoader<IGuiceConfigurator> guiceConfigurators = ServiceLoader.load(IGuiceConfigurator.class);
-		if (GuiceContext.config == null)
-		{
-			GuiceContext.config = new GuiceConfig<>();
-		}
-		for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
-		{
-			log.config("Loading IGuiceConfigurator - " +
-			           guiceConfigurator.getClass()
-			                            .getCanonicalName());
-			GuiceContext.config = guiceConfigurator.configure(config);
-		}
-		log.config("IGuiceConfigurator Final Configuration : " + config.toString());
-	}
-
-	/**
-	 * Starts up Guice and the scanner
-	 */
-	private void loadScanner()
-	{
-		Stopwatch stopwatch = Stopwatch.createStarted();
-		log.info("Loading Classpath Scanner - [" + getThreadCount() + "] threads");
-		if (config == null)
-		{
-			loadConfiguration();
-		}
-		scanner = new ClassGraph();
-		if (config.isWhiteList())
-		{
-			String[] packages = getPackagesList();
-			if (packages.length != 0)
-			{
-				scanner.whitelistPackages(packages);
-			}
-			String[] paths = getPathsList();
-			if (paths.length != 0)
-			{
-				scanner.whitelistPaths(paths);
-			}
-			scanner.blacklistPaths(getPathsBlacklistList());
-		}
-		if (config.isFieldInfo())
-		{
-			scanner.enableFieldInfo();
-		}
-		if (config.isAnnotationScanning())
-		{
-			scanner.enableAnnotationInfo();
-		}
-		if (config.isMethodInfo())
-		{
-			scanner.enableMethodInfo();
-		}
-		if (config.isIgnoreFieldVisibility())
-		{
-			scanner.ignoreFieldVisibility();
-		}
-		if (config.isIgnoreMethodVisibility())
-		{
-			scanner.ignoreMethodVisibility();
-		}
-
-		if (config.isVerbose())
-		{
-			scanner.verbose();
-		}
-		try
-		{
-			scanResult = scanner.scan(getThreadCount());
-			Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
-			fileScans.forEach((key, value) ->
-					                  scanResult.getResourcesWithLeafName(key)
-					                            .forEachByteArray(value));
-		}
-		catch (Exception mpe)
-		{
-			log.log(Level.SEVERE, "Unable to run scanner", mpe);
-		}
-
-		stopwatch.stop();
-		log.fine("Loaded Classpath Scanner -Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
-	}
-
-	@SuppressWarnings("unchecked")
-	private List loadDefaultBinders()
-	{
-		ServiceLoader<IGuiceModule> preStartups = ServiceLoader.load(IGuiceModule.class);
-		List<IGuiceModule> startups = new ArrayList<>();
-		for (IGuiceModule preStartup : preStartups)
-		{
-			startups.add(preStartup);
-		}
-		startups.sort(Comparator.comparing(IGuiceModule::sortOrder));
-		List output = new ArrayList<>();
-		for (IGuiceModule startup : startups)
-		{
-			log.config("Loading IGuiceModule  - " +
-			           startup.getClass()
-			                  .getCanonicalName());
-			output.add(startup);
-		}
-		return output;
 	}
 
 	/**
@@ -397,6 +274,96 @@ public class GuiceContext
 	}
 
 	/**
+	 * Builds a reflection object if one does not exist
+	 *
+	 * @return A facade of the ReflectUtils on the scan result
+	 */
+	public static Reflections reflect()
+	{
+		if (instance().reflections == null)
+		{
+			instance().reflections = new Reflections();
+		}
+		return instance().reflections;
+	}
+
+	/**
+	 * Builds an asynchronous running pool to execute with a termination waiter
+	 *
+	 * @param st
+	 * 		A list of startup objects
+	 * @param runnables
+	 * 		A list of post startup threads
+	 */
+	private static void configureWorkStealingPool(List<IGuicePostStartup> st, List<PostStartupRunnable> runnables)
+	{
+		ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(threadCount);
+		for (IGuicePostStartup IGuicePostStartup : st)
+		{
+			runnables.add(new PostStartupRunnable(IGuicePostStartup));
+		}
+		for (PostStartupRunnable a : runnables)
+		{
+			try
+			{
+				postLoaderExecutionService.submit((Runnable) a);
+			}
+			catch (Exception e)
+			{
+				log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
+			}
+		}
+		postLoaderExecutionService.shutdown();
+		try
+		{
+			postLoaderExecutionService.awaitTermination(asyncTerminationWait, asyncTerminationTimeUnit);
+		}
+		catch (Exception e)
+		{
+			log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
+		}
+	}
+
+	private void loadPreStartups()
+	{
+		ServiceLoader<IGuicePreStartup> preStartups = ServiceLoader.load(IGuicePreStartup.class);
+		List<IGuicePreStartup> startups = new ArrayList<>();
+		for (IGuicePreStartup preStartup : preStartups)
+		{
+			startups.add(preStartup);
+		}
+		startups.sort(Comparator.comparing(IGuicePreStartup::sortOrder));
+		for (IGuicePreStartup startup : startups)
+		{
+			log.config("Loading IGuicePreStartup - " +
+			           startup.getClass()
+			                  .getCanonicalName());
+			startup.onStartup();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private List loadDefaultBinders()
+	{
+		ServiceLoader<IGuiceModule> preStartups = ServiceLoader.load(IGuiceModule.class);
+		List<IGuiceModule> startups = new ArrayList<>();
+		for (IGuiceModule preStartup : preStartups)
+		{
+			startups.add(preStartup);
+		}
+		startups.sort(Comparator.comparing(IGuiceModule::sortOrder));
+		List output = new ArrayList<>();
+		for (IGuiceModule startup : startups)
+		{
+			log.config("Loading IGuiceModule  - " +
+			           startup.getClass()
+			                  .getCanonicalName());
+			output.add(startup);
+		}
+		return output;
+	}
+
+	/**
 	 * Returns the current scan result
 	 *
 	 * @return The physical Scan Result from the complete class scanner
@@ -411,61 +378,101 @@ public class GuiceContext
 		return scanResult;
 	}
 
-	private void loadPostStartups()
+	/**
+	 * Starts up Guice and the scanner
+	 */
+	private void loadScanner()
 	{
-		ServiceLoader<IGuicePostStartup> postStartups = ServiceLoader.load(IGuicePostStartup.class);
-		Map<Integer, List<IGuicePostStartup>> postStartupGroups = new TreeMap<>();
-
-		for (IGuicePostStartup postStartup : postStartups)
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		log.info("Loading Classpath Scanner - [" + getThreadCount() + "] threads");
+		if (config == null)
 		{
-			IGuicePostStartup injected = GuiceContext.getInstance(postStartup.getClass());
-			Integer sortOrder = injected.sortOrder();
-			postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
-			                 .add(injected);
+			loadConfiguration();
 		}
-		postStartupGroups.forEach((key, value) ->
-		                          {
-			                          value.sort(Comparator.comparing(IGuicePostStartup::sortOrder));
-			                          if (value.size() == 1)
-			                          {
-				                          log.config("Loading IGuicePostStartup - " +
-				                                     value.get(0)
-				                                          .getClass()
-				                                          .getCanonicalName());
-				                          value.get(0)
-				                               .postLoad();
-			                          }
-			                          else
-			                          {
-				                          List<PostStartupRunnable> runnables = new ArrayList<>();
-				                          configureWorkStealingPool(value, runnables);
-			                          }
-		                          });
+		scanner = new ClassGraph();
+		if (config.isWhiteList())
+		{
+			String[] packages = getPackagesList();
+			if (packages.length != 0)
+			{
+				scanner.whitelistPackages(packages);
+			}
+			String[] paths = getPathsList();
+			if (paths.length != 0)
+			{
+				scanner.whitelistPaths(paths);
+			}
+			scanner.blacklistPaths(getPathsBlacklistList());
+		}
+		if (config.isFieldInfo())
+		{
+			scanner.enableFieldInfo();
+		}
+		if (config.isAnnotationScanning())
+		{
+			scanner.enableAnnotationInfo();
+		}
+		if (config.isMethodInfo())
+		{
+			scanner.enableMethodInfo();
+		}
+		if (config.isIgnoreFieldVisibility())
+		{
+			scanner.ignoreFieldVisibility();
+		}
+		if (config.isIgnoreMethodVisibility())
+		{
+			scanner.ignoreMethodVisibility();
+		}
+
+		if (config.isVerbose())
+		{
+			scanner.verbose();
+		}
+		try
+		{
+			scanResult = scanner.scan(getThreadCount());
+			Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
+			fileScans.forEach((key, value) ->
+					                  scanResult.getResourcesWithLeafName(key)
+					                            .forEachByteArray(value));
+		}
+		catch (Exception mpe)
+		{
+			log.log(Level.SEVERE, "Unable to run scanner", mpe);
+		}
+
+		stopwatch.stop();
+		log.fine("Loaded Classpath Scanner -Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
 	}
 
 	/**
-	 * Returns a complete list of generic exclusions
+	 * Gets the number of threads to use when processing
+	 * Default processors count
 	 *
-	 * @return A string list of packages to be scanned
+	 * @return Default processors count
 	 */
-	private String[] getPathsBlacklistList()
+	@SuppressWarnings("all")
+	public static int getThreadCount()
 	{
-		Set<String> strings = new LinkedHashSet<>();
-		ServiceLoader<IPathContentsBlacklistScanner> exclusions = ServiceLoader.load(IPathContentsBlacklistScanner.class);
-		if (exclusions.iterator()
-		              .hasNext())
+		return threadCount;
+	}
+
+	private void loadConfiguration()
+	{
+		ServiceLoader<IGuiceConfigurator> guiceConfigurators = ServiceLoader.load(IGuiceConfigurator.class);
+		if (GuiceContext.config == null)
 		{
-			for (IPathContentsBlacklistScanner exclusion : exclusions)
-			{
-				log.log(Level.CONFIG, "Loading IPathContentsBlacklistScanner - " +
-				                      exclusion.getClass()
-				                               .getCanonicalName());
-				Set<String> searches = exclusion.searchFor();
-				strings.addAll(searches);
-			}
-			log.log(Level.FINE, "IPathContentsBlacklistScanner Final Configuration - " + strings.toString());
+			GuiceContext.config = new GuiceConfig<>();
 		}
-		return strings.toArray(new String[0]);
+		for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
+		{
+			log.config("Loading IGuiceConfigurator - " +
+			           guiceConfigurator.getClass()
+			                            .getCanonicalName());
+			GuiceContext.config = guiceConfigurator.configure(config);
+		}
+		log.config("IGuiceConfigurator Final Configuration : " + config.toString());
 	}
 
 	/**
@@ -519,6 +526,31 @@ public class GuiceContext
 	}
 
 	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	private String[] getPathsBlacklistList()
+	{
+		Set<String> strings = new LinkedHashSet<>();
+		ServiceLoader<IPathContentsBlacklistScanner> exclusions = ServiceLoader.load(IPathContentsBlacklistScanner.class);
+		if (exclusions.iterator()
+		              .hasNext())
+		{
+			for (IPathContentsBlacklistScanner exclusion : exclusions)
+			{
+				log.log(Level.CONFIG, "Loading IPathContentsBlacklistScanner - " +
+				                      exclusion.getClass()
+				                               .getCanonicalName());
+				Set<String> searches = exclusion.searchFor();
+				strings.addAll(searches);
+			}
+			log.log(Level.FINE, "IPathContentsBlacklistScanner Final Configuration - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
+	}
+
+	/**
 	 * Registers the quick scan files
 	 */
 	@SuppressWarnings("unchecked")
@@ -534,55 +566,6 @@ public class GuiceContext
 			fileScans.putAll(fileScanner.onMatch());
 		}
 		return fileScans;
-	}
-
-	/**
-	 * Builds an asynchronous running pool to execute with a termination waiter
-	 *
-	 * @param st
-	 * 		A list of startup objects
-	 * @param runnables
-	 * 		A list of post startup threads
-	 */
-	private static void configureWorkStealingPool(List<IGuicePostStartup> st, List<PostStartupRunnable> runnables)
-	{
-		ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(threadCount);
-		for (IGuicePostStartup IGuicePostStartup : st)
-		{
-			runnables.add(new PostStartupRunnable(IGuicePostStartup));
-		}
-		for (PostStartupRunnable a : runnables)
-		{
-			try
-			{
-				postLoaderExecutionService.submit((Runnable) a);
-			}
-			catch (Exception e)
-			{
-				log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
-			}
-		}
-		postLoaderExecutionService.shutdown();
-		try
-		{
-			postLoaderExecutionService.awaitTermination(asyncTerminationWait, asyncTerminationTimeUnit);
-		}
-		catch (Exception e)
-		{
-			log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
-		}
-	}
-
-	/**
-	 * Gets the number of threads to use when processing
-	 * Default processors count
-	 *
-	 * @return Default processors count
-	 */
-	@SuppressWarnings("all")
-	public static int getThreadCount()
-	{
-		return threadCount;
 	}
 
 	/**
@@ -609,6 +592,38 @@ public class GuiceContext
 		GuiceContext.instance().scanResult = scanResult;
 	}
 
+	private void loadPostStartups()
+	{
+		ServiceLoader<IGuicePostStartup> postStartups = ServiceLoader.load(IGuicePostStartup.class);
+		Map<Integer, List<IGuicePostStartup>> postStartupGroups = new TreeMap<>();
+
+		for (IGuicePostStartup postStartup : postStartups)
+		{
+			IGuicePostStartup injected = GuiceContext.getInstance(postStartup.getClass());
+			Integer sortOrder = injected.sortOrder();
+			postStartupGroups.computeIfAbsent(sortOrder, k -> new ArrayList<>())
+			                 .add(injected);
+		}
+		postStartupGroups.forEach((key, value) ->
+		                          {
+			                          value.sort(Comparator.comparing(IGuicePostStartup::sortOrder));
+			                          if (value.size() == 1)
+			                          {
+				                          log.config("Loading IGuicePostStartup - " +
+				                                     value.get(0)
+				                                          .getClass()
+				                                          .getCanonicalName());
+				                          value.get(0)
+				                               .postLoad();
+			                          }
+			                          else
+			                          {
+				                          List<PostStartupRunnable> runnables = new ArrayList<>();
+				                          configureWorkStealingPool(value, runnables);
+			                          }
+		                          });
+	}
+
 	/**
 	 * Returns the current classpath scanner
 	 *
@@ -630,20 +645,6 @@ public class GuiceContext
 	public static void setScanner(ClassGraph scanner)
 	{
 		instance().scanner = scanner;
-	}
-
-	/**
-	 * Builds a reflection object if one does not exist
-	 *
-	 * @return A facade of the ReflectUtils on the scan result
-	 */
-	public static Reflections reflect()
-	{
-		if (instance().reflections == null)
-		{
-			instance().reflections = new Reflections();
-		}
-		return instance().reflections;
 	}
 
 	/**
