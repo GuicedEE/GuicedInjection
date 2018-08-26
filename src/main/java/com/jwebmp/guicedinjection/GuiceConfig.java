@@ -42,9 +42,13 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * White list the scanning. Highly Recommended
 	 */
 	private boolean whiteList;
-
+	/**
+	 * Whether or not to log very verbose
+	 */
 	private boolean verbose;
-
+	/**
+	 * If classpath scanning is enabled.
+	 */
 	private boolean classpathScanning;
 
 	/**

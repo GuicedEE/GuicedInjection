@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  */
 @SuppressWarnings("unused")
 public class ContextBinderGuice
-		implements IGuiceDefaultBinder<GuiceInjectorModule>
+		implements IGuiceDefaultBinder<ContextBinderGuice, GuiceInjectorModule>
 {
 	private static final Logger log = LogFactory.getLog("GuiceContextBinder");
 
