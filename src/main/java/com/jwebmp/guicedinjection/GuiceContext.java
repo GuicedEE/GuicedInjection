@@ -392,7 +392,17 @@ public class GuiceContext
 			{
 				scanner.whitelistPaths(paths);
 			}
-			scanner.blacklistPaths(getPathsBlacklistList());
+			String[] blacklistList = getPathsBlacklistList();
+			if (blacklistList.length != 0)
+			{
+				scanner.blacklistPaths(blacklistList);
+			}
+			String[] jarBlacklist = getJarsBlacklistList();
+			if (jarBlacklist.length != 0)
+			{
+				scanner.blacklistJars(jarBlacklist);
+			}
+			scanner.blacklistPaths("META-INF/MANIFEST.MF");
 		}
 		if (GuiceContext.config.isFieldInfo())
 		{
@@ -460,7 +470,7 @@ public class GuiceContext
 			GuiceContext.log.config("Loading IGuiceConfigurator - " +
 			                        guiceConfigurator.getClass()
 			                                         .getCanonicalName());
-			GuiceContext.config = guiceConfigurator.configure(GuiceContext.config);
+			guiceConfigurator.configure(GuiceContext.config);
 		}
 		GuiceContext.log.config("IGuiceConfigurator Final Configuration : " + GuiceContext.config.toString());
 	}
@@ -536,6 +546,28 @@ public class GuiceContext
 				strings.addAll(searches);
 			}
 			GuiceContext.log.log(Level.FINE, "IPathContentsBlacklistScanner Final Configuration - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
+	}
+
+	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	private String[] getJarsBlacklistList()
+	{
+		Set<String> strings = new LinkedHashSet<>();
+		ServiceLoader<IGuiceScanJarExclusions> exclusions = ServiceLoader.load(IGuiceScanJarExclusions.class);
+		if (exclusions.iterator()
+		              .hasNext())
+		{
+			for (IGuiceScanJarExclusions exclusion : exclusions)
+			{
+				Set<String> searches = exclusion.excludeJars();
+				strings.addAll(searches);
+			}
+			GuiceContext.log.log(Level.FINE, "IGuiceScanJarExclusions Final Configuration - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}
