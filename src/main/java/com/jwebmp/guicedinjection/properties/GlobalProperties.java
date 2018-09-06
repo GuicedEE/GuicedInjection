@@ -40,6 +40,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
  * @author Marc Magon
  * @since 08 Jul 2017
  */
+@SuppressWarnings("MissingClassJavaDoc")
 @javax.inject.Singleton
 @JsonAutoDetect(fieldVisibility = ANY,
 		getterVisibility = NONE,
