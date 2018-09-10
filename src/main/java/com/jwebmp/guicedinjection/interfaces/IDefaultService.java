@@ -8,6 +8,12 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * Supplies standard set changer and comparable's for services
+ *
+ * @param <J>
+ */
+@SuppressWarnings("MissingClassJavaDoc")
 public interface IDefaultService<J extends IDefaultService<J>>
 		extends Comparable<J>, Comparator<J>
 {
@@ -19,18 +25,27 @@ public interface IDefaultService<J extends IDefaultService<J>>
 	 *
 	 * @return Set<T>
 	 */
-	@SuppressWarnings("MissingClassJavaDoc")
+	@SuppressWarnings({"MissingClassJavaDoc", "unchecked"})
 	static <T> Set<T> loaderToSet(ServiceLoader<T> loader)
 	{
 		Set<T> output = new TreeSet<>();
 		for (T newInstance : loader)
 		{
-			//noinspection unchecked
 			output.add((T) GuiceContext.get(newInstance.getClass()));
 		}
 		return output;
 	}
 
+	/**
+	 * Method compare ...
+	 *
+	 * @param o1
+	 * 		of type J
+	 * @param o2
+	 * 		of type J
+	 *
+	 * @return int
+	 */
 	@Override
 	default int compare(J o1, J o2)
 	{
@@ -42,11 +57,24 @@ public interface IDefaultService<J extends IDefaultService<J>>
 		         .compareTo(o2.sortOrder());
 	}
 
+	/**
+	 * Default Sort Order 100
+	 *
+	 * @return 100
+	 */
 	default Integer sortOrder()
 	{
 		return 100;
 	}
 
+	/**
+	 * Method compareTo ...
+	 *
+	 * @param o
+	 * 		of type J
+	 *
+	 * @return int
+	 */
 	@Override
 	default int compareTo(@NotNull J o)
 	{
