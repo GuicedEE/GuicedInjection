@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class GuiceDefaultModuleExclusions
-		implements IGuiceScanModuleExclusions
+		implements IGuiceScanModuleExclusions<GuiceDefaultModuleExclusions>
 {
 	@Override
 	public @NotNull Set<String> excludeModules()

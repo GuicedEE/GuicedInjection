@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class GuiceDefaultJARExclusions
-		implements IGuiceScanJarExclusions
+		implements IGuiceScanJarExclusions<GuiceDefaultJARExclusions>
 {
 	@NotNull
 	@Override
