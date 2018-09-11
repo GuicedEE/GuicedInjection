@@ -29,6 +29,7 @@ import io.github.classgraph.ScanResult;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,7 +51,13 @@ public class GuiceContext
 		implements Serializable
 {
 
+	/**
+	 * Field log
+	 */
 	private static final Logger log = LogFactory.getLog("GuiceContext");
+	/**
+	 * Field serialVersionUID
+	 */
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -63,10 +70,18 @@ public class GuiceContext
 	 */
 	private static boolean buildingInjector = false;
 
+	/**
+	 * The number of threads
+	 */
 	private static int threadCount = Runtime.getRuntime()
 	                                        .availableProcessors();
-
+	/**
+	 * The time in units to wait
+	 */
 	private static long asyncTerminationWait = 60L;
+	/**
+	 * The time in chrono to wait
+	 */
 	private static TimeUnit asyncTerminationTimeUnit = TimeUnit.SECONDS;
 	/**
 	 * The configuration object
@@ -180,6 +195,25 @@ public class GuiceContext
 	{
 		return GuiceContext.inject()
 		                   .getInstance(type);
+	}
+
+	/**
+	 * Gets a new injected instance of a class
+	 *
+	 * @param <T>
+	 * 		The type to retrieve
+	 * @param type
+	 * 		The physical class object
+	 * @param annotation
+	 * 		The annotation to fetch
+	 *
+	 * @return The scoped object
+	 */
+	@NotNull
+	public static <T> T get(@NotNull Class<T> type, Class<? extends Annotation> annotation)
+	{
+		return GuiceContext.inject()
+		                   .getInstance(Key.get(type, annotation));
 	}
 
 	/**
@@ -335,6 +369,9 @@ public class GuiceContext
 		}
 	}
 
+	/**
+	 * Method loadPreStartups gets the pre startups and loads them up
+	 */
 	private void loadPreStartups()
 	{
 		ServiceLoader<IGuicePreStartup> preStartups = ServiceLoader.load(IGuicePreStartup.class);
@@ -396,13 +433,18 @@ public class GuiceContext
 			if (blacklistList.length != 0)
 			{
 				scanner.blacklistPaths(blacklistList);
+				scanner.blacklistPaths("META-INF/MANIFEST.MF");
 			}
 			String[] jarBlacklist = getJarsBlacklistList();
 			if (jarBlacklist.length != 0)
 			{
 				scanner.blacklistJars(jarBlacklist);
 			}
-			scanner.blacklistPaths("META-INF/MANIFEST.MF");
+			String[] modulesBlacklist = getModulesBlacklistList();
+			if (modulesBlacklist.length != 0)
+			{
+				scanner.blacklistModules(modulesBlacklist);
+			}
 		}
 		if (GuiceContext.config.isFieldInfo())
 		{
@@ -472,7 +514,7 @@ public class GuiceContext
 			                                         .getCanonicalName());
 			guiceConfigurator.configure(GuiceContext.config);
 		}
-		GuiceContext.log.config("IGuiceConfigurator Final Configuration : " + GuiceContext.config.toString());
+		GuiceContext.log.config("IGuiceConfigurator  : " + GuiceContext.config.toString());
 	}
 
 	/**
@@ -495,7 +537,7 @@ public class GuiceContext
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
-			GuiceContext.log.log(Level.FINE, "IPackageScanningContentsScanner Final Configuration - " + strings.toString());
+			GuiceContext.log.log(Level.FINE, "IPackageScanningContentsScanner - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}
@@ -520,7 +562,7 @@ public class GuiceContext
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
-			GuiceContext.log.log(Level.FINE, "IPathScanningContentsScanner Final Configuration - " + strings.toString());
+			GuiceContext.log.log(Level.FINE, "IPathScanningContentsScanner - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}
@@ -545,7 +587,7 @@ public class GuiceContext
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
-			GuiceContext.log.log(Level.FINE, "IPathContentsBlacklistScanner Final Configuration - " + strings.toString());
+			GuiceContext.log.log(Level.FINE, "IPathContentsBlacklistScanner - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}
@@ -567,7 +609,29 @@ public class GuiceContext
 				Set<String> searches = exclusion.excludeJars();
 				strings.addAll(searches);
 			}
-			GuiceContext.log.log(Level.FINE, "IGuiceScanJarExclusions Final Configuration - " + strings.toString());
+			GuiceContext.log.log(Level.FINE, "IGuiceScanJarExclusions - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
+	}
+
+	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	private String[] getModulesBlacklistList()
+	{
+		Set<String> strings = new LinkedHashSet<>();
+		ServiceLoader<IGuiceScanModuleExclusions> exclusions = ServiceLoader.load(IGuiceScanModuleExclusions.class);
+		if (exclusions.iterator()
+		              .hasNext())
+		{
+			for (IGuiceScanModuleExclusions exclusion : exclusions)
+			{
+				Set<String> searches = exclusion.excludeModules();
+				strings.addAll(searches);
+			}
+			GuiceContext.log.log(Level.FINE, "IGuiceScanModuleExclusions - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}

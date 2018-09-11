@@ -1,5 +1,6 @@
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
 import com.jwebmp.guicedinjection.implementations.GuiceDefaultJARExclusions;
+import com.jwebmp.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 import com.jwebmp.guicedinjection.injections.ContextBinderGuice;
 import com.jwebmp.guicedinjection.interfaces.*;
 
@@ -38,8 +39,10 @@ module com.jwebmp.guicedinjection {
 	uses IPathContentsScanner;
 	uses IPathContentsBlacklistScanner;
 	uses IGuiceScanJarExclusions;
+	uses IGuiceScanModuleExclusions;
 
 	provides IGuiceScanJarExclusions with GuiceDefaultJARExclusions;
+	provides IGuiceScanModuleExclusions with GuiceDefaultModuleExclusions;
 
 	provides IGuiceDefaultBinder with ContextBinderGuice;
 	provides IGuiceModule with GuiceInjectorModule;

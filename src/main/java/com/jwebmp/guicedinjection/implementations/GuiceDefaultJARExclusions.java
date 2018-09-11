@@ -17,6 +17,25 @@ public class GuiceDefaultJARExclusions
 		jarExclusions.add("animal-sniffer-annotations*");
 		jarExclusions.add("antlr*");
 		jarExclusions.add("aopalliance*");
+		jarExclusions.add("apiguardian-api*");
+		jarExclusions.add("assertj*");
+		jarExclusions.add("byte-buddy*");
+		jarExclusions.add("hamcrest*");
+		jarExclusions.add("junit*");
+		jarExclusions.add("mockito*");
+		jarExclusions.add("objenesis*");
+		jarExclusions.add("opentest4j*");
+		jarExclusions.add("validation-api*");
+		jarExclusions.add("checker-qual*");
+		jarExclusions.add("classgraph*");
+		jarExclusions.add("error-prone-annotations*");
+		jarExclusions.add("guava*");
+		jarExclusions.add("guice*");
+		jarExclusions.add("j2objc*");
+		jarExclusions.add("jackson*");
+		jarExclusions.add("javax.inject*");
+		jarExclusions.add("jwebmp-log-master*");
+		jarExclusions.add("guiced-injection*");
 		return jarExclusions;
 	}
 }
