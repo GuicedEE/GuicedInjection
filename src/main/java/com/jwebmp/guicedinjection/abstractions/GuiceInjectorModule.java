@@ -49,7 +49,13 @@ public class GuiceInjectorModule
 		implements IGuiceModule
 {
 
+	/**
+	 * Field log
+	 */
 	private static final Logger log = LogFactory.getLog("GuiceInjectorModule");
+	/**
+	 * Field serialVersionUID
+	 */
 	private static final long serialVersionUID = 1L;
 
 	/**
