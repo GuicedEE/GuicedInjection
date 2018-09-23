@@ -13,7 +13,6 @@ import java.util.TreeSet;
  *
  * @param <J>
  */
-@SuppressWarnings("MissingClassJavaDoc")
 public interface IDefaultService<J extends IDefaultService<J>>
 		extends Comparable<J>, Comparator<J>
 {
@@ -21,11 +20,10 @@ public interface IDefaultService<J extends IDefaultService<J>>
 	 * Method loaderToSet, converts a ServiceLoader into a TreeSet
 	 *
 	 * @param loader
-	 * 		of type ServiceLoader<T>
+	 * 		of type ServiceLoader
 	 *
-	 * @return Set<T>
+	 * @return Set
 	 */
-	@SuppressWarnings({"MissingClassJavaDoc", "unchecked"})
 	static <T> Set<T> loaderToSet(ServiceLoader<T> loader)
 	{
 		Set<T> output = new TreeSet<>();
