@@ -358,7 +358,7 @@ public class GuiceContext
 				GuiceContext.log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
 			}
 		}
-		postLoaderExecutionService.shutdown();
+		postLoaderExecutionService.shutdownNow();
 		try
 		{
 			postLoaderExecutionService.awaitTermination(GuiceContext.asyncTerminationWait, GuiceContext.asyncTerminationTimeUnit);
@@ -419,6 +419,7 @@ public class GuiceContext
 		scanner = new ClassGraph();
 		if (GuiceContext.config.isWhiteList())
 		{
+
 			String[] packages = getPackagesList();
 			if (packages.length != 0)
 			{
@@ -429,21 +430,25 @@ public class GuiceContext
 			{
 				scanner.whitelistPaths(paths);
 			}
-			String[] blacklistList = getPathsBlacklistList();
-			if (blacklistList.length != 0)
+
+			if (GuiceContext.config.isExcludeModulesAndJars())
 			{
-				scanner.blacklistPaths(blacklistList);
-				scanner.blacklistPaths("META-INF/MANIFEST.MF");
-			}
-			String[] jarBlacklist = getJarsBlacklistList();
-			if (jarBlacklist.length != 0)
-			{
-				scanner.blacklistJars(jarBlacklist);
-			}
-			String[] modulesBlacklist = getModulesBlacklistList();
-			if (modulesBlacklist.length != 0)
-			{
-				scanner.blacklistModules(modulesBlacklist);
+				String[] blacklistList = getPathsBlacklistList();
+				if (blacklistList.length != 0)
+				{
+					scanner.blacklistPaths(blacklistList);
+					scanner.blacklistPaths("META-INF/MANIFEST.MF");
+				}
+				String[] jarBlacklist = getJarsBlacklistList();
+				if (jarBlacklist.length != 0)
+				{
+					scanner.blacklistJars(jarBlacklist);
+				}
+				String[] modulesBlacklist = getModulesBlacklistList();
+				if (modulesBlacklist.length != 0)
+				{
+					scanner.blacklistModules(modulesBlacklist);
+				}
 			}
 		}
 		if (GuiceContext.config.isFieldInfo())

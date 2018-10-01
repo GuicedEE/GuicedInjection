@@ -50,6 +50,14 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * If classpath scanning is enabled.
 	 */
 	private boolean classpathScanning;
+	/**
+	 * Excludes modules and jars from scanning - may and may not make it faster depending on your pc
+	 */
+	private boolean excludeModulesAndJars;
+	/**
+	 * Excludes paths from scanning - excellent for minizing path scanning on web application
+	 */
+	private boolean excludePaths;
 
 	/**
 	 * Configures the Guice Context and Reflection Identifier
@@ -272,6 +280,53 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		return (J) this;
 	}
 
+	/**
+	 * Excludes modules and jars from scanning - may and may not make it faster depending on your pc
+	 *
+	 * @return
+	 */
+	public boolean isExcludeModulesAndJars()
+	{
+		return excludeModulesAndJars;
+	}
+
+	/**
+	 * Excludes modules and jars from scanning - may and may not make it faster depending on your pc
+	 *
+	 * @param excludeModulesAndJars
+	 *
+	 * @return J
+	 */
+	public J setExcludeModulesAndJars(boolean excludeModulesAndJars)
+	{
+		this.excludeModulesAndJars = excludeModulesAndJars;
+		return (J) this;
+	}
+
+	/**
+	 * Excludes paths from scanning - excellent for minizing path scanning on web application
+	 *
+	 * @return boolean
+	 */
+	public boolean isExcludePaths()
+	{
+		return excludePaths;
+	}
+
+	/**
+	 * Excludes paths from scanning - excellent for minizing path scanning on web application
+	 *
+	 * @param excludePaths
+	 * 		If the default paths must be automatically excluded
+	 *
+	 * @return J
+	 */
+	public J setExcludePaths(boolean excludePaths)
+	{
+		this.excludePaths = excludePaths;
+		return (J) this;
+	}
+
 	@Override
 	public String toString()
 	{
@@ -285,6 +340,8 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		       ", whiteList=" + whiteList +
 		       ", verbose=" + verbose +
 		       ", classpathScanning=" + classpathScanning +
+		       ", excludeModulesAndJars=" + excludeModulesAndJars +
+		       ", excludePaths=" + excludePaths +
 		       '}';
 	}
 }
