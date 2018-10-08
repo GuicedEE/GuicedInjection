@@ -152,6 +152,10 @@ public class GuiceContext
 				GuiceContext.buildingInjector = false;
 				GuiceContext.instance()
 				            .loadPostStartups();
+
+				Runtime.getRuntime()
+				       .addShutdownHook(new Thread(() -> GuiceContext.destroy()));
+
 				GuiceContext.log.config("Injection System Ready");
 			}
 			catch (Throwable e)
@@ -297,15 +301,17 @@ public class GuiceContext
 	}
 
 	/**
-	 * Execute on Destroy
+	 * Builds a reflection object if one does not exist
+	 *
+	 * @return A facade of the ReflectUtils on the scan result
 	 */
-	@SuppressWarnings("unused")
-	public static void destroy()
+	public static Reflections reflect()
 	{
-		GuiceContext.instance().reflections = null;
-		GuiceContext.instance().scanResult = null;
-		GuiceContext.instance().scanner = null;
-		GuiceContext.instance().injector = null;
+		if (GuiceContext.instance().reflections == null)
+		{
+			GuiceContext.instance().reflections = new Reflections();
+		}
+		return GuiceContext.instance().reflections;
 	}
 
 	/**
@@ -319,17 +325,22 @@ public class GuiceContext
 	}
 
 	/**
-	 * Builds a reflection object if one does not exist
-	 *
-	 * @return A facade of the ReflectUtils on the scan result
+	 * Execute on Destroy
 	 */
-	public static Reflections reflect()
+	@SuppressWarnings("unused")
+	public static void destroy()
 	{
-		if (GuiceContext.instance().reflections == null)
+		Set<IGuicePreDestroy> destroyers = IDefaultService.loaderToSet(ServiceLoader.load(IGuicePreDestroy.class));
+		for (IGuicePreDestroy destroyer : destroyers)
 		{
-			GuiceContext.instance().reflections = new Reflections();
+			IGuicePreDestroy instance = GuiceContext.get(destroyer.getClass());
+			instance.onDestroy();
 		}
-		return GuiceContext.instance().reflections;
+
+		GuiceContext.instance().reflections = null;
+		GuiceContext.instance().scanResult = null;
+		GuiceContext.instance().scanner = null;
+		GuiceContext.instance().injector = null;
 	}
 
 	/**
@@ -351,17 +362,17 @@ public class GuiceContext
 		{
 			try
 			{
-				postLoaderExecutionService.submit((Runnable) a);
+				postLoaderExecutionService.execute(a);
 			}
 			catch (Exception e)
 			{
 				GuiceContext.log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
 			}
 		}
-		postLoaderExecutionService.shutdownNow();
+		postLoaderExecutionService.shutdown();
 		try
 		{
-			postLoaderExecutionService.awaitTermination(GuiceContext.asyncTerminationWait, GuiceContext.asyncTerminationTimeUnit);
+			postLoaderExecutionService.awaitTermination(1L, TimeUnit.SECONDS);
 		}
 		catch (Exception e)
 		{
