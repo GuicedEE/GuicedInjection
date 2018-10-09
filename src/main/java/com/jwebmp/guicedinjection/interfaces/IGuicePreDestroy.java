@@ -24,8 +24,8 @@ import java.util.Comparator;
  * @author Marc Magon
  * @since 15 May 2017
  */
-public interface IGuicePreDestroy
-		extends Comparator<IGuicePreDestroy>, Comparable<IGuicePreDestroy>
+public interface IGuicePreDestroy<J extends IGuicePreDestroy<J>>
+		extends Comparator<J>, Comparable<J>
 {
 
 	/**
@@ -34,7 +34,7 @@ public interface IGuicePreDestroy
 	void onDestroy();
 
 	@Override
-	default int compare(IGuicePreDestroy o1, IGuicePreDestroy o2)
+	default int compare(J o1, J o2)
 	{
 		return o1.sortOrder()
 		         .compareTo(o2.sortOrder());
@@ -52,7 +52,7 @@ public interface IGuicePreDestroy
 	}
 
 	@Override
-	default int compareTo(IGuicePreDestroy o)
+	default int compareTo(J o)
 	{
 		if (o == null)
 		{
