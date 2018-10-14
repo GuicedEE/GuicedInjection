@@ -161,6 +161,7 @@ public class GuiceContext
 			catch (Throwable e)
 			{
 				GuiceContext.log.log(Level.SEVERE, "Exception creating Injector : " + e.getMessage(), e);
+				throw new RuntimeException("Unable to boot Guice Injector", e);
 			}
 		}
 		GuiceContext.buildingInjector = false;
