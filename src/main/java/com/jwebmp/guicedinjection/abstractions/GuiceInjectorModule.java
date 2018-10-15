@@ -25,6 +25,7 @@ import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.Message;
 import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.TypeListener;
+import com.jwebmp.guicedinjection.GuiceContext;
 import com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder;
 import com.jwebmp.guicedinjection.interfaces.IGuiceModule;
 import com.jwebmp.logger.LogFactory;
@@ -32,6 +33,7 @@ import com.jwebmp.logger.LogFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,17 +48,13 @@ import java.util.logging.Logger;
  */
 public class GuiceInjectorModule
 		extends AbstractModule
-		implements IGuiceModule
+		implements IGuiceModule<GuiceInjectorModule>
 {
 
 	/**
 	 * Field log
 	 */
 	private static final Logger log = LogFactory.getLog("GuiceInjectorModule");
-	/**
-	 * Field serialVersionUID
-	 */
-	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Constructs a new instance of the module
@@ -78,9 +76,11 @@ public class GuiceInjectorModule
 	/**
 	 * Executes the linked binders to perform any custom binding
 	 */
+	@SuppressWarnings("unchecked")
 	private void runBinders()
 	{
-		ServiceLoader<IGuiceDefaultBinder> loader = ServiceLoader.load(IGuiceDefaultBinder.class);
+		Set<IGuiceDefaultBinder> loader = GuiceContext.instance()
+		                                              .getLoader(IGuiceDefaultBinder.class, true, ServiceLoader.load(IGuiceDefaultBinder.class));
 		for (IGuiceDefaultBinder binder : loader)
 		{
 			log.log(Level.CONFIG, "Loading IGuiceDefaultBinder - " + binder.getClass());

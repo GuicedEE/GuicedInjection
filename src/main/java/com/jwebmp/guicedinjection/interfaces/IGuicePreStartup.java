@@ -16,16 +16,14 @@
  */
 package com.jwebmp.guicedinjection.interfaces;
 
-import java.util.Comparator;
-
 /**
  * Initializes before Guice has been injected
  *
  * @author Marc Magon
  * @since 15 May 2017
  */
-public interface IGuicePreStartup
-		extends Comparator<IGuicePreStartup>, Comparable<IGuicePreStartup>
+public interface IGuicePreStartup<J extends IGuicePreStartup<J>>
+		extends IDefaultService<J>
 {
 
 	/**
@@ -33,36 +31,14 @@ public interface IGuicePreStartup
 	 */
 	void onStartup();
 
-	default int compare(IGuicePreStartup o1, IGuicePreStartup o2)
-	{
-		return o1.sortOrder()
-		         .compareTo(o2.sortOrder());
-	}
-
-
 	/**
 	 * Sort order for startup, Default 100.
 	 *
 	 * @return the sort order never null
 	 */
+	@Override
 	default Integer sortOrder()
 	{
 		return 100;
 	}
-
-	@Override
-	default int compareTo(IGuicePreStartup o)
-	{
-		if (o == null)
-		{
-			return -1;
-		}
-		int result = sortOrder().compareTo(o.sortOrder());
-		if (getClass().equals(o.getClass()))
-		{
-			return 0;
-		}
-		return result == 0 ? 1 : result;
-	}
-
 }

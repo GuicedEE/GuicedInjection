@@ -3,7 +3,7 @@ package za.co.mmagon.externalpackage;
 import com.jwebmp.guicedinjection.interfaces.IGuicePostStartup;
 
 public class PostConstructTestI
-		implements IGuicePostStartup
+		implements IGuicePostStartup<PostConstructTestI>
 {
 
 	public PostConstructTestI()

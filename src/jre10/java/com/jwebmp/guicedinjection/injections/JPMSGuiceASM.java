@@ -4,7 +4,7 @@ import com.jwebmp.guicedinjection.interfaces.IGuicePreStartup;
 import com.jwebmp.logger.LogFactory;
 
 public class JPMSGuiceASM
-		implements IGuicePreStartup
+		implements IGuicePreStartup<JPMSGuiceASM>
 {
 	@Override
 	public void onStartup()

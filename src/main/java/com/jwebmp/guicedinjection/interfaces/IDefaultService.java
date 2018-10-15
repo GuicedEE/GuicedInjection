@@ -3,10 +3,7 @@ package com.jwebmp.guicedinjection.interfaces;
 import com.jwebmp.guicedinjection.GuiceContext;
 
 import javax.validation.constraints.NotNull;
-import java.util.Comparator;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Supplies standard set changer and comparable's for services
@@ -33,6 +30,25 @@ public interface IDefaultService<J extends IDefaultService<J>>
 		}
 		return output;
 	}
+
+	/**
+	 * Method loaderToSet, converts a ServiceLoader into a TreeSet
+	 *
+	 * @param loader
+	 * 		of type ServiceLoader
+	 *
+	 * @return Set
+	 */
+	static <T> Set<T> loaderToSetNoInjection(ServiceLoader<T> loader)
+	{
+		Set<T> output = new LinkedHashSet<>();
+		for (T newInstance : loader)
+		{
+			output.add(newInstance);
+		}
+		return output;
+	}
+
 
 	/**
 	 * Method compare ...

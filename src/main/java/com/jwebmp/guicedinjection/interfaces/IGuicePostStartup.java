@@ -22,7 +22,8 @@ package com.jwebmp.guicedinjection.interfaces;
  * @author Marc Magon
  * @since 15 May 2017
  */
-public interface IGuicePostStartup
+public interface IGuicePostStartup<J extends IGuicePostStartup<J>>
+		extends IDefaultService<J>
 {
 
 	/**
@@ -35,10 +36,10 @@ public interface IGuicePostStartup
 	 *
 	 * @return the sort order to return
 	 */
+	@Override
 	default Integer sortOrder()
 	{
 		return 50;
 	}
 
-	;
 }
