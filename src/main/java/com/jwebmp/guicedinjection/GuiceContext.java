@@ -329,7 +329,8 @@ public class GuiceContext
 	@SuppressWarnings("unused")
 	public static void destroy()
 	{
-		Set<IGuicePreDestroy> destroyers = IDefaultService.loaderToSet(ServiceLoader.load(IGuicePreDestroy.class));
+		Set<IGuicePreDestroy> destroyers = GuiceContext.instance()
+		                                               .getLoader(IGuicePreDestroy.class, ServiceLoader.load(IGuicePreDestroy.class));
 		for (IGuicePreDestroy destroyer : destroyers)
 		{
 			IGuicePreDestroy instance = GuiceContext.get(destroyer.getClass());
@@ -745,7 +746,15 @@ public class GuiceContext
 	{
 		if (!getAllLoadedServices().containsKey(loaderType))
 		{
-			Set<T> loader = loaderToSet(serviceLoader);
+			Set<T> loader = null;
+			if (GuiceContext.buildingInjector)
+			{
+				loader = loaderToSetNoInjection(serviceLoader);
+			}
+			else
+			{
+				loader = loaderToSet(serviceLoader);
+			}
 			getAllLoadedServices().put(loaderType, loader);
 		}
 		return getAllLoadedServices().get(loaderType);
