@@ -21,6 +21,8 @@ public interface IDefaultService<J extends IDefaultService<J>>
 	 *
 	 * @return Set
 	 */
+	@SuppressWarnings("unchecked")
+	@NotNull
 	static <T> Set<T> loaderToSet(ServiceLoader<T> loader)
 	{
 		Set<T> output = new TreeSet<>();
@@ -39,6 +41,8 @@ public interface IDefaultService<J extends IDefaultService<J>>
 	 *
 	 * @return Set
 	 */
+	@SuppressWarnings("unchecked")
+	@NotNull
 	static <T> Set<T> loaderToSetNoInjection(ServiceLoader<T> loader)
 	{
 		Set<T> output = new LinkedHashSet<>();
