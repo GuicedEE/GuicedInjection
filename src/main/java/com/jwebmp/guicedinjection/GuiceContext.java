@@ -30,7 +30,6 @@ import io.github.classgraph.ScanResult;
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +62,8 @@ public class GuiceContext
 	/**
 	 * A list of all the loaded singleton sets
 	 */
-	private static final Map<Class, Set> allLoadedServices = new ConcurrentHashMap<>();
+	@SuppressWarnings("unchecked")
+	private static final Map<Class, Set> allLoadedServices = Collections.synchronizedMap(new LinkedHashMap());
 	/**
 	 * The building injector
 	 */
@@ -422,11 +422,7 @@ public class GuiceContext
 	private void loadPreStartups()
 	{
 		Set<IGuicePreStartup> preStartups = getLoader(IGuicePreStartup.class, true, ServiceLoader.load(IGuicePreStartup.class));
-		List<IGuicePreStartup> startups = new ArrayList<>();
-		for (IGuicePreStartup preStartup : preStartups)
-		{
-			startups.add(preStartup);
-		}
+		List<IGuicePreStartup> startups = new ArrayList<>(preStartups);
 		startups.sort(Comparator.comparing(IGuicePreStartup::sortOrder));
 		for (IGuicePreStartup startup : startups)
 		{
@@ -464,6 +460,9 @@ public class GuiceContext
 		GuiceContext.instance().scanResult = scanResult;
 	}
 
+	/**
+	 * Loads the IGuiceConfigurator
+	 */
 	private void loadConfiguration()
 	{
 		Set<IGuiceConfigurator> guiceConfigurators = getLoader(IGuiceConfigurator.class, true, ServiceLoader.load(IGuiceConfigurator.class));
@@ -829,7 +828,6 @@ public class GuiceContext
 				                          GuiceContext.configureWorkStealingPool(new ArrayList<>(value), runnables);
 			                          }
 		                          });
-		allLoadedServices.put(IGuiceModule.class, startupSet);
 	}
 
 	/**
