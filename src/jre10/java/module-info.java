@@ -7,24 +7,22 @@ import com.jwebmp.guicedinjection.interfaces.*;
 
 module com.jwebmp.guicedinjection {
 
-	requires transitive com.google.guice;
-	requires transitive javax.inject;
-	requires transitive aopalliance;
+	requires com.google.guice;
 
-	requires transitive com.google.common;
+	requires io.github.classgraph;
+	requires java.validation;
 
-	requires transitive io.github.classgraph;
-	requires transitive java.validation;
+	requires com.fasterxml.jackson.core;
+	requires com.fasterxml.jackson.databind;
+	requires com.fasterxml.jackson.datatype.jdk8;
+	requires com.fasterxml.jackson.datatype.jsr310;
 
-	requires transitive com.fasterxml.jackson.core;
-	requires transitive com.fasterxml.jackson.databind;
-	requires transitive com.fasterxml.jackson.datatype.jdk8;
-	requires transitive com.fasterxml.jackson.datatype.jsr310;
-	requires transitive com.fasterxml.jackson.annotation;
-
-	requires transitive java.logging;
-	requires transitive com.jwebmp.logmaster;
-
+	requires java.logging;
+	requires com.jwebmp.logmaster;
+	requires aopalliance;
+	requires javax.inject;
+	requires com.fasterxml.jackson.annotation;
+	requires com.google.common;
 
 	exports com.jwebmp.guicedinjection;
 	exports com.jwebmp.guicedinjection.interfaces;
