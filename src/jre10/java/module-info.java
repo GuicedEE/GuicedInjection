@@ -8,6 +8,10 @@ import com.jwebmp.guicedinjection.interfaces.*;
 module com.jwebmp.guicedinjection {
 
 	requires transitive com.google.guice;
+	requires transitive javax.inject;
+	requires transitive aopalliance;
+
+	requires transitive com.google.common;
 
 	requires transitive io.github.classgraph;
 	requires transitive java.validation;
@@ -20,10 +24,7 @@ module com.jwebmp.guicedinjection {
 
 	requires transitive java.logging;
 	requires transitive com.jwebmp.logmaster;
-	requires transitive aopalliance;
-	requires transitive javax.inject;
 
-	requires transitive com.google.common;
 
 	exports com.jwebmp.guicedinjection;
 	exports com.jwebmp.guicedinjection.interfaces;
