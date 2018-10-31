@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jwebmp.guicedinjection.GuiceContext;
 import com.jwebmp.logger.LogFactory;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -48,10 +47,10 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
 @JsonInclude(NON_NULL)
 public class GlobalProperties
 
-		implements Serializable
+
 {
 
-	private static final long serialVersionUID = 1L;
+
 	private static final Logger log = LogFactory.getLog("GlobalPropertyMaps");
 	private transient final Map<String, Map<Object, Object>> globalProperties;
 

@@ -3,7 +3,6 @@ package com.jwebmp.guicedinjection;
 import com.google.inject.Singleton;
 
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 
 /**
  * The configuration class for Guice Context and the Classpath Scanner
@@ -11,9 +10,9 @@ import java.io.Serializable;
 @Singleton
 @SuppressWarnings("all")
 public class GuiceConfig<J extends GuiceConfig<J>>
-		implements Serializable
+
 {
-	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Whether to include field information right now
 	 */
