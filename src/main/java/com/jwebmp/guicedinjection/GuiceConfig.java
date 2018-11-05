@@ -7,12 +7,10 @@ import javax.validation.constraints.NotNull;
 /**
  * The configuration class for Guice Context and the Classpath Scanner
  */
+@SuppressWarnings("WeakerAccess")
 @Singleton
-@SuppressWarnings("all")
 public class GuiceConfig<J extends GuiceConfig<J>>
-
 {
-
 	/**
 	 * Whether to include field information right now
 	 */
@@ -40,11 +38,15 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * White list the scanning. Highly Recommended
 	 */
-	private boolean whiteList;
+	private boolean whiteListPackages;
 	/**
 	 * Whether or not to log very verbose
 	 */
 	private boolean verbose;
+	/**
+	 * If the path should be scanned
+	 */
+	private boolean pathScanning;
 	/**
 	 * If classpath scanning is enabled.
 	 */
@@ -53,10 +55,19 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Excludes modules and jars from scanning - may and may not make it faster depending on your pc
 	 */
 	private boolean excludeModulesAndJars;
+
 	/**
 	 * Excludes paths from scanning - excellent for minizing path scanning on web application
 	 */
 	private boolean excludePaths;
+	/**
+	 * Excludes paths from scanning - excellent for minizing path scanning on web application
+	 */
+	private boolean whitelistPaths;
+	/**
+	 * Provides a list of whitelist jars/modules to scan
+	 */
+	private boolean whitelistJarsAndModules;
 
 	/**
 	 * Configures the Guice Context and Reflection Identifier
@@ -203,9 +214,9 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return if whitelisting is enabled
 	 */
-	public boolean isWhiteList()
+	public boolean isWhiteListPackages()
 	{
-		return whiteList;
+		return whiteListPackages;
 	}
 
 	/**
@@ -213,16 +224,16 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * * <p>
 	 * * Use META-INF/services/com.jwebmp.guiceinjection.scanners.IPackageContentsScanner to register your packages
 	 *
-	 * @param whiteList
+	 * @param whiteListPackages
 	 * 		if packages should be white listed
 	 *
 	 * @return Always this
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setWhiteList(boolean whiteList)
+	public J setWhiteListPackages(boolean whiteListPackages)
 	{
-		this.whiteList = whiteList;
+		this.whiteListPackages = whiteListPackages;
 		return (J) this;
 	}
 
@@ -252,11 +263,28 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		return (J) this;
 	}
 
+	/**
+	 * Method isVerbose returns the verbose of this GuiceConfig object.
+	 * <p>
+	 * Whether or not to log very verbose
+	 *
+	 * @return the verbose (type boolean) of this GuiceConfig object.
+	 */
 	public boolean isVerbose()
 	{
 		return verbose;
 	}
 
+	/**
+	 * Method setVerbose sets the verbose of this GuiceConfig object.
+	 * <p>
+	 * Whether or not to log very verbose
+	 *
+	 * @param verbose
+	 * 		the verbose of this GuiceConfig object.
+	 *
+	 * @return J
+	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
 	public J setVerbose(boolean verbose)
@@ -266,11 +294,28 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		return (J) this;
 	}
 
+	/**
+	 * Method isClasspathScanning returns the classpathScanning of this GuiceConfig object.
+	 * <p>
+	 * If classpath scanning is enabled.
+	 *
+	 * @return the classpathScanning (type boolean) of this GuiceConfig object.
+	 */
 	public boolean isClasspathScanning()
 	{
 		return classpathScanning;
 	}
 
+	/**
+	 * Method setClasspathScanning sets the classpathScanning of this GuiceConfig object.
+	 * <p>
+	 * If classpath scanning is enabled.
+	 *
+	 * @param classpathScanning
+	 * 		the classpathScanning of this GuiceConfig object.
+	 *
+	 * @return J
+	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
 	public J setClasspathScanning(boolean classpathScanning)
@@ -293,9 +338,12 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Excludes modules and jars from scanning - may and may not make it faster depending on your pc
 	 *
 	 * @param excludeModulesAndJars
+	 * 		to exclude them
 	 *
 	 * @return J
 	 */
+	@SuppressWarnings("unchecked")
+	@NotNull
 	public J setExcludeModulesAndJars(boolean excludeModulesAndJars)
 	{
 		this.excludeModulesAndJars = excludeModulesAndJars;
@@ -320,6 +368,8 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return J
 	 */
+	@SuppressWarnings("unchecked")
+	@NotNull
 	public J setExcludePaths(boolean excludePaths)
 	{
 		this.excludePaths = excludePaths;
@@ -336,11 +386,98 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		       ", methodInfo=" + methodInfo +
 		       ", ignoreFieldVisibility=" + ignoreFieldVisibility +
 		       ", ignoreMethodVisibility=" + ignoreMethodVisibility +
-		       ", whiteList=" + whiteList +
+		       ", whiteListPackages=" + whiteListPackages +
 		       ", verbose=" + verbose +
+		       ", pathScanning=" + pathScanning +
 		       ", classpathScanning=" + classpathScanning +
 		       ", excludeModulesAndJars=" + excludeModulesAndJars +
 		       ", excludePaths=" + excludePaths +
+		       ", whitelistPaths=" + whitelistPaths +
+		       ", whitelistJarsAndModules=" + whitelistJarsAndModules +
 		       '}';
+	}
+
+	/**
+	 * Method isWhitelistPaths returns the whitelistPaths of this GuiceConfig object.
+	 * <p>
+	 * Excludes paths from scanning - excellent for minizing path scanning on web application
+	 *
+	 * @return the whitelistPaths (type boolean) of this GuiceConfig object.
+	 */
+	public boolean isWhitelistPaths()
+	{
+		return whitelistPaths;
+	}
+
+	/**
+	 * Method setWhitelistPaths sets the whitelistPaths of this GuiceConfig object.
+	 * <p>
+	 * Excludes paths from scanning - excellent for minizing path scanning on web application
+	 *
+	 * @param whitelistPaths
+	 * 		the whitelistPaths of this GuiceConfig object.
+	 *
+	 * @return GuiceConfig<J>
+	 */
+	public GuiceConfig<J> setWhitelistPaths(boolean whitelistPaths)
+	{
+		this.whitelistPaths = whitelistPaths;
+		return this;
+	}
+
+	/**
+	 * Method isWhitelistJarsAndModules returns the whitelistJarsAndModules of this GuiceConfig object.
+	 * <p>
+	 * Provides a list of whitelist jars/modules to scan
+	 *
+	 * @return the whitelistJarsAndModules (type boolean) of this GuiceConfig object.
+	 */
+	public boolean isWhitelistJarsAndModules()
+	{
+		return whitelistJarsAndModules;
+	}
+
+	/**
+	 * Method setWhitelistJarsAndModules sets the whitelistJarsAndModules of this GuiceConfig object.
+	 * <p>
+	 * Provides a list of whitelist jars/modules to scan
+	 *
+	 * @param whitelistJarsAndModules
+	 * 		the whitelistJarsAndModules of this GuiceConfig object.
+	 *
+	 * @return GuiceConfig<J>
+	 */
+	public GuiceConfig<J> setWhitelistJarsAndModules(boolean whitelistJarsAndModules)
+	{
+		this.whitelistJarsAndModules = whitelistJarsAndModules;
+		return this;
+	}
+
+	/**
+	 * Method isPathScanning returns the pathScanning of this GuiceConfig object.
+	 * <p>
+	 * If the path should be scanned
+	 *
+	 * @return the pathScanning (type boolean) of this GuiceConfig object.
+	 */
+	public boolean isPathScanning()
+	{
+		return pathScanning;
+	}
+
+	/**
+	 * Method setPathScanning sets the pathScanning of this GuiceConfig object.
+	 * <p>
+	 * If the path should be scanned
+	 *
+	 * @param pathScanning
+	 * 		the pathScanning of this GuiceConfig object.
+	 *
+	 * @return GuiceConfig<J>
+	 */
+	public GuiceConfig<J> setPathScanning(boolean pathScanning)
+	{
+		this.pathScanning = pathScanning;
+		return this;
 	}
 }

@@ -17,7 +17,7 @@ public class IGuiceConfigTest
 		assertTrue(config.isIgnoreFieldVisibility());
 		assertTrue(config.isIgnoreMethodVisibility());
 		assertTrue(config.isMethodInfo());
-		assertTrue(config.isWhiteList());
+		assertTrue(config.isWhiteListPackages());
 		assertTrue(config.isFieldScanning());
 	}
 
@@ -25,7 +25,7 @@ public class IGuiceConfigTest
 	public GuiceConfig configure(GuiceConfig config)
 	{
 		config.setIgnoreMethodVisibility(true)
-		      .setWhiteList(true)
+		      .setWhiteListPackages(true)
 		      .setAnnotationScanning(true)
 		      .setFieldInfo(true)
 		      .setFieldScanning(true)

@@ -136,7 +136,7 @@ public class GuiceContext
 				            .loadConfiguration();
 				if (GuiceContext.instance()
 				                .getConfig()
-				                .isWhiteList() ||
+				                .isPathScanning() ||
 				    GuiceContext.instance()
 				                .getConfig()
 				                .isClasspathScanning())
@@ -404,6 +404,31 @@ public class GuiceContext
 	}
 
 	/**
+	 * Returns the Java version as an int value.
+	 *
+	 * @return the Java version as an int value (8, 9, etc.)
+	 *
+	 * @since 12130
+	 */
+	public static int getJavaVersion()
+	{
+		String version = System.getProperty("java.version");
+		if (version.startsWith("1."))
+		{
+			version = version.substring(2);
+		}
+		// Allow these formats:
+		// 1.8.0_72-ea
+		// 9-ea
+		// 9
+		// 9.0.1
+		int dotPos = version.indexOf('.');
+		int dashPos = version.indexOf('-');
+		String value = version.substring(0, dotPos > -1 ? dotPos : dashPos > -1 ? dashPos : version.length());
+		return Integer.parseInt(value);
+	}
+
+	/**
 	 * Method getAllLoadedServices returns the allLoadedServices of this GuiceContext object.
 	 * <p>
 	 * A list of all the loaded singleton sets
@@ -492,65 +517,7 @@ public class GuiceContext
 			loadConfiguration();
 		}
 		scanner = new ClassGraph();
-		if (GuiceContext.config.isWhiteList())
-		{
-
-			String[] packages = getPackagesList();
-			if (packages.length != 0)
-			{
-				scanner.whitelistPackages(packages);
-			}
-			String[] paths = getPathsList();
-			if (paths.length != 0)
-			{
-				scanner.whitelistPaths(paths);
-			}
-
-			if (GuiceContext.config.isExcludeModulesAndJars())
-			{
-				String[] blacklistList = getPathsBlacklistList();
-				if (blacklistList.length != 0)
-				{
-					scanner.blacklistPaths(blacklistList);
-					scanner.blacklistPaths("META-INF/MANIFEST.MF");
-				}
-				String[] jarBlacklist = getJarsBlacklistList();
-				if (jarBlacklist.length != 0)
-				{
-					scanner.blacklistJars(jarBlacklist);
-				}
-				String[] modulesBlacklist = getModulesBlacklistList();
-				if (modulesBlacklist.length != 0)
-				{
-					scanner.blacklistModules(modulesBlacklist);
-				}
-			}
-		}
-		if (GuiceContext.config.isFieldInfo())
-		{
-			scanner.enableFieldInfo();
-		}
-		if (GuiceContext.config.isAnnotationScanning())
-		{
-			scanner.enableAnnotationInfo();
-		}
-		if (GuiceContext.config.isMethodInfo())
-		{
-			scanner.enableMethodInfo();
-		}
-		if (GuiceContext.config.isIgnoreFieldVisibility())
-		{
-			scanner.ignoreFieldVisibility();
-		}
-		if (GuiceContext.config.isIgnoreMethodVisibility())
-		{
-			scanner.ignoreMethodVisibility();
-		}
-
-		if (GuiceContext.config.isVerbose())
-		{
-			scanner.verbose();
-		}
+		configureScanner(scanner);
 		try
 		{
 			scanResult = scanner.scan(GuiceContext.getThreadCount());
@@ -565,7 +532,108 @@ public class GuiceContext
 		}
 
 		stopwatch.stop();
-		GuiceContext.log.fine("Loaded Classpath Scanner -Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
+		GuiceContext.log.fine("Loaded Classpath Scanner - Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
+	}
+
+	/**
+	 * Configures the scanner from its setup
+	 *
+	 * @param graph
+	 * 		The ClassGraph to apply the configuration to
+	 */
+	private void configureScanner(ClassGraph graph)
+	{
+		if (config.isWhitelistPaths())
+		{
+			String[] paths = getPathsList();
+			if (paths.length != 0)
+			{
+				graph.whitelistPaths(paths);
+			}
+		}
+		if (config.isWhitelistJarsAndModules())
+		{
+			if (getJavaVersion() < 9)
+			{
+				String[] jarBlacklist = getJarsWhiteList();
+				if (jarBlacklist.length != 0)
+				{
+					graph.blacklistJars(jarBlacklist);
+				}
+			}
+			else
+			{
+				String[] modulesBlacklist = getModulesWhiteList();
+				if (modulesBlacklist.length != 0)
+				{
+					graph.blacklistModules(modulesBlacklist);
+				}
+			}
+		}
+
+		if (GuiceContext.config.isExcludePaths())
+		{
+			String[] blacklistList = getPathsBlacklistList();
+			if (blacklistList.length != 0)
+			{
+				graph.blacklistPaths(blacklistList);
+			}
+		}
+
+		if (GuiceContext.config.isExcludeModulesAndJars())
+		{
+			if (getJavaVersion() < 9)
+			{
+				String[] jarBlacklist = getJarsBlacklistList();
+				if (jarBlacklist.length != 0)
+				{
+					graph.blacklistJars(jarBlacklist);
+				}
+			}
+			else
+			{
+				String[] modulesBlacklist = getModulesBlacklistList();
+				if (modulesBlacklist.length != 0)
+				{
+					graph.blacklistModules(modulesBlacklist);
+				}
+			}
+		}
+
+		if (GuiceContext.config.isWhiteListPackages())
+		{
+			String[] packages = getPackagesList();
+			if (packages.length != 0)
+			{
+				graph.whitelistPackages(packages);
+			}
+		}
+
+		if (GuiceContext.config.isFieldInfo())
+		{
+			graph.enableFieldInfo();
+		}
+		if (GuiceContext.config.isAnnotationScanning())
+		{
+			graph.enableAnnotationInfo();
+		}
+		if (GuiceContext.config.isMethodInfo())
+		{
+			graph.enableMethodInfo();
+		}
+		if (GuiceContext.config.isIgnoreFieldVisibility())
+		{
+			graph.ignoreFieldVisibility();
+		}
+		if (GuiceContext.config.isIgnoreMethodVisibility())
+		{
+			graph.ignoreMethodVisibility();
+		}
+
+		if (GuiceContext.config.isVerbose())
+		{
+			graph.verbose();
+		}
 	}
 
 	/**
@@ -589,6 +657,79 @@ public class GuiceContext
 				strings.addAll(searches);
 			}
 			GuiceContext.log.log(Level.FINE, "IPackageScanningContentsScanner - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
+	}
+
+	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	private String[] getPathsList()
+	{
+		Set<String> strings = new TreeSet<>();
+		Set<IPathContentsScanner> exclusions = getLoader(IPathContentsScanner.class, true, ServiceLoader.load(IPathContentsScanner.class));
+		if (exclusions.iterator()
+		              .hasNext())
+		{
+			for (IPathContentsScanner exclusion : exclusions)
+			{
+				GuiceContext.log.log(Level.CONFIG, "Loading IPathScanningContentsScanner - " +
+				                                   exclusion.getClass()
+				                                            .getCanonicalName());
+				Set<String> searches = exclusion.searchFor();
+				strings.addAll(searches);
+			}
+			GuiceContext.log.log(Level.FINE, "IPathScanningContentsScanner - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
+	}
+
+	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	private String[] getPathsBlacklistList()
+	{
+		Set<String> strings = new TreeSet<>();
+		Set<IPathContentsBlacklistScanner> exclusions = getLoader(IPathContentsBlacklistScanner.class, true, ServiceLoader.load(IPathContentsBlacklistScanner.class));
+		if (exclusions.iterator()
+		              .hasNext())
+		{
+			for (IPathContentsBlacklistScanner exclusion : exclusions)
+			{
+				GuiceContext.log.log(Level.CONFIG, "Loading IPathContentsBlacklistScanner - " +
+				                                   exclusion.getClass()
+				                                            .getCanonicalName());
+				Set<String> searches = exclusion.searchFor();
+				strings.addAll(searches);
+			}
+			GuiceContext.log.log(Level.FINE, "IPathContentsBlacklistScanner - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
+	}
+
+	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	@SuppressWarnings("unchecked")
+	private String[] getJarsWhiteList()
+	{
+		Set<String> strings = new TreeSet<>();
+		Set<IGuiceScanJarInclusions> exclusions = getLoader(IGuiceScanJarInclusions.class, true, ServiceLoader.load(IGuiceScanJarInclusions.class));
+		if (exclusions.iterator()
+		              .hasNext())
+		{
+			for (IGuiceScanJarInclusions exclusion : exclusions)
+			{
+				Set<String> searches = exclusion.includeJars();
+				strings.addAll(searches);
+			}
+			GuiceContext.log.log(Level.FINE, "IGuiceScanJarInclusions - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}
@@ -622,59 +763,34 @@ public class GuiceContext
 	 *
 	 * @return A string list of packages to be scanned
 	 */
-	private String[] getPathsList()
+	@SuppressWarnings("unchecked")
+	private String[] getModulesWhiteList()
 	{
-		Set<String> strings = new LinkedHashSet<>();
-		Set<IPathContentsScanner> exclusions = getLoader(IPathContentsScanner.class, true, ServiceLoader.load(IPathContentsScanner.class));
+		Set<String> strings = new TreeSet<>();
+		Set<IGuiceScanModuleInclusions> exclusions = getLoader(IGuiceScanModuleInclusions.class, true, ServiceLoader.load(IGuiceScanModuleInclusions.class));
 		if (exclusions.iterator()
 		              .hasNext())
 		{
-			for (IPathContentsScanner exclusion : exclusions)
+			for (IGuiceScanModuleInclusions exclusion : exclusions)
 			{
-				GuiceContext.log.log(Level.CONFIG, "Loading IPathScanningContentsScanner - " +
-				                                   exclusion.getClass()
-				                                            .getCanonicalName());
-				Set<String> searches = exclusion.searchFor();
+				Set<String> searches = exclusion.includeModules();
 				strings.addAll(searches);
 			}
-			GuiceContext.log.log(Level.FINE, "IPathScanningContentsScanner - " + strings.toString());
+			GuiceContext.log.log(Level.FINE, "IGuiceScanModuleInclusions - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}
+
 
 	/**
 	 * Returns a complete list of generic exclusions
 	 *
 	 * @return A string list of packages to be scanned
 	 */
-	private String[] getPathsBlacklistList()
-	{
-		Set<String> strings = new LinkedHashSet<>();
-		Set<IPathContentsBlacklistScanner> exclusions = getLoader(IPathContentsBlacklistScanner.class, true, ServiceLoader.load(IPathContentsBlacklistScanner.class));
-		if (exclusions.iterator()
-		              .hasNext())
-		{
-			for (IPathContentsBlacklistScanner exclusion : exclusions)
-			{
-				GuiceContext.log.log(Level.CONFIG, "Loading IPathContentsBlacklistScanner - " +
-				                                   exclusion.getClass()
-				                                            .getCanonicalName());
-				Set<String> searches = exclusion.searchFor();
-				strings.addAll(searches);
-			}
-			GuiceContext.log.log(Level.FINE, "IPathContentsBlacklistScanner - " + strings.toString());
-		}
-		return strings.toArray(new String[0]);
-	}
-
-	/**
-	 * Returns a complete list of generic exclusions
-	 *
-	 * @return A string list of packages to be scanned
-	 */
+	@SuppressWarnings("unchecked")
 	private String[] getJarsBlacklistList()
 	{
-		Set<String> strings = new LinkedHashSet<>();
+		Set<String> strings = new TreeSet<>();
 		Set<IGuiceScanJarExclusions> exclusions = getLoader(IGuiceScanJarExclusions.class, true, ServiceLoader.load(IGuiceScanJarExclusions.class));
 		if (exclusions.iterator()
 		              .hasNext())
@@ -694,9 +810,10 @@ public class GuiceContext
 	 *
 	 * @return A string list of packages to be scanned
 	 */
+	@SuppressWarnings("unchecked")
 	private String[] getModulesBlacklistList()
 	{
-		Set<String> strings = new LinkedHashSet<>();
+		Set<String> strings = new TreeSet<>();
 		Set<IGuiceScanModuleExclusions> exclusions = getLoader(IGuiceScanModuleExclusions.class, true, ServiceLoader.load(IGuiceScanModuleExclusions.class));
 		if (exclusions.iterator()
 		              .hasNext())
@@ -745,7 +862,7 @@ public class GuiceContext
 	{
 		if (!getAllLoadedServices().containsKey(loaderType))
 		{
-			Set<T> loader = null;
+			Set<T> loader;
 			if (GuiceContext.buildingInjector)
 			{
 				loader = loaderToSetNoInjection(serviceLoader);
@@ -759,12 +876,16 @@ public class GuiceContext
 		return getAllLoadedServices().get(loaderType);
 	}
 
+	/**
+	 * Method loadDefaultBinders ...
+	 *
+	 * @return List
+	 */
 	@SuppressWarnings("unchecked")
 	private List loadDefaultBinders()
 	{
 		Set<IGuiceModule> preStartups = getLoader(IGuiceModule.class, true, ServiceLoader.load(IGuiceModule.class));
-		Set<IGuiceModule> startups = new TreeSet<>();
-		startups.addAll(preStartups);
+		Set<IGuiceModule> startups = new TreeSet<>(preStartups);
 		List output = new ArrayList<>();
 		for (IGuiceModule startup : startups)
 		{
@@ -799,6 +920,9 @@ public class GuiceContext
 		GuiceContext.instance().scanner = scanner;
 	}
 
+	/**
+	 * Method loadPostStartups ...
+	 */
 	private void loadPostStartups()
 	{
 		Set<IGuicePostStartup> startupSet = getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class));
