@@ -24,6 +24,7 @@ import com.jwebmp.guicedinjection.interfaces.*;
 import com.jwebmp.guicedinjection.threading.PostStartupRunnable;
 import com.jwebmp.logger.LogFactory;
 import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ModuleRef;
 import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
 
@@ -551,6 +552,7 @@ public class GuiceContext
 				graph.whitelistPaths(paths);
 			}
 		}
+
 		if (config.isWhitelistJarsAndModules())
 		{
 			if (getJavaVersion() < 9)
@@ -593,9 +595,23 @@ public class GuiceContext
 			else
 			{
 				String[] modulesBlacklist = getModulesBlacklistList();
-				if (modulesBlacklist.length != 0)
+				Set<String> moduleSet = new LinkedHashSet<>(Arrays.asList(modulesBlacklist));
+				try (ScanResult sr = new ClassGraph().scan())
+				{
+					List<ModuleRef> modules = sr.getModules();
+					for (ModuleRef module : modules)
+					{
+						moduleSet.remove(module.getName());
+					}
+				}
+
+				if (moduleSet.size() != 0)
 				{
 					graph.blacklistModules(modulesBlacklist);
+				}
+				else
+				{
+					graph.ignoreParentModuleLayers();
 				}
 			}
 		}
