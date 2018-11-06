@@ -7,10 +7,14 @@ import javax.validation.constraints.NotNull;
 /**
  * The configuration class for Guice Context and the Classpath Scanner
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue"})
 @Singleton
 public class GuiceConfig<J extends GuiceConfig<J>>
 {
+	/**
+	 * Property to use when everything is found in the boot module
+	 */
+	private boolean excludeParentModules;
 	/**
 	 * Whether to include field information right now
 	 */
@@ -55,7 +59,10 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Excludes modules and jars from scanning - may and may not make it faster depending on your pc
 	 */
 	private boolean excludeModulesAndJars;
-
+	/**
+	 * Excludes packages from scanning - excellent for minimizing path scanning on web application
+	 */
+	private boolean excludePackages;
 	/**
 	 * Excludes paths from scanning - excellent for minizing path scanning on web application
 	 */
@@ -327,7 +334,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Excludes modules and jars from scanning - may and may not make it faster depending on your pc
 	 *
-	 * @return
+	 * @return is modules/jars are excluded from scans
 	 */
 	public boolean isExcludeModulesAndJars()
 	{
@@ -376,6 +383,11 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		return (J) this;
 	}
 
+	/**
+	 * Method toString ...
+	 *
+	 * @return String
+	 */
 	@Override
 	public String toString()
 	{
@@ -478,6 +490,64 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	public GuiceConfig<J> setPathScanning(boolean pathScanning)
 	{
 		this.pathScanning = pathScanning;
+		return this;
+	}
+
+	/**
+	 * Method isExcludeParentModules returns the excludeParentModules of this GuiceConfig object.
+	 * <p>
+	 * Property to use when everything is found in the boot module
+	 *
+	 * @return the excludeParentModules (type boolean) of this GuiceConfig object.
+	 */
+	@SuppressWarnings("unused")
+	public boolean isExcludeParentModules()
+	{
+		return excludeParentModules;
+	}
+
+	/**
+	 * Method setExcludeParentModules sets the excludeParentModules of this GuiceConfig object.
+	 * <p>
+	 * Property to use when everything is found in the boot module
+	 *
+	 * @param excludeParentModules
+	 * 		the excludeParentModules of this GuiceConfig object.
+	 *
+	 * @return GuiceConfig J
+	 */
+	@SuppressWarnings("unused")
+	public GuiceConfig<J> setExcludeParentModules(boolean excludeParentModules)
+	{
+		this.excludeParentModules = excludeParentModules;
+		return this;
+	}
+
+	/**
+	 * Method isBlackListPackages returns the excludePackages of this GuiceConfig object.
+	 * <p>
+	 * Excludes packages from scanning - excellent for minimizing path scanning on web application
+	 *
+	 * @return the excludePackages (type boolean) of this GuiceConfig object.
+	 */
+	public boolean isBlackListPackages()
+	{
+		return excludePackages;
+	}
+
+	/**
+	 * Method setExcludePackages sets the excludePackages of this GuiceConfig object.
+	 * <p>
+	 * Excludes packages from scanning - excellent for minimizing path scanning on web application
+	 *
+	 * @param excludePackages
+	 * 		the excludePackages of this GuiceConfig object.
+	 *
+	 * @return GuiceConfig J
+	 */
+	public GuiceConfig<J> setExcludePackages(boolean excludePackages)
+	{
+		this.excludePackages = excludePackages;
 		return this;
 	}
 }

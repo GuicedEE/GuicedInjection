@@ -24,7 +24,6 @@ import com.jwebmp.guicedinjection.interfaces.*;
 import com.jwebmp.guicedinjection.threading.PostStartupRunnable;
 import com.jwebmp.logger.LogFactory;
 import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ModuleRef;
 import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
 
@@ -549,7 +548,15 @@ public class GuiceContext
 			String[] paths = getPathsList();
 			if (paths.length != 0)
 			{
-				graph.whitelistPaths(paths);
+				graph.whitelistPathsNonRecursive(paths);
+			}
+		}
+		if (GuiceContext.config.isExcludePaths())
+		{
+			String[] blacklistList = getPathsBlacklistList();
+			if (blacklistList.length != 0)
+			{
+				graph.blacklistPaths(blacklistList);
 			}
 		}
 
@@ -568,20 +575,10 @@ public class GuiceContext
 				String[] modulesBlacklist = getModulesWhiteList();
 				if (modulesBlacklist.length != 0)
 				{
-					graph.blacklistModules(modulesBlacklist);
+					graph.whitelistModules(modulesBlacklist);
 				}
 			}
 		}
-
-		if (GuiceContext.config.isExcludePaths())
-		{
-			String[] blacklistList = getPathsBlacklistList();
-			if (blacklistList.length != 0)
-			{
-				graph.blacklistPaths(blacklistList);
-			}
-		}
-
 		if (GuiceContext.config.isExcludeModulesAndJars())
 		{
 			if (getJavaVersion() < 9)
@@ -595,17 +592,7 @@ public class GuiceContext
 			else
 			{
 				String[] modulesBlacklist = getModulesBlacklistList();
-				Set<String> moduleSet = new LinkedHashSet<>(Arrays.asList(modulesBlacklist));
-				try (ScanResult sr = new ClassGraph().scan())
-				{
-					List<ModuleRef> modules = sr.getModules();
-					for (ModuleRef module : modules)
-					{
-						moduleSet.remove(module.getName());
-					}
-				}
-
-				if (moduleSet.size() != 0)
+				if (modulesBlacklist.length != 0)
 				{
 					graph.blacklistModules(modulesBlacklist);
 				}
@@ -624,11 +611,25 @@ public class GuiceContext
 				graph.whitelistPackages(packages);
 			}
 		}
+		if (GuiceContext.config.isBlackListPackages())
+		{
+			String[] packages = getBlacklistPackages();
+			if (packages.length != 0)
+			{
+				graph.blacklistPackages(packages);
+			}
+		}
+
+		if (GuiceContext.config.isExcludeParentModules())
+		{
+			graph.ignoreParentModuleLayers();
+		}
 
 		if (GuiceContext.config.isFieldInfo())
 		{
 			graph.enableFieldInfo();
 		}
+
 		if (GuiceContext.config.isAnnotationScanning())
 		{
 			graph.enableAnnotationInfo();
@@ -675,6 +676,55 @@ public class GuiceContext
 			GuiceContext.log.log(Level.FINE, "IPackageScanningContentsScanner - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
+	}
+
+	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	private String[] getBlacklistPackages()
+	{
+		Set<String> strings = new LinkedHashSet<>();
+		Set<IPackageBlackListScanner> exclusions = getLoader(IPackageBlackListScanner.class, true, ServiceLoader.load(IPackageBlackListScanner.class));
+		if (exclusions.iterator()
+		              .hasNext())
+		{
+			for (IPackageBlackListScanner exclusion : exclusions)
+			{
+				GuiceContext.log.log(Level.CONFIG, "Loading IPackageContentsScanner - " +
+				                                   exclusion.getClass()
+				                                            .getCanonicalName());
+				Set<String> searches = exclusion.exclude();
+				strings.addAll(searches);
+			}
+			GuiceContext.log.log(Level.FINE, "IPackageScanningContentsScanner - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
+	}
+
+	/**
+	 * A set
+	 *
+	 * @param loaderType
+	 * 		The service type
+	 * @param <T>
+	 * 		The type
+	 * @param dontInject
+	 * 		Don't inject
+	 *
+	 * @return A set of them
+	 */
+	@SuppressWarnings("unchecked")
+	@NotNull
+	public <T> Set<T> getLoader(Class<T> loaderType, boolean dontInject, ServiceLoader<T> serviceLoader)
+	{
+		if (!getAllLoadedServices().containsKey(loaderType))
+		{
+			Set<T> loader = loaderToSetNoInjection(serviceLoader);
+			getAllLoadedServices().put(loaderType, loader);
+		}
+		return getAllLoadedServices().get(loaderType);
 	}
 
 	/**
@@ -748,30 +798,6 @@ public class GuiceContext
 			GuiceContext.log.log(Level.FINE, "IGuiceScanJarInclusions - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
-	}
-
-	/**
-	 * A set
-	 *
-	 * @param loaderType
-	 * 		The service type
-	 * @param <T>
-	 * 		The type
-	 * @param dontInject
-	 * 		Don't inject
-	 *
-	 * @return A set of them
-	 */
-	@SuppressWarnings("unchecked")
-	@NotNull
-	public <T> Set<T> getLoader(Class<T> loaderType, boolean dontInject, ServiceLoader<T> serviceLoader)
-	{
-		if (!getAllLoadedServices().containsKey(loaderType))
-		{
-			Set<T> loader = loaderToSetNoInjection(serviceLoader);
-			getAllLoadedServices().put(loaderType, loader);
-		}
-		return getAllLoadedServices().get(loaderType);
 	}
 
 	/**
