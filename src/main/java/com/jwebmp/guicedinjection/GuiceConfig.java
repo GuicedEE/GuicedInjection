@@ -429,7 +429,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * @param whitelistPaths
 	 * 		the whitelistPaths of this GuiceConfig object.
 	 *
-	 * @return GuiceConfig<J>
+	 * @return GuiceConfig J
 	 */
 	public GuiceConfig<J> setWhitelistPaths(boolean whitelistPaths)
 	{
@@ -485,7 +485,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * @param pathScanning
 	 * 		the pathScanning of this GuiceConfig object.
 	 *
-	 * @return GuiceConfig<J>
+	 * @return GuiceConfig J
 	 */
 	public GuiceConfig<J> setPathScanning(boolean pathScanning)
 	{
