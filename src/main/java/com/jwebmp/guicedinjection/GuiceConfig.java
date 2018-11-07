@@ -457,7 +457,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * @param whitelistJarsAndModules
 	 * 		the whitelistJarsAndModules of this GuiceConfig object.
 	 *
-	 * @return GuiceConfig<J>
+	 * @return GuiceConfig J
 	 */
 	public GuiceConfig<J> setWhitelistJarsAndModules(boolean whitelistJarsAndModules)
 	{
