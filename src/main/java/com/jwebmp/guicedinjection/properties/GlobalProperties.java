@@ -46,13 +46,10 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
 		setterVisibility = NONE)
 @JsonInclude(NON_NULL)
 public class GlobalProperties
-
-
 {
-
-
 	private static final Logger log = LogFactory.getLog("GlobalPropertyMaps");
-	private transient final Map<String, Map<Object, Object>> globalProperties;
+
+	private final Map<String, Map<Object, Object>> globalProperties;
 
 	/**
 	 * Constructs a new GlobalProperties

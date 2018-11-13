@@ -88,19 +88,19 @@ public class GuiceContext
 	/**
 	 * The physical injector for the JVM container
 	 */
-	private transient Injector injector;
+	private Injector injector;
 	/**
 	 * The actual scanner
 	 */
-	private transient ClassGraph scanner;
+	private ClassGraph scanner;
 	/**
 	 * The scan result built from everything - the core scanner.
 	 */
-	private transient ScanResult scanResult;
+	private ScanResult scanResult;
 	/**
 	 * Facade layer for backwards compatibility
 	 */
-	private transient Reflections reflections;
+	private Reflections reflections;
 
 	/**
 	 * Creates a new Guice context. Not necessary

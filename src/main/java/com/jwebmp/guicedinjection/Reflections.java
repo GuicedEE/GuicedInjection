@@ -22,7 +22,6 @@ import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -58,8 +57,8 @@ public class Reflections
 	public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type)
 	{
 		ClassInfoList subtypes = GuiceContext.instance()
-		                                           .getScanResult()
-		                                           .getSubclasses(type.getCanonicalName());
+		                                     .getScanResult()
+		                                     .getSubclasses(type.getCanonicalName());
 		return new HashSet(subtypes.loadClasses());
 	}
 
@@ -76,8 +75,8 @@ public class Reflections
 	public Set<Class> getTypesAnnotatedWith(Class<? extends Annotation> annotation)
 	{
 		ClassInfoList subtypes = GuiceContext.instance()
-		                                    .getScanResult()
-		                                    .getClassesWithAnnotation(annotation.getCanonicalName());
+		                                     .getScanResult()
+		                                     .getClassesWithAnnotation(annotation.getCanonicalName());
 		return new HashSet(subtypes.loadClasses());
 	}
 
@@ -94,7 +93,7 @@ public class Reflections
 	 * @return A given field that can be used on an object. Set Accessible is not run.
 	 */
 	@NotNull
-	@SuppressWarnings({"unchecked","unused"})
+	@SuppressWarnings({"unchecked", "unused"})
 	public Optional<Field> getFieldAnnotatedWithOfType(Class<? extends Annotation> annotation, Class type, Class in)
 	{
 		Field field = null;

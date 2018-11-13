@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
 public class PostStartupRunnable
 		implements Runnable, Callable<PostStartupRunnable>
 {
-	private transient IGuicePostStartup startup;
+	private IGuicePostStartup startup;
 
 	public PostStartupRunnable(IGuicePostStartup startup)
 	{
