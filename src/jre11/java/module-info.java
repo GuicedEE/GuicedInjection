@@ -15,13 +15,14 @@ module com.jwebmp.guicedinjection {
 	requires com.fasterxml.jackson.databind;
 	requires com.fasterxml.jackson.datatype.jdk8;
 	requires com.fasterxml.jackson.datatype.jsr310;
+	requires com.fasterxml.jackson.annotation;
 
 	requires java.logging;
 	requires com.jwebmp.logmaster;
 
 	requires aopalliance;
 	requires javax.inject;
-	requires com.fasterxml.jackson.annotation;
+
 	requires com.google.common;
 
 	exports com.jwebmp.guicedinjection;
