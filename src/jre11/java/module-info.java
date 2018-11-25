@@ -18,7 +18,7 @@ module com.jwebmp.guicedinjection {
 	requires com.fasterxml.jackson.annotation;
 
 	requires java.logging;
-	requires com.jwebmp.logmaster;
+	requires transitive com.jwebmp.logmaster;
 
 	requires aopalliance;
 	requires javax.inject;
