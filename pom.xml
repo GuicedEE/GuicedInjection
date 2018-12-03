@@ -43,6 +43,18 @@
         </dependency>
 
         <dependency>
+            <groupId>com.jwebmp</groupId>
+            <artifactId>javax.inject</artifactId>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jwebmp</groupId>
+            <artifactId>aopalliance-core</artifactId>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <type>jar</type>

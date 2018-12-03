@@ -52,4 +52,3 @@ module com.jwebmp.guicedinjection {
 	provides IGuiceDefaultBinder with ContextBinderGuice;
 	provides IGuiceModule with GuiceInjectorModule;
 }
-
