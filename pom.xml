@@ -31,26 +31,46 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.classgraph</groupId>
-            <artifactId>classgraph</artifactId>
-            <type>jar</type>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <type>jar</type>
-        </dependency>
-
-        <dependency>
             <groupId>com.jwebmp</groupId>
-            <artifactId>javax.inject</artifactId>
+            <artifactId>aopalliance-core</artifactId>
+            <version>${project.version}</version>
+            <classifier>${jwebmp.runtime.classifier}</classifier>
+            <!--<optional>true</optional>-->
             <type>jar</type>
         </dependency>
 
         <dependency>
             <groupId>com.jwebmp</groupId>
             <artifactId>aopalliance-core</artifactId>
+            <version>${project.version}</version>
+            <classifier>${jwebmp.runtime.classifier}</classifier>
+            <!--<optional>true</optional>-->
+            <type>jar</type>
+        </dependency>
+
+
+
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jwebmp.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>${project.version}</version>
+            <classifier>${jwebmp.runtime.classifier}</classifier>
+            <!--<optional>true</optional>-->
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jwebmp</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>${project.version}</version>
+            <classifier>${jwebmp.runtime.classifier}</classifier>
+            <!--<optional>true</optional>-->
             <type>jar</type>
         </dependency>
 
@@ -62,13 +82,19 @@
 
         <!-- Jackson Support-->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>com.jwebmp.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>${project.version}</version>
+            <classifier>${jwebmp.runtime.classifier}</classifier>
+            <!--<optional>true</optional>-->
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>com.jwebmp.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
+            <version>${project.version}</version>
+            <classifier>${jwebmp.runtime.classifier}</classifier>
+            <!--<optional>true</optional>-->
             <type>jar</type>
         </dependency>
 
