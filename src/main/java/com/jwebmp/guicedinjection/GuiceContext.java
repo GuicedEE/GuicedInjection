@@ -336,6 +336,7 @@ public class GuiceContext
 			IGuicePreDestroy instance = GuiceContext.get(destroyer.getClass());
 			instance.onDestroy();
 		}
+		GuiceContext.instance().scanResult.close();
 		GuiceContext.instance().reflections = null;
 		GuiceContext.instance().scanResult = null;
 		GuiceContext.instance().scanner = null;
@@ -352,6 +353,37 @@ public class GuiceContext
 	 */
 	private static void configureWorkStealingPool(List<IGuicePostStartup> st, List<PostStartupRunnable> runnables)
 	{
+		Thread[] threads = new Thread[st.size()];
+		for (int i = 0; i < st.size(); i++)
+		{
+			IGuicePostStartup postStartup = st.get(i);
+			if (postStartup instanceof Thread)
+			{
+				threads[i] = (Thread) postStartup;
+			}
+			else
+			{
+				threads[i] = new PostStartupRunnable(postStartup);
+			}
+		}
+
+		for (Thread thread : threads)
+		{
+			thread.start();
+		}
+	/*	for (Thread thread : threads)
+		{
+			try
+			{
+				thread.join();
+			}
+			catch (InterruptedException e)
+			{
+				log.log(Level.SEVERE, "Unable to join asynchronous thread to current.", e);
+			}
+		}*/
+
+		/*
 		ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(GuiceContext.threadCount);
 		for (IGuicePostStartup IGuicePostStartup : st)
 		{
@@ -376,7 +408,7 @@ public class GuiceContext
 		catch (Exception e)
 		{
 			GuiceContext.log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
-		}
+		}*/
 	}
 
 	/**
@@ -717,7 +749,7 @@ public class GuiceContext
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public <T> Set<T> getLoader(Class<T> loaderType, boolean dontInject, ServiceLoader<T> serviceLoader)
+	public <T> Set<T> getLoader(Class<T> loaderType, @SuppressWarnings("unused") boolean dontInject, ServiceLoader<T> serviceLoader)
 	{
 		if (!getAllLoadedServices().containsKey(loaderType))
 		{
@@ -968,6 +1000,8 @@ public class GuiceContext
 	private void loadPostStartups()
 	{
 		Set<IGuicePostStartup> startupSet = getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class));
+
+
 		Map<Integer, Set<IGuicePostStartup>> postStartupGroups = new TreeMap<>();
 		for (IGuicePostStartup postStartup : startupSet)
 		{
@@ -1006,4 +1040,13 @@ public class GuiceContext
 		return GuiceContext.config;
 	}
 
+	/**
+	 * Loads the service lists of post startup's for manual additions
+	 *
+	 * @return The list of guice post startups
+	 */
+	public @NotNull Set<IGuicePostStartup> loadPostStartupServices()
+	{
+		return getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class));
+	}
 }

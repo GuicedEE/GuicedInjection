@@ -43,6 +43,7 @@ module com.jwebmp.guicedinjection {
 	uses IGuiceScanModuleExclusions;
 	uses IGuiceScanJarInclusions;
 	uses IGuiceScanModuleInclusions;
+	uses IPackageBlackListScanner;
 
 	provides IGuicePreStartup with JPMSGuiceASM;
 

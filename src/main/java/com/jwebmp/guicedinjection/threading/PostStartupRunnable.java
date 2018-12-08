@@ -9,6 +9,7 @@ import java.util.concurrent.Callable;
  * Executed internally.
  */
 public class PostStartupRunnable
+		extends Thread
 		implements Runnable, Callable<PostStartupRunnable>
 {
 	private IGuicePostStartup startup;
