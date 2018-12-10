@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>com.jwebmp</groupId>
-        <artifactId>jwebmp-parent</artifactId>
+        <artifactId>jwebmp-builder</artifactId>
         <version>0.0.0_0-SNAPSHOT</version>
     </parent>
 
@@ -38,17 +38,6 @@
             <!--<optional>true</optional>-->
             <type>jar</type>
         </dependency>
-
-        <dependency>
-            <groupId>com.jwebmp</groupId>
-            <artifactId>aopalliance-core</artifactId>
-            <version>${project.version}</version>
-            <classifier>${jwebmp.runtime.classifier}</classifier>
-            <!--<optional>true</optional>-->
-            <type>jar</type>
-        </dependency>
-
-
 
         <dependency>
             <groupId>io.github.classgraph</groupId>
