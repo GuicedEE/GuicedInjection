@@ -212,7 +212,6 @@ public class GuiceContext
 	 *
 	 * @return The scoped object
 	 */
-	@NotNull
 	public static <T> T get(@NotNull Class<T> type, Class<? extends Annotation> annotation)
 	{
 		return GuiceContext.inject()
@@ -353,37 +352,6 @@ public class GuiceContext
 	 */
 	private static void configureWorkStealingPool(List<IGuicePostStartup> st, List<PostStartupRunnable> runnables)
 	{
-		Thread[] threads = new Thread[st.size()];
-		for (int i = 0; i < st.size(); i++)
-		{
-			IGuicePostStartup postStartup = st.get(i);
-			if (postStartup instanceof Thread)
-			{
-				threads[i] = (Thread) postStartup;
-			}
-			else
-			{
-				threads[i] = new PostStartupRunnable(postStartup);
-			}
-		}
-
-		for (Thread thread : threads)
-		{
-			thread.start();
-		}
-	/*	for (Thread thread : threads)
-		{
-			try
-			{
-				thread.join();
-			}
-			catch (InterruptedException e)
-			{
-				log.log(Level.SEVERE, "Unable to join asynchronous thread to current.", e);
-			}
-		}*/
-
-		/*
 		ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(GuiceContext.threadCount);
 		for (IGuicePostStartup IGuicePostStartup : st)
 		{
@@ -403,12 +371,13 @@ public class GuiceContext
 		postLoaderExecutionService.shutdown();
 		try
 		{
-			postLoaderExecutionService.awaitTermination(1L, TimeUnit.SECONDS);
+			GuiceContext.log.log(Level.CONFIG, "Waiting for Database Startups...");
+			postLoaderExecutionService.awaitTermination(30L, TimeUnit.SECONDS);
 		}
 		catch (Exception e)
 		{
 			GuiceContext.log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
-		}*/
+		}
 	}
 
 	/**
