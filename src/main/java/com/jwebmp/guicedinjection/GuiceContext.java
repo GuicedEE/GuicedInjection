@@ -368,11 +368,11 @@ public class GuiceContext
 				GuiceContext.log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
 			}
 		}
-		postLoaderExecutionService.shutdown();
+		postLoaderExecutionService.shutdownNow();
 		try
 		{
 			GuiceContext.log.log(Level.CONFIG, "Waiting for Database Startups...");
-			postLoaderExecutionService.awaitTermination(30L, TimeUnit.SECONDS);
+			postLoaderExecutionService.awaitTermination(1L, TimeUnit.SECONDS);
 		}
 		catch (Exception e)
 		{
