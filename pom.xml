@@ -78,9 +78,38 @@
             <!--<optional>true</optional>-->
             <type>jar</type>
         </dependency>
+
         <dependency>
             <groupId>com.jwebmp.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
+            <version>${project.version}</version>
+            <classifier>${jwebmp.runtime.classifier}</classifier>
+            <!--<optional>true</optional>-->
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jwebmp.jackson.module</groupId>
+            <artifactId>jackson-module-guice</artifactId>
+            <version>${project.version}</version>
+            <classifier>${jwebmp.runtime.classifier}</classifier>
+            <!--<optional>true</optional>-->
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jwebmp.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${project.version}</version>
+            <classifier>${jwebmp.runtime.classifier}</classifier>
+            <!--<optional>true</optional>-->
+            <type>jar</type>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.jwebmp.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
             <version>${project.version}</version>
             <classifier>${jwebmp.runtime.classifier}</classifier>
             <!--<optional>true</optional>-->
