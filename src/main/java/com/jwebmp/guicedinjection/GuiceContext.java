@@ -29,6 +29,7 @@ import io.github.classgraph.ScanResult;
 
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -101,6 +102,19 @@ public class GuiceContext
 	 * Facade layer for backwards compatibility
 	 */
 	private Reflections reflections;
+	/**
+	 * Boolean dictating if a synchronized thread should be locked
+	 */
+	private boolean lockSynchronizedThreads;
+	/**
+	 * The time to wait for asynchronous post startup groups
+	 */
+	private long synchronousThreadTimeout = 1L;
+	/**
+	 * The unit of time to wait for timeout blocks
+	 */
+	private ChronoUnit synchronousThreadTimeoutUnit = ChronoUnit.NANOS;
+
 
 	/**
 	 * Creates a new Guice context. Not necessary
@@ -372,7 +386,14 @@ public class GuiceContext
 		try
 		{
 			GuiceContext.log.log(Level.CONFIG, "Waiting for Database Startups...");
-			postLoaderExecutionService.awaitTermination(1L, TimeUnit.SECONDS);
+			if (!instance().isLockSynchronizedThreads())
+			{
+				postLoaderExecutionService.awaitTermination(GuiceContext.getAsyncTerminationWait(), GuiceContext.getAsyncTerminationTimeUnit());
+			}
+			else
+			{
+				postLoaderExecutionService.awaitTermination(1L, TimeUnit.NANOSECONDS);
+			}
 		}
 		catch (Exception e)
 		{
@@ -427,19 +448,6 @@ public class GuiceContext
 		int dashPos = version.indexOf('-');
 		String value = version.substring(0, dotPos > -1 ? dotPos : dashPos > -1 ? dashPos : version.length());
 		return Integer.parseInt(value);
-	}
-
-	/**
-	 * Method getAllLoadedServices returns the allLoadedServices of this GuiceContext object.
-	 * <p>
-	 * A list of all the loaded singleton sets
-	 *
-	 * @return the allLoadedServices (type Map Class, Set ) of this GuiceContext object.
-	 */
-	@NotNull
-	public static Map<Class, Set> getAllLoadedServices()
-	{
-		return allLoadedServices;
 	}
 
 	/**
@@ -824,7 +832,6 @@ public class GuiceContext
 		return strings.toArray(new String[0]);
 	}
 
-
 	/**
 	 * Returns a complete list of generic exclusions
 	 *
@@ -887,36 +894,6 @@ public class GuiceContext
 			fileScans.putAll(fileScanner.onMatch());
 		}
 		return fileScans;
-	}
-
-	/**
-	 * A set
-	 *
-	 * @param loaderType
-	 * 		The service type
-	 * @param <T>
-	 * 		The type
-	 *
-	 * @return A set of them
-	 */
-	@SuppressWarnings("unchecked")
-	@NotNull
-	public <T> Set<T> getLoader(Class<T> loaderType, ServiceLoader<T> serviceLoader)
-	{
-		if (!getAllLoadedServices().containsKey(loaderType))
-		{
-			Set<T> loader;
-			if (GuiceContext.buildingInjector)
-			{
-				loader = loaderToSetNoInjection(serviceLoader);
-			}
-			else
-			{
-				loader = loaderToSet(serviceLoader);
-			}
-			getAllLoadedServices().put(loaderType, loader);
-		}
-		return getAllLoadedServices().get(loaderType);
 	}
 
 	/**
@@ -1010,6 +987,84 @@ public class GuiceContext
 	}
 
 	/**
+	 * If the post startup asynchronous threads should for (x) amount of time
+	 *
+	 * @return if active
+	 */
+	public boolean isLockSynchronizedThreads()
+	{
+		return lockSynchronizedThreads;
+	}
+
+	public GuiceContext setLockSynchronizedThreads(boolean lockSynchronizedThreads)
+	{
+		this.lockSynchronizedThreads = lockSynchronizedThreads;
+		return this;
+	}
+
+	/**
+	 * If the post startup asynchronous threads should for (x) amount of time
+	 *
+	 * @param lockSynchronizedThreads
+	 * 		if locked
+	 *
+	 * @return this instance
+	 */
+	public GuiceContext setLockSynchronizedThreads(boolean lockSynchronizedThreads, Long time, ChronoUnit unit)
+	{
+		this.lockSynchronizedThreads = lockSynchronizedThreads;
+		this.setSynchronousThreadTimeout(time);
+		this.setSynchronousThreadTimeoutUnit(unit);
+		return this;
+	}
+
+	/**
+	 * Method getSynchronousThreadTimeout returns the synchronousThreadTimeout of this GuiceContext object.
+	 * <p>
+	 * The time to wait for asynchronous post startup groups
+	 *
+	 * @return the synchronousThreadTimeout (type long) of this GuiceContext object.
+	 */
+	public long getSynchronousThreadTimeout()
+	{
+		return synchronousThreadTimeout;
+	}
+
+	public GuiceContext setSynchronousThreadTimeout(long synchronousThreadTimeout)
+	{
+		this.synchronousThreadTimeout = synchronousThreadTimeout;
+		return this;
+	}
+
+	/**
+	 * Method getSynchronousThreadTimeoutUnit returns the synchronousThreadTimeoutUnit of this GuiceContext object.
+	 * <p>
+	 * The unit of time to wait for timeout blocks
+	 *
+	 * @return the synchronousThreadTimeoutUnit (type ChronoUnit) of this GuiceContext object.
+	 */
+	public ChronoUnit getSynchronousThreadTimeoutUnit()
+	{
+		return synchronousThreadTimeoutUnit;
+	}
+
+	/**
+	 * Method setSynchronousThreadTimeoutUnit sets the synchronousThreadTimeoutUnit of this GuiceContext object.
+	 * <p>
+	 * The unit of time to wait for timeout blocks
+	 *
+	 * @param synchronousThreadTimeoutUnit
+	 * 		the synchronousThreadTimeoutUnit of this GuiceContext object.
+	 *
+	 * @return GuiceContext
+	 */
+	public GuiceContext setSynchronousThreadTimeoutUnit(ChronoUnit synchronousThreadTimeoutUnit)
+	{
+		this.synchronousThreadTimeoutUnit = synchronousThreadTimeoutUnit;
+		return this;
+	}
+
+	/**
 	 * Loads the service lists of post startup's for manual additions
 	 *
 	 * @return The list of guice post startups
@@ -1017,5 +1072,48 @@ public class GuiceContext
 	public @NotNull Set<IGuicePostStartup> loadPostStartupServices()
 	{
 		return getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class));
+	}
+
+	/**
+	 * A set
+	 *
+	 * @param loaderType
+	 * 		The service type
+	 * @param <T>
+	 * 		The type
+	 *
+	 * @return A set of them
+	 */
+	@SuppressWarnings("unchecked")
+	@NotNull
+	public <T> Set<T> getLoader(Class<T> loaderType, ServiceLoader<T> serviceLoader)
+	{
+		if (!getAllLoadedServices().containsKey(loaderType))
+		{
+			Set<T> loader;
+			if (GuiceContext.buildingInjector)
+			{
+				loader = loaderToSetNoInjection(serviceLoader);
+			}
+			else
+			{
+				loader = loaderToSet(serviceLoader);
+			}
+			getAllLoadedServices().put(loaderType, loader);
+		}
+		return getAllLoadedServices().get(loaderType);
+	}
+
+	/**
+	 * Method getAllLoadedServices returns the allLoadedServices of this GuiceContext object.
+	 * <p>
+	 * A list of all the loaded singleton sets
+	 *
+	 * @return the allLoadedServices (type Map Class, Set ) of this GuiceContext object.
+	 */
+	@NotNull
+	public static Map<Class, Set> getAllLoadedServices()
+	{
+		return allLoadedServices;
 	}
 }
