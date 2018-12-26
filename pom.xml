@@ -14,9 +14,7 @@
     <packaging>jar</packaging>
 
     <name>Guiced Injector</name>
-    <description>Guice Injection allows you to access multiple Guice Binders and Modules across separate archives.
-        Allowing you to configure your applications with injection from multiple dependancies. Servlets, EJB's, and
-        Stand-Alone is supported. Requires JDK 8 or 10.
+    <description>Guice Injection allows you to access multiple Guice Binders and Modules across separate archives. Allowing you to configure your applications with injection from multiple dependancies. Servlets, EJB's, and Stand-Alone is supported. Requires JDK 8 or 10.
     </description>
     <url>https://github.com/GedMarc/GuiceInjection</url>
 
