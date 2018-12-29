@@ -349,7 +349,10 @@ public class GuiceContext
 			IGuicePreDestroy instance = GuiceContext.get(destroyer.getClass());
 			instance.onDestroy();
 		}
-		GuiceContext.instance().scanResult.close();
+		if (GuiceContext.instance().scanResult != null)
+		{
+			GuiceContext.instance().scanResult.close();
+		}
 		GuiceContext.instance().reflections = null;
 		GuiceContext.instance().scanResult = null;
 		GuiceContext.instance().scanner = null;
