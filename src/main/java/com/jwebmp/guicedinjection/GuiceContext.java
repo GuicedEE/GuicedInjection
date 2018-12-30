@@ -354,6 +354,10 @@ public class GuiceContext
 			GuiceContext.instance().scanResult.close();
 		}
 		GuiceContext.instance().reflections = null;
+		if (GuiceContext.instance().scanResult != null)
+		{
+			GuiceContext.instance().scanResult.close();
+		}
 		GuiceContext.instance().scanResult = null;
 		GuiceContext.instance().scanner = null;
 		GuiceContext.instance().injector = null;
