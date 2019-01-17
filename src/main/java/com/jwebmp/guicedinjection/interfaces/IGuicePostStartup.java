@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Marc Magon
+ * Copyright (C) 2017 GedMarc
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ package com.jwebmp.guicedinjection.interfaces;
 /**
  * Executes immediately after Guice has been initialized
  *
- * @author Marc Magon
+ * @author GedMarc
  * @since 15 May 2017
  */
 public interface IGuicePostStartup<J extends IGuicePostStartup<J>>

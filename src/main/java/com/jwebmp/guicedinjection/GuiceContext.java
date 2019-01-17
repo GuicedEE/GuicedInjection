@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Marc Magon
+ * Copyright (C) 2017 GedMarc
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1076,7 +1076,8 @@ public class GuiceContext
 	 *
 	 * @return The list of guice post startups
 	 */
-	public @NotNull Set<IGuicePostStartup> loadPostStartupServices()
+	public @NotNull
+	Set<IGuicePostStartup> loadPostStartupServices()
 	{
 		return getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class));
 	}
