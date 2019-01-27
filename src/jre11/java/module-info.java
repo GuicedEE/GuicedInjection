@@ -1,9 +1,3 @@
-import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
-import com.jwebmp.guicedinjection.implementations.GuiceDefaultModuleExclusions;
-import com.jwebmp.guicedinjection.injections.ContextBinderGuice;
-import com.jwebmp.guicedinjection.injections.JPMSGuiceASM;
-import com.jwebmp.guicedinjection.interfaces.*;
-
 module com.jwebmp.guicedinjection {
 
 	requires com.google.guice;
@@ -29,27 +23,25 @@ module com.jwebmp.guicedinjection {
 	exports com.jwebmp.guicedinjection.pairing;
 	exports com.jwebmp.guicedinjection.properties;
 
-	uses IPackageContentsScanner;
-	uses IFileContentsScanner;
-	uses IGuiceConfigurator;
-	uses IGuiceDefaultBinder;
-	uses IGuicePreStartup;
-	uses IGuicePreDestroy;
-	uses IGuiceModule;
-	uses IGuicePostStartup;
-	uses IPathContentsScanner;
-	uses IPathContentsBlacklistScanner;
-	uses IGuiceScanJarExclusions;
-	uses IGuiceScanModuleExclusions;
-	uses IGuiceScanJarInclusions;
-	uses IGuiceScanModuleInclusions;
-	uses IPackageBlackListScanner;
+	uses com.jwebmp.guicedinjection.interfaces.IPackageContentsScanner;
+	uses com.jwebmp.guicedinjection.interfaces.IFileContentsScanner;
+	uses com.jwebmp.guicedinjection.interfaces.IGuiceConfigurator;
+	uses com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder;
+	uses com.jwebmp.guicedinjection.interfaces.IGuicePreStartup;
+	uses com.jwebmp.guicedinjection.interfaces.IGuicePreDestroy;
+	uses com.jwebmp.guicedinjection.interfaces.IGuiceModule;
+	uses com.jwebmp.guicedinjection.interfaces.IGuicePostStartup;
+	uses com.jwebmp.guicedinjection.interfaces.IPathContentsScanner;
+	uses com.jwebmp.guicedinjection.interfaces.IPathContentsBlacklistScanner;
+	uses com.jwebmp.guicedinjection.interfaces.IGuiceScanJarExclusions;
+	uses com.jwebmp.guicedinjection.interfaces.IGuiceScanModuleExclusions;
+	uses com.jwebmp.guicedinjection.interfaces.IGuiceScanJarInclusions;
+	uses com.jwebmp.guicedinjection.interfaces.IGuiceScanModuleInclusions;
+	uses com.jwebmp.guicedinjection.interfaces.IPackageBlackListScanner;
 
-	provides IGuicePreStartup with JPMSGuiceASM;
+	provides com.jwebmp.guicedinjection.interfaces.IGuiceScanJarExclusions with com.jwebmp.guicedinjection.implementations.GuiceDefaultModuleExclusions;
+	provides com.jwebmp.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.jwebmp.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 
-	provides IGuiceScanJarExclusions with GuiceDefaultModuleExclusions;
-	provides IGuiceScanModuleExclusions with GuiceDefaultModuleExclusions;
-
-	provides IGuiceDefaultBinder with ContextBinderGuice;
-	provides IGuiceModule with GuiceInjectorModule;
+	provides com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder with com.jwebmp.guicedinjection.injections.ContextBinderGuice;
+	provides com.jwebmp.guicedinjection.interfaces.IGuiceModule with com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
 }
