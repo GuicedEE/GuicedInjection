@@ -537,6 +537,7 @@ public class GuiceContext
 		try
 		{
 			scanResult = scanner.scan(GuiceContext.getThreadCount());
+			stopwatch.stop();
 			Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
 			fileScans.forEach((key, value) ->
 					                  scanResult.getResourcesWithLeafName(key)
@@ -546,8 +547,6 @@ public class GuiceContext
 		{
 			GuiceContext.log.log(Level.SEVERE, "Unable to run scanner", mpe);
 		}
-
-		stopwatch.stop();
 		GuiceContext.log.fine("Loaded Classpath Scanner - Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
 	}
 
