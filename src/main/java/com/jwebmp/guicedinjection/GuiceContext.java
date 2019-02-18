@@ -378,33 +378,32 @@ public class GuiceContext
 		{
 			runnables.add(new PostStartupRunnable(IGuicePostStartup));
 		}
-		for (PostStartupRunnable a : runnables)
-		{
-			try
-			{
-				postLoaderExecutionService.execute(a);
-			}
-			catch (Exception e)
-			{
-				GuiceContext.log.log(Level.SEVERE, "Unable to invoke Post Startups\n", e);
-			}
-		}
-		postLoaderExecutionService.shutdownNow();
 		try
 		{
-			GuiceContext.log.log(Level.CONFIG, "Waiting for Database Startups...");
-			if (!instance().isLockSynchronizedThreads())
-			{
-				postLoaderExecutionService.awaitTermination(GuiceContext.getAsyncTerminationWait(), GuiceContext.getAsyncTerminationTimeUnit());
-			}
-			else
-			{
-				postLoaderExecutionService.awaitTermination(1L, TimeUnit.NANOSECONDS);
-			}
+			postLoaderExecutionService.invokeAll(runnables);
+			awaitTerminationAfterShutdown(postLoaderExecutionService);
 		}
 		catch (Exception e)
 		{
 			GuiceContext.log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
+		}
+	}
+
+	private static void awaitTerminationAfterShutdown(ExecutorService threadPool)
+	{
+		threadPool.shutdown();
+		try
+		{
+			if (!threadPool.awaitTermination(GuiceContext.getAsyncTerminationWait(), GuiceContext.getAsyncTerminationTimeUnit()))
+			{
+				threadPool.shutdownNow();
+			}
+		}
+		catch (InterruptedException ex)
+		{
+			threadPool.shutdownNow();
+			Thread.currentThread()
+			      .interrupt();
 		}
 	}
 
