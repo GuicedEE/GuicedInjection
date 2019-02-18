@@ -32,7 +32,6 @@ import java.lang.annotation.Annotation;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -267,52 +266,6 @@ public class GuiceContext
 	}
 
 	/**
-	 * Returns the async termination wait period Default 60
-	 *
-	 * @return The wait time for post startup operations to finish
-	 */
-	@SuppressWarnings("unused")
-	public static long getAsyncTerminationWait()
-	{
-		return GuiceContext.asyncTerminationWait;
-	}
-
-	/**
-	 * Sets the termination asynchronous wait period (60)
-	 *
-	 * @param asyncTerminationWait
-	 * 		The wait time for post startup threads to finish
-	 */
-	@SuppressWarnings("unused")
-	public static void setAsyncTerminationWait(long asyncTerminationWait)
-	{
-		GuiceContext.asyncTerminationWait = asyncTerminationWait;
-	}
-
-	/**
-	 * Gets the termination waiting period (Defualt sesonds)
-	 *
-	 * @return The wait time for post startup object wait time
-	 */
-	@SuppressWarnings("unused")
-	public static TimeUnit getAsyncTerminationTimeUnit()
-	{
-		return GuiceContext.asyncTerminationTimeUnit;
-	}
-
-	/**
-	 * Sets the asynchronous termination waiting period
-	 *
-	 * @param asyncTerminationTimeUnit
-	 * 		The unit to apply for the waiting time
-	 */
-	@SuppressWarnings("unused")
-	public static void setAsyncTerminationTimeUnit(TimeUnit asyncTerminationTimeUnit)
-	{
-		GuiceContext.asyncTerminationTimeUnit = asyncTerminationTimeUnit;
-	}
-
-	/**
 	 * Builds a reflection object if one does not exist
 	 *
 	 * @return A facade of the ReflectUtils on the scan result
@@ -373,19 +326,23 @@ public class GuiceContext
 	 */
 	private static void configureWorkStealingPool(List<IGuicePostStartup> st, List<PostStartupRunnable> runnables)
 	{
-		ExecutorService postLoaderExecutionService = Executors.newWorkStealingPool(GuiceContext.threadCount);
-		for (IGuicePostStartup IGuicePostStartup : st)
+		int threads = st.size();
+		PostStartupRunnable[] runners = new PostStartupRunnable[st.size()];
+		for (int i = 0; i < threads; i++)
 		{
-			runnables.add(new PostStartupRunnable(IGuicePostStartup));
+			runners[i] = new PostStartupRunnable(st.get(i));
+			runners[i].start();
 		}
-		try
+		for (int i = 0; i < threads; i++)
 		{
-			postLoaderExecutionService.invokeAll(runnables);
-			awaitTerminationAfterShutdown(postLoaderExecutionService);
-		}
-		catch (Exception e)
-		{
-			GuiceContext.log.log(Level.SEVERE, "Could not execute asynchronous post loads", e);
+			try
+			{
+				runners[i].join();
+			}
+			catch (InterruptedException e)
+			{
+				log.log(Level.SEVERE, "Unable to join startup thread", e);
+			}
 		}
 	}
 
@@ -405,6 +362,52 @@ public class GuiceContext
 			Thread.currentThread()
 			      .interrupt();
 		}
+	}
+
+	/**
+	 * Returns the async termination wait period Default 60
+	 *
+	 * @return The wait time for post startup operations to finish
+	 */
+	@SuppressWarnings("unused")
+	public static long getAsyncTerminationWait()
+	{
+		return GuiceContext.asyncTerminationWait;
+	}
+
+	/**
+	 * Sets the termination asynchronous wait period (60)
+	 *
+	 * @param asyncTerminationWait
+	 * 		The wait time for post startup threads to finish
+	 */
+	@SuppressWarnings("unused")
+	public static void setAsyncTerminationWait(long asyncTerminationWait)
+	{
+		GuiceContext.asyncTerminationWait = asyncTerminationWait;
+	}
+
+	/**
+	 * Gets the termination waiting period (Defualt sesonds)
+	 *
+	 * @return The wait time for post startup object wait time
+	 */
+	@SuppressWarnings("unused")
+	public static TimeUnit getAsyncTerminationTimeUnit()
+	{
+		return GuiceContext.asyncTerminationTimeUnit;
+	}
+
+	/**
+	 * Sets the asynchronous termination waiting period
+	 *
+	 * @param asyncTerminationTimeUnit
+	 * 		The unit to apply for the waiting time
+	 */
+	@SuppressWarnings("unused")
+	public static void setAsyncTerminationTimeUnit(TimeUnit asyncTerminationTimeUnit)
+	{
+		GuiceContext.asyncTerminationTimeUnit = asyncTerminationTimeUnit;
 	}
 
 	/**
