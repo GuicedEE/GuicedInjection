@@ -63,24 +63,6 @@ public class Reflections
 	}
 
 	/**
-	 * Returns all the class types annotated with an annotation
-	 *
-	 * @param annotation
-	 * 		The given annotations to find
-	 *
-	 * @return The set of classes that have the types annotated
-	 */
-	@NotNull
-	@SuppressWarnings({"unchecked", "WeakerAccess"})
-	public Set<Class> getTypesAnnotatedWith(Class<? extends Annotation> annotation)
-	{
-		ClassInfoList subtypes = GuiceContext.instance()
-		                                     .getScanResult()
-		                                     .getClassesWithAnnotation(annotation.getCanonicalName());
-		return new HashSet(subtypes.loadClasses());
-	}
-
-	/**
 	 * Get all fields with the annotation
 	 *
 	 * @param annotation

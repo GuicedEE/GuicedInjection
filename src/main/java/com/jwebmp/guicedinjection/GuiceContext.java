@@ -28,7 +28,6 @@ import io.github.classgraph.ScanResult;
 
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -92,19 +91,6 @@ public class GuiceContext
 	 * Facade layer for backwards compatibility
 	 */
 	private Reflections reflections;
-	/**
-	 * Boolean dictating if a synchronized thread should be locked
-	 */
-	private boolean lockSynchronizedThreads;
-	/**
-	 * The time to wait for asynchronous post startup groups
-	 */
-	private long synchronousThreadTimeout = 1L;
-	/**
-	 * The unit of time to wait for timeout blocks
-	 */
-	private ChronoUnit synchronousThreadTimeoutUnit = ChronoUnit.NANOS;
-
 
 	/**
 	 * Creates a new Guice context. Not necessary
@@ -881,84 +867,6 @@ public class GuiceContext
 	public GuiceConfig<?> getConfig()
 	{
 		return GuiceContext.config;
-	}
-
-	/**
-	 * If the post startup asynchronous threads should for (x) amount of time
-	 *
-	 * @return if active
-	 */
-	public boolean isLockSynchronizedThreads()
-	{
-		return lockSynchronizedThreads;
-	}
-
-	public GuiceContext setLockSynchronizedThreads(boolean lockSynchronizedThreads)
-	{
-		this.lockSynchronizedThreads = lockSynchronizedThreads;
-		return this;
-	}
-
-	/**
-	 * If the post startup asynchronous threads should for (x) amount of time
-	 *
-	 * @param lockSynchronizedThreads
-	 * 		if locked
-	 *
-	 * @return this instance
-	 */
-	public GuiceContext setLockSynchronizedThreads(boolean lockSynchronizedThreads, Long time, ChronoUnit unit)
-	{
-		this.lockSynchronizedThreads = lockSynchronizedThreads;
-		this.setSynchronousThreadTimeout(time);
-		this.setSynchronousThreadTimeoutUnit(unit);
-		return this;
-	}
-
-	/**
-	 * Method getSynchronousThreadTimeout returns the synchronousThreadTimeout of this GuiceContext object.
-	 * <p>
-	 * The time to wait for asynchronous post startup groups
-	 *
-	 * @return the synchronousThreadTimeout (type long) of this GuiceContext object.
-	 */
-	public long getSynchronousThreadTimeout()
-	{
-		return synchronousThreadTimeout;
-	}
-
-	public GuiceContext setSynchronousThreadTimeout(long synchronousThreadTimeout)
-	{
-		this.synchronousThreadTimeout = synchronousThreadTimeout;
-		return this;
-	}
-
-	/**
-	 * Method getSynchronousThreadTimeoutUnit returns the synchronousThreadTimeoutUnit of this GuiceContext object.
-	 * <p>
-	 * The unit of time to wait for timeout blocks
-	 *
-	 * @return the synchronousThreadTimeoutUnit (type ChronoUnit) of this GuiceContext object.
-	 */
-	public ChronoUnit getSynchronousThreadTimeoutUnit()
-	{
-		return synchronousThreadTimeoutUnit;
-	}
-
-	/**
-	 * Method setSynchronousThreadTimeoutUnit sets the synchronousThreadTimeoutUnit of this GuiceContext object.
-	 * <p>
-	 * The unit of time to wait for timeout blocks
-	 *
-	 * @param synchronousThreadTimeoutUnit
-	 * 		the synchronousThreadTimeoutUnit of this GuiceContext object.
-	 *
-	 * @return GuiceContext
-	 */
-	public GuiceContext setSynchronousThreadTimeoutUnit(ChronoUnit synchronousThreadTimeoutUnit)
-	{
-		this.synchronousThreadTimeoutUnit = synchronousThreadTimeoutUnit;
-		return this;
 	}
 
 	/**
