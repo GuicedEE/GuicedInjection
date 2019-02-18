@@ -21,7 +21,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.jwebmp.guicedinjection.interfaces.*;
-import com.jwebmp.guicedinjection.threading.PostStartupRunnable;
 import com.jwebmp.logger.LogFactory;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ResourceList;
@@ -31,7 +30,6 @@ import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,14 +71,7 @@ public class GuiceContext
 	 */
 	private static int threadCount = Runtime.getRuntime()
 	                                        .availableProcessors();
-	/**
-	 * The time in units to wait
-	 */
-	private static long asyncTerminationWait = 60L;
-	/**
-	 * The time in chrono to wait
-	 */
-	private static TimeUnit asyncTerminationTimeUnit = TimeUnit.SECONDS;
+
 	/**
 	 * The configuration object
 	 */
@@ -314,100 +305,6 @@ public class GuiceContext
 		GuiceContext.instance().scanResult = null;
 		GuiceContext.instance().scanner = null;
 		GuiceContext.instance().injector = null;
-	}
-
-	/**
-	 * Builds an asynchronous running pool to execute with a termination waiter
-	 *
-	 * @param st
-	 * 		A list of startup objects
-	 * @param runnables
-	 * 		A list of post startup threads
-	 */
-	private static void configureWorkStealingPool(List<IGuicePostStartup> st, List<PostStartupRunnable> runnables)
-	{
-		int threads = st.size();
-		PostStartupRunnable[] runners = new PostStartupRunnable[st.size()];
-		for (int i = 0; i < threads; i++)
-		{
-			runners[i] = new PostStartupRunnable(st.get(i));
-			runners[i].start();
-		}
-		for (int i = 0; i < threads; i++)
-		{
-			try
-			{
-				runners[i].join();
-			}
-			catch (InterruptedException e)
-			{
-				log.log(Level.SEVERE, "Unable to join startup thread", e);
-			}
-		}
-	}
-
-	private static void awaitTerminationAfterShutdown(ExecutorService threadPool)
-	{
-		threadPool.shutdown();
-		try
-		{
-			if (!threadPool.awaitTermination(GuiceContext.getAsyncTerminationWait(), GuiceContext.getAsyncTerminationTimeUnit()))
-			{
-				threadPool.shutdownNow();
-			}
-		}
-		catch (InterruptedException ex)
-		{
-			threadPool.shutdownNow();
-			Thread.currentThread()
-			      .interrupt();
-		}
-	}
-
-	/**
-	 * Returns the async termination wait period Default 60
-	 *
-	 * @return The wait time for post startup operations to finish
-	 */
-	@SuppressWarnings("unused")
-	public static long getAsyncTerminationWait()
-	{
-		return GuiceContext.asyncTerminationWait;
-	}
-
-	/**
-	 * Sets the termination asynchronous wait period (60)
-	 *
-	 * @param asyncTerminationWait
-	 * 		The wait time for post startup threads to finish
-	 */
-	@SuppressWarnings("unused")
-	public static void setAsyncTerminationWait(long asyncTerminationWait)
-	{
-		GuiceContext.asyncTerminationWait = asyncTerminationWait;
-	}
-
-	/**
-	 * Gets the termination waiting period (Defualt sesonds)
-	 *
-	 * @return The wait time for post startup object wait time
-	 */
-	@SuppressWarnings("unused")
-	public static TimeUnit getAsyncTerminationTimeUnit()
-	{
-		return GuiceContext.asyncTerminationTimeUnit;
-	}
-
-	/**
-	 * Sets the asynchronous termination waiting period
-	 *
-	 * @param asyncTerminationTimeUnit
-	 * 		The unit to apply for the waiting time
-	 */
-	@SuppressWarnings("unused")
-	public static void setAsyncTerminationTimeUnit(TimeUnit asyncTerminationTimeUnit)
-	{
-		GuiceContext.asyncTerminationTimeUnit = asyncTerminationTimeUnit;
 	}
 
 	/**
@@ -966,21 +863,13 @@ public class GuiceContext
 
 		postStartupGroups.forEach((key, value) ->
 		                          {
-			                          if (value.size() == 1)
-			                          {
-				                          IGuicePostStartup postStartup = value.iterator()
-				                                                               .next();
-				                          GuiceContext.log.config("Loading IGuicePostStartup - " +
-				                                                  postStartup
-						                                                  .getClass()
-						                                                  .getCanonicalName());
-				                          postStartup.postLoad();
-			                          }
-			                          else
-			                          {
-				                          List<PostStartupRunnable> runnables = new ArrayList<>();
-				                          GuiceContext.configureWorkStealingPool(new ArrayList<>(value), runnables);
-			                          }
+			                          IGuicePostStartup postStartup = value.iterator()
+			                                                               .next();
+			                          GuiceContext.log.config("Loading IGuicePostStartup - " +
+			                                                  postStartup
+					                                                  .getClass()
+					                                                  .getCanonicalName());
+			                          postStartup.postLoad();
 		                          });
 	}
 
