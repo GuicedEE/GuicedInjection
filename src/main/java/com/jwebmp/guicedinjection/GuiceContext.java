@@ -849,13 +849,14 @@ public class GuiceContext
 
 		postStartupGroups.forEach((key, value) ->
 		                          {
-			                          IGuicePostStartup postStartup = value.iterator()
-			                                                               .next();
-			                          GuiceContext.log.config("Loading IGuicePostStartup - " +
-			                                                  postStartup
-					                                                  .getClass()
-					                                                  .getCanonicalName());
-			                          postStartup.postLoad();
+			                          for (IGuicePostStartup postStartup : value)
+			                          {
+				                          GuiceContext.log.config("Loading IGuicePostStartup - " +
+				                                                  postStartup
+						                                                  .getClass()
+						                                                  .getCanonicalName());
+				                          postStartup.postLoad();
+			                          }
 		                          });
 	}
 
