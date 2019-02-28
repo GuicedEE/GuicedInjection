@@ -29,6 +29,9 @@ import io.github.classgraph.ScanResult;
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -849,13 +852,23 @@ public class GuiceContext
 
 		postStartupGroups.forEach((key, value) ->
 		                          {
+			                          ExecutorService threadedService = Executors.newWorkStealingPool();
+			                          List<GroupedPostStartupThread> threads = new ArrayList<>();
 			                          for (IGuicePostStartup postStartup : value)
 			                          {
 				                          GuiceContext.log.config("Loading IGuicePostStartup - " +
 				                                                  postStartup
 						                                                  .getClass()
 						                                                  .getCanonicalName());
-				                          postStartup.postLoad();
+				                          threads.add(new GroupedPostStartupThread(postStartup));
+			                          }
+			                          try
+			                          {
+				                          threadedService.invokeAll(threads, 50, TimeUnit.MILLISECONDS);
+			                          }
+			                          catch (Exception e)
+			                          {
+				                          log.log(Level.WARNING, "Unable to invoke post startups", e);
 			                          }
 		                          });
 	}
@@ -922,5 +935,23 @@ public class GuiceContext
 	public static Map<Class, Set> getAllLoadedServices()
 	{
 		return allLoadedServices;
+	}
+
+	private class GroupedPostStartupThread
+			implements Callable<GroupedPostStartupThread>
+	{
+		private final IGuicePostStartup<?> startup;
+
+		public GroupedPostStartupThread(IGuicePostStartup<?> startup)
+		{
+			this.startup = startup;
+		}
+
+		@Override
+		public GroupedPostStartupThread call() throws Exception
+		{
+			startup.postLoad();
+			return null;
+		}
 	}
 }
