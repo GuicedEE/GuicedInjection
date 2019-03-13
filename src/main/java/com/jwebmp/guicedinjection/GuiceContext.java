@@ -21,6 +21,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.jwebmp.guicedinjection.interfaces.*;
+import com.jwebmp.guicedinjection.interfaces.annotations.INotEnhanceable;
+import com.jwebmp.guicedinjection.interfaces.annotations.INotInjectable;
 import com.jwebmp.logger.LogFactory;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ResourceList;
@@ -28,10 +30,9 @@ import io.github.classgraph.ScanResult;
 
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +51,6 @@ import static com.jwebmp.guicedinjection.interfaces.IDefaultService.*;
 @SuppressWarnings("MissingClassJavaDoc")
 public class GuiceContext
 {
-
 	/**
 	 * Field log
 	 */
@@ -69,12 +69,6 @@ public class GuiceContext
 	 */
 	private static boolean buildingInjector = false;
 	/**
-	 * The number of threads
-	 */
-	private static int threadCount = Runtime.getRuntime()
-	                                        .availableProcessors();
-
-	/**
 	 * The configuration object
 	 */
 	private static GuiceConfig<?> config;
@@ -90,10 +84,6 @@ public class GuiceContext
 	 * The scan result built from everything - the core scanner.
 	 */
 	private ScanResult scanResult;
-	/**
-	 * Facade layer for backwards compatibility
-	 */
-	private Reflections reflections;
 
 	/**
 	 * Creates a new Guice context. Not necessary
@@ -170,27 +160,33 @@ public class GuiceContext
 	 * @return The scoped object
 	 */
 	@NotNull
-	public static <T> T getInstance(@NotNull Class<T> type)
-	{
-		return GuiceContext.inject()
-		                   .getInstance(type);
-	}
-
-	/**
-	 * Gets a new injected instance of a class
-	 *
-	 * @param <T>
-	 * 		The type to retrieve
-	 * @param type
-	 * 		The physical class object
-	 *
-	 * @return The scoped object
-	 */
-	@NotNull
 	public static <T> T get(@NotNull Class<T> type)
 	{
-		return GuiceContext.inject()
-		                   .getInstance(type);
+		return get(type, null);
+	}
+
+	private static boolean isEntityType(Class<?> clazz)
+	{
+		for (Annotation annotation : clazz.getAnnotations())
+		{
+			if (annotation.annotationType()
+			              .getCanonicalName()
+			              .equalsIgnoreCase("javax.persistence.Entity"))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean isNotEnhanceable(Class<?> clazz)
+	{
+		return clazz.isAnnotationPresent(INotEnhanceable.class);
+	}
+
+	private static boolean isNotInjectable(Class<?> clazz)
+	{
+		return clazz.isAnnotationPresent(INotInjectable.class);
 	}
 
 	/**
@@ -207,25 +203,11 @@ public class GuiceContext
 	 */
 	public static <T> T get(@NotNull Class<T> type, Class<? extends Annotation> annotation)
 	{
-		return GuiceContext.inject()
-		                   .getInstance(Key.get(type, annotation));
-	}
-
-	/**
-	 * Gets a new specified instance from a give key
-	 *
-	 * @param <T>
-	 * 		The type to retrieve
-	 * @param type
-	 * 		The physical class object
-	 *
-	 * @return The scoped object
-	 */
-	@NotNull
-	public static <T> T getInstance(@NotNull Key<T> type)
-	{
-		return GuiceContext.inject()
-		                   .getInstance(type);
+		if (annotation == null)
+		{
+			return get(Key.get(type));
+		}
+		return get(Key.get(type, annotation));
 	}
 
 	/**
@@ -241,22 +223,29 @@ public class GuiceContext
 	@NotNull
 	public static <T> T get(@NotNull Key<T> type)
 	{
-		return GuiceContext.inject()
-		                   .getInstance(type);
-	}
-
-	/**
-	 * Builds a reflection object if one does not exist
-	 *
-	 * @return A facade of the ReflectUtils on the scan result
-	 */
-	public static Reflections reflect()
-	{
-		if (GuiceContext.instance().reflections == null)
+		Class<T> clazz = (Class<T>) type.getTypeLiteral().getRawType();
+		T instance = null;
+		boolean isEntityType =isEntityType(clazz);
+		if (isNotEnhanceable(clazz) || isEntityType)
 		{
-			GuiceContext.instance().reflections = new Reflections();
+			try
+			{
+				instance = clazz.getDeclaredConstructor()
+				                .newInstance();
+				if(!isNotInjectable(clazz))
+				{
+					inject().injectMembers(instance);
+				}
+			}
+			catch (Exception e)
+			{
+				log.log(Level.SEVERE,"Unable to construct [" + clazz.getCanonicalName() + "]. Not Enhanceable or an Entity.",e);
+				throw new RuntimeException(e);
+			}
 		}
-		return GuiceContext.instance().reflections;
+		else
+			instance = inject().getInstance(type);
+		return instance;
 	}
 
 	/**
@@ -286,7 +275,6 @@ public class GuiceContext
 		{
 			GuiceContext.instance().scanResult.close();
 		}
-		GuiceContext.instance().reflections = null;
 		if (GuiceContext.instance().scanResult != null)
 		{
 			GuiceContext.instance().scanResult.close();
@@ -294,30 +282,6 @@ public class GuiceContext
 		GuiceContext.instance().scanResult = null;
 		GuiceContext.instance().scanner = null;
 		GuiceContext.instance().injector = null;
-	}
-
-	/**
-	 * Gets the number of threads to use when processing
-	 * Default processors count
-	 *
-	 * @return Default processors count
-	 */
-	@SuppressWarnings("all")
-	public static int getThreadCount()
-	{
-		return threadCount;
-	}
-
-	/**
-	 * Sets the thread count to use
-	 *
-	 * @param threadCount
-	 * 		The thread count to execute on
-	 */
-	@SuppressWarnings("unused")
-	public static void setThreadCount(int threadCount)
-	{
-		GuiceContext.threadCount = threadCount;
 	}
 
 	/**
@@ -415,7 +379,7 @@ public class GuiceContext
 	private void loadScanner()
 	{
 		Stopwatch stopwatch = Stopwatch.createStarted();
-		GuiceContext.log.info("Loading Classpath Scanner - [" + GuiceContext.getThreadCount() + "] threads");
+		GuiceContext.log.info("Loading Classpath Scanner");
 		if (GuiceContext.config == null)
 		{
 			loadConfiguration();
@@ -424,7 +388,7 @@ public class GuiceContext
 		configureScanner(scanner);
 		try
 		{
-			scanResult = scanner.scan(GuiceContext.getThreadCount());
+			scanResult = scanner.scan();
 			stopwatch.stop();
 			Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
 			fileScans.forEach((key, value) ->
@@ -852,23 +816,13 @@ public class GuiceContext
 
 		postStartupGroups.forEach((key, value) ->
 		                          {
-			                          ExecutorService threadedService = Executors.newWorkStealingPool();
-			                          List<GroupedPostStartupThread> threads = new ArrayList<>();
 			                          for (IGuicePostStartup postStartup : value)
 			                          {
+				                          postStartup.postLoad();
 				                          GuiceContext.log.config("Loading IGuicePostStartup - " +
 				                                                  postStartup
 						                                                  .getClass()
 						                                                  .getCanonicalName());
-				                          threads.add(new GroupedPostStartupThread(postStartup));
-			                          }
-			                          try
-			                          {
-				                          threadedService.invokeAll(threads, 50, TimeUnit.MILLISECONDS);
-			                          }
-			                          catch (Exception e)
-			                          {
-				                          log.log(Level.WARNING, "Unable to invoke post startups", e);
 			                          }
 		                          });
 	}
@@ -935,23 +889,5 @@ public class GuiceContext
 	public static Map<Class, Set> getAllLoadedServices()
 	{
 		return allLoadedServices;
-	}
-
-	private class GroupedPostStartupThread
-			implements Callable<GroupedPostStartupThread>
-	{
-		private final IGuicePostStartup<?> startup;
-
-		public GroupedPostStartupThread(IGuicePostStartup<?> startup)
-		{
-			this.startup = startup;
-		}
-
-		@Override
-		public GroupedPostStartupThread call() throws Exception
-		{
-			startup.postLoad();
-			return null;
-		}
 	}
 }

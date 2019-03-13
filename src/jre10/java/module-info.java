@@ -1,7 +1,6 @@
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
 import com.jwebmp.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 import com.jwebmp.guicedinjection.injections.ContextBinderGuice;
-import com.jwebmp.guicedinjection.injections.JPMSGuiceASM;
 import com.jwebmp.guicedinjection.interfaces.*;
 
 module com.jwebmp.guicedinjection {

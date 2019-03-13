@@ -193,7 +193,7 @@ public class GlobalProperties
 	{
 		try
 		{
-			return GuiceContext.getInstance(ObjectMapper.class)
+			return GuiceContext.get(ObjectMapper.class)
 			                   .writeValueAsString(this);
 		}
 		catch (JsonProcessingException e)

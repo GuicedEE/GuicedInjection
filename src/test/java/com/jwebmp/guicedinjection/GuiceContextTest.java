@@ -9,6 +9,8 @@ import com.jwebmp.logger.LogFactory;
 import com.jwebmp.logger.handlers.ConsoleSTDOutputHandler;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import za.co.mmagon.externalpackage.NotEnhanceableClass;
+import za.co.mmagon.externalpackage.PostConstructTestI;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -39,12 +41,9 @@ public class GuiceContextTest
 	public void main()
 	{
 		GuiceContext.inject();
-	}
+		GuiceContext.get(PostConstructTestI.class);
+		GuiceContext.get(NotEnhanceableClass.class);
 
-	@Test
-	public void testReflection()
-	{
-		GuiceContext.reflect();
 	}
 
 	@Test

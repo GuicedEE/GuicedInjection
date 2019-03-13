@@ -10,7 +10,7 @@ public class OptionalPairTest
 	@Test
 	public void toStringTest()
 	{
-		GlobalProperties global = GuiceContext.getInstance(GlobalProperties.class);
+		GlobalProperties global = GuiceContext.get(GlobalProperties.class);
 	}
 
 	@Test
