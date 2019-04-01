@@ -38,7 +38,6 @@ public class Pair<K, V>
 	 * @param value
 	 * 		The value for the pair
 	 */
-	@SuppressWarnings("WeakerAccess")
 	public Pair(@NotNull K key, V value)
 	{
 		this.key = key;
@@ -79,7 +78,7 @@ public class Pair<K, V>
 	 *
 	 * @return this Pair
 	 */
-	public Pair setValue(V value)
+	public Pair<K,V> setValue(V value)
 	{
 		this.value = value;
 		return this;
@@ -93,7 +92,7 @@ public class Pair<K, V>
 	 *
 	 * @return The pair
 	 */
-	public Pair setKey(@NotNull K key)
+	public Pair<K,V> setKey(@NotNull K key)
 	{
 		this.key = key;
 		return this;
@@ -105,5 +104,18 @@ public class Pair<K, V>
 		return getKey().toString()
 		               .compareTo(o.getKey()
 		                           .toString());
+	}
+
+	/**
+	 * Returns a new instance of a pair
+	 * @param key The key
+	 * @param value The value
+	 * @param <K> The key type
+	 * @param <V> The value type
+	 * @return The new instance of Pair
+	 */
+	public static <K,V>  Pair<K,V> of(K key, V value)
+	{
+		return new Pair<>(key, value);
 	}
 }
