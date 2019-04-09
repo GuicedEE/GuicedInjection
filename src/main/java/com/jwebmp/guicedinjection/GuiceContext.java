@@ -182,7 +182,7 @@ public class GuiceContext
 	 * @return The scoped object
 	 */
 	@NotNull
-	@Deprecated(forRemoval = true)
+	@Deprecated()
 	public static <T> T getInstance(@NotNull Class<T> type)
 	{
 		return get(type, null);
@@ -200,7 +200,7 @@ public class GuiceContext
 	 * @return The scoped object
 	 */
 	@NotNull
-	@Deprecated(forRemoval = true)
+	@Deprecated()
 	public static <T> T getInstance(@NotNull Key<T> type)
 	{
 		return get(type);
@@ -218,7 +218,7 @@ public class GuiceContext
 	 * @return The scoped object
 	 */
 	@NotNull
-	@Deprecated(forRemoval = true)
+	@Deprecated()
 	public static <T> T getInstance(@NotNull Class<T> type,Class<? extends Annotation> annotation)
 	{
 		return get(type, annotation);
