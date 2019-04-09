@@ -5,6 +5,7 @@ import com.jwebmp.guicedinjection.GuiceConfig;
 import com.jwebmp.guicedinjection.GuiceContext;
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
 import com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder;
+import com.jwebmp.guicedinjection.interfaces.JobService;
 import com.jwebmp.guicedinjection.properties.GlobalProperties;
 import com.jwebmp.logger.LogFactory;
 import io.github.classgraph.ScanResult;
@@ -43,5 +44,9 @@ public class ContextBinderGuice
 		      .toProvider(() -> GuiceContext.instance()
 		                                    .getScanResult())
 		      .in(Singleton.class);
+
+		ContextBinderGuice.log.fine("Bound JobService.class");
+		module.bind(JobService.class)
+		      .asEagerSingleton();
 	}
 }

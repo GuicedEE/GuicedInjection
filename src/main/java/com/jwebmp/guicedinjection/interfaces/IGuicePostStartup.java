@@ -23,7 +23,7 @@ package com.jwebmp.guicedinjection.interfaces;
  * @since 15 May 2017
  */
 public interface IGuicePostStartup<J extends IGuicePostStartup<J>>
-		extends IDefaultService<J>
+		extends IDefaultService<J>, Runnable
 {
 
 	/**
@@ -42,4 +42,8 @@ public interface IGuicePostStartup<J extends IGuicePostStartup<J>>
 		return 50;
 	}
 
+	default void run()
+	{
+		postLoad();
+	}
 }

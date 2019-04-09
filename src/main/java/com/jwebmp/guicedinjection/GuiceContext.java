@@ -33,6 +33,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,6 +85,9 @@ public class GuiceContext
 	 * The scan result built from everything - the core scanner.
 	 */
 	private ScanResult scanResult;
+
+	public static long defaultWaitTime = 1;
+	public static TimeUnit defaultWaitUnit = TimeUnit.MILLISECONDS;
 
 	/**
 	 * Creates a new Guice context. Not necessary
@@ -165,6 +169,61 @@ public class GuiceContext
 		return get(type, null);
 	}
 
+	/**
+	 * Gets a new injected instance of a class
+	 *
+	 * @deprecated For get()
+	 *
+	 * @param <T>
+	 * 		The type to retrieve
+	 * @param type
+	 * 		The physical class object
+	 *
+	 * @return The scoped object
+	 */
+	@NotNull
+	@Deprecated(forRemoval = true)
+	public static <T> T getInstance(@NotNull Class<T> type)
+	{
+		return get(type, null);
+	}
+	/**
+	 * Gets a new injected instance of a class
+	 *
+	 * @deprecated For get()
+	 *
+	 * @param <T>
+	 * 		The type to retrieve
+	 * @param type
+	 * 		The physical class object
+	 *
+	 * @return The scoped object
+	 */
+	@NotNull
+	@Deprecated(forRemoval = true)
+	public static <T> T getInstance(@NotNull Key<T> type)
+	{
+		return get(type);
+	}
+	/**
+	 * Gets a new injected instance of a class
+	 *
+	 * @deprecated For get()
+	 *
+	 * @param <T>
+	 * 		The type to retrieve
+	 * @param type
+	 * 		The physical class object
+	 *
+	 * @return The scoped object
+	 */
+	@NotNull
+	@Deprecated(forRemoval = true)
+	public static <T> T getInstance(@NotNull Class<T> type,Class<? extends Annotation> annotation)
+	{
+		return get(type, annotation);
+	}
+
 	private static boolean isEntityType(Class<?> clazz)
 	{
 		for (Annotation annotation : clazz.getAnnotations())
@@ -223,28 +282,31 @@ public class GuiceContext
 	@NotNull
 	public static <T> T get(@NotNull Key<T> type)
 	{
-		Class<T> clazz = (Class<T>) type.getTypeLiteral().getRawType();
+		Class<T> clazz = (Class<T>) type.getTypeLiteral()
+		                                .getRawType();
 		T instance = null;
-		boolean isEntityType =isEntityType(clazz);
+		boolean isEntityType = isEntityType(clazz);
 		if (isNotEnhanceable(clazz) || isEntityType)
 		{
 			try
 			{
 				instance = clazz.getDeclaredConstructor()
 				                .newInstance();
-				if(!isNotInjectable(clazz))
+				if (!isNotInjectable(clazz))
 				{
 					inject().injectMembers(instance);
 				}
 			}
 			catch (Exception e)
 			{
-				log.log(Level.SEVERE,"Unable to construct [" + clazz.getCanonicalName() + "]. Not Enhanceable or an Entity.",e);
+				log.log(Level.SEVERE, "Unable to construct [" + clazz.getCanonicalName() + "]. Not Enhanceable or an Entity.", e);
 				throw new RuntimeException(e);
 			}
 		}
 		else
+		{
 			instance = inject().getInstance(type);
+		}
 		return instance;
 	}
 
@@ -816,14 +878,21 @@ public class GuiceContext
 
 		postStartupGroups.forEach((key, value) ->
 		                          {
+			                          GuiceContext.get(JobService.class)
+			                                      .registerJobPool("GuicePostStartupGroup", Executors.newWorkStealingPool(Runtime.getRuntime()
+			                                                                                                                     .availableProcessors()));
 			                          for (IGuicePostStartup postStartup : value)
 			                          {
-				                          postStartup.postLoad();
-				                          GuiceContext.log.config("Loading IGuicePostStartup - " +
+				                          GuiceContext.get(JobService.class)
+				                                      .addJob("GuicePostStartupGroup", postStartup);
+				                          GuiceContext.log.config("Registering IGuicePostStartup - " +
 				                                                  postStartup
 						                                                  .getClass()
 						                                                  .getCanonicalName());
 			                          }
+			                          GuiceContext.get(JobService.class)
+			                                      .waitForJob("GuicePostStartupGroup",defaultWaitTime,defaultWaitUnit);
+			                          GuiceContext.log.fine("Completed with Post Startups Key [" + key + "]");
 		                          });
 	}
 
