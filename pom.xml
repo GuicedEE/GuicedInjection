@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>com.jwebmp.guicedee</groupId>
-            <artifactId>jwebmp-log-master</artifactId>
+            <artifactId>guiced-log-master</artifactId>
         </dependency>
 
         <dependency>
