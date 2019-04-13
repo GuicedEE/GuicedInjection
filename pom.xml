@@ -60,6 +60,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.jwebmp.jpms.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+
+
+        <dependency>
             <groupId>com.jwebmp.jpms.jackson.module</groupId>
             <artifactId>jackson-module-guice</artifactId>
         </dependency>
