@@ -30,9 +30,7 @@ import io.github.classgraph.ScanResult;
 
 import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -86,7 +84,9 @@ public class GuiceContext
 	 */
 	private ScanResult scanResult;
 
+	@SuppressWarnings("WeakerAccess")
 	public static long defaultWaitTime = 1;
+	@SuppressWarnings("WeakerAccess")
 	public static TimeUnit defaultWaitUnit = TimeUnit.MILLISECONDS;
 
 	/**
@@ -279,12 +279,13 @@ public class GuiceContext
 	 *
 	 * @return The scoped object
 	 */
+	@SuppressWarnings("unchecked")
 	@NotNull
 	public static <T> T get(@NotNull Key<T> type)
 	{
 		Class<T> clazz = (Class<T>) type.getTypeLiteral()
 		                                .getRawType();
-		T instance = null;
+		T instance;
 		boolean isEntityType = isEntityType(clazz);
 		if (isNotEnhanceable(clazz) || isEntityType)
 		{
@@ -353,7 +354,7 @@ public class GuiceContext
 	 *
 	 * @since 12130
 	 */
-	public static int getJavaVersion()
+	private static int getJavaVersion()
 	{
 		String version = System.getProperty("java.version");
 		if (version.startsWith("1."))
@@ -801,7 +802,6 @@ public class GuiceContext
 	/**
 	 * Registers the quick scan files
 	 */
-	@SuppressWarnings("unchecked")
 	private Map<String, ResourceList.ByteArrayConsumer> quickScanFiles()
 	{
 		Map<String, ResourceList.ByteArrayConsumer> fileScans = new HashMap<>();
@@ -954,6 +954,7 @@ public class GuiceContext
 	 *
 	 * @return the allLoadedServices (type Map Class, Set ) of this GuiceContext object.
 	 */
+	@SuppressWarnings("WeakerAccess")
 	@NotNull
 	public static Map<Class, Set> getAllLoadedServices()
 	{
