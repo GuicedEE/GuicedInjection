@@ -11,6 +11,8 @@ import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.jwebmp.guicedinjection.GuiceContext.*;
+
 /**
  * Manages All Concurrent Threaded Jobs that execute asynchronously outside of the EE Context
  */
@@ -65,7 +67,7 @@ public class JobService
 		try
 		{
 			log.finer("Waiting for pool " + pool + " to shutdown cleanly.");
-			es.awaitTermination(1, TimeUnit.MILLISECONDS);
+			es.awaitTermination(defaultWaitTime, defaultWaitUnit);
 		}
 		catch (Exception e)
 		{
@@ -92,7 +94,7 @@ public class JobService
 		try
 		{
 			log.finer("Waiting for repeating  pool " + pool + " to shutdown cleanly.");
-			es.awaitTermination(60, TimeUnit.SECONDS);
+			es.awaitTermination(defaultWaitTime, defaultWaitUnit);
 		}
 		catch (Exception e)
 		{
@@ -117,7 +119,7 @@ public class JobService
 			try
 			{
 				serviceMap.get(name)
-				          .awaitTermination(60, TimeUnit.SECONDS);
+				          .awaitTermination(defaultWaitTime, defaultWaitUnit);
 			}
 			catch (InterruptedException e)
 			{
@@ -145,7 +147,7 @@ public class JobService
 			{
 				log.finer("Waiting for current job processes to finish...");
 				pollingMap.get(name)
-				          .awaitTermination(60, TimeUnit.SECONDS);
+				          .awaitTermination(defaultWaitTime, defaultWaitUnit);
 			}
 			catch (Exception e)
 			{
@@ -183,7 +185,7 @@ public class JobService
 
 	public void waitForJob(String jobName)
 	{
-		waitForJob(jobName, 20, TimeUnit.SECONDS);
+		waitForJob(jobName, defaultWaitTime, defaultWaitUnit);
 	}
 
 	public void waitForJob(String jobName, long timeout, TimeUnit unit)
@@ -262,7 +264,7 @@ public class JobService
 			                   value.shutdown();
 			                   try
 			                   {
-				                   value.awaitTermination(60, TimeUnit.SECONDS);
+				                   value.awaitTermination(defaultWaitTime, defaultWaitUnit);
 			                   }
 			                   catch (Exception e)
 			                   {
@@ -276,7 +278,7 @@ public class JobService
 			                   value.shutdown();
 			                   try
 			                   {
-				                   value.awaitTermination(60, TimeUnit.SECONDS);
+				                   value.awaitTermination(defaultWaitTime, defaultWaitUnit);
 			                   }
 			                   catch (Exception e)
 			                   {
