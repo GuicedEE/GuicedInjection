@@ -158,7 +158,7 @@ public class JobService implements IGuicePreDestroy<JobService>
 		ExecutorService service = serviceMap.get(jobPoolName);
 		if (getCurrentTaskCount(service) >= maxQueueCount)
 		{
-			log.log(Level.WARNING, maxQueueCount + " Hit - Finishing before next run");
+			log.log(Level.FINER, maxQueueCount + " Hit - Finishing before next run");
 			removeJob(jobPoolName);
 			service = registerJobPool(jobPoolName, Executors.newFixedThreadPool(Runtime.getRuntime()
 			                                                                 .availableProcessors()));
