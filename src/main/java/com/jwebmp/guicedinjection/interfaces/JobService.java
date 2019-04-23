@@ -18,13 +18,14 @@ import static com.jwebmp.guicedinjection.GuiceContext.*;
  */
 
 @Singleton
-public class JobService
+public class JobService implements IGuicePreDestroy<JobService>
 {
 	private static final Logger log = LogFactory.getLog("JobService");
 	private static final Map<String, ExecutorService> serviceMap = new ConcurrentHashMap<>();
 	private static final Map<String, ScheduledExecutorService> pollingMap = new ConcurrentHashMap<>();
+	public static Integer maxQueueCount = 20;
 
-	JobService()
+	public JobService()
 	{
 		//No config required
 	}
@@ -55,13 +56,13 @@ public class JobService
 	 * @param pool
 	 * 		The pool to remove
 	 */
-	public void removeJob(String pool)
+	public ExecutorService removeJob(String pool)
 	{
 		ExecutorService es = serviceMap.get(pool);
 		if (es == null)
 		{
 			log.warning("Pool " + pool + " was not registered");
-			return;
+			return null;
 		}
 		es.shutdown();
 		try
@@ -74,6 +75,7 @@ public class JobService
 			log.log(Level.SEVERE, "Couldn't shut down pool" + pool + " cleanly in 60 seconds. Forcing.");
 		}
 		serviceMap.remove(pool);
+		return es;
 	}
 
 	/**
@@ -82,13 +84,13 @@ public class JobService
 	 * @param pool
 	 * 		The pool name to remove
 	 */
-	public void removePollingJob(String pool)
+	public ScheduledExecutorService removePollingJob(String pool)
 	{
 		ScheduledExecutorService es = pollingMap.get(pool);
 		if (es == null)
 		{
 			log.warning("Repeating Pool " + pool + " was not registered");
-			return;
+			return null;
 		}
 		es.shutdown();
 		try
@@ -102,6 +104,7 @@ public class JobService
 			es.shutdownNow();
 		}
 		pollingMap.remove(pool);
+		return es;
 	}
 
 	/**
@@ -110,23 +113,14 @@ public class JobService
 	 * @param name
 	 * @param executorService
 	 */
-	public void registerJobPool(String name, ExecutorService executorService)
+	public ExecutorService registerJobPool(String name, ExecutorService executorService)
 	{
 		if (serviceMap.containsKey(name))
 		{
-			serviceMap.get(name)
-			          .shutdown();
-			try
-			{
-				serviceMap.get(name)
-				          .awaitTermination(defaultWaitTime, defaultWaitUnit);
-			}
-			catch (InterruptedException e)
-			{
-				log.log(Level.WARNING, "Unable to shut down existing job pool specified [" + name + "]", e);
-			}
+			removeJob(name);
 		}
 		serviceMap.put(name, executorService);
+		return executorService;
 	}
 
 	/**
@@ -137,24 +131,14 @@ public class JobService
 	 * @param executorService
 	 * 		The service executor
 	 */
-	public void registerJobPollingPool(String name, ScheduledExecutorService executorService)
+	public ScheduledExecutorService registerJobPollingPool(String name, ScheduledExecutorService executorService)
 	{
 		if (pollingMap.containsKey(name))
 		{
-			pollingMap.get(name)
-			          .shutdown();
-			try
-			{
-				log.finer("Waiting for current job processes to finish...");
-				pollingMap.get(name)
-				          .awaitTermination(defaultWaitTime, defaultWaitUnit);
-			}
-			catch (Exception e)
-			{
-				log.log(Level.WARNING, "Unable to shut down existing job pool specified [" + name + "]", e);
-			}
+			removeJob(name);
 		}
 		pollingMap.put(name, executorService);
+		return executorService;
 	}
 
 	/**
@@ -163,7 +147,7 @@ public class JobService
 	 * @param jobPoolName
 	 * @param thread
 	 */
-	public ForkJoinPool addJob(String jobPoolName, Runnable thread)
+	public ExecutorService addJob(String jobPoolName, Runnable thread)
 	{
 		if (!serviceMap.containsKey(jobPoolName))
 		{
@@ -171,15 +155,15 @@ public class JobService
 			                                                                 .availableProcessors()));
 		}
 
-		ForkJoinPool service = (ForkJoinPool) serviceMap.get(jobPoolName);
-		if (service.getQueuedTaskCount() >= 20)
+		ExecutorService service = serviceMap.get(jobPoolName);
+		if (getCurrentTaskCount(service) >= maxQueueCount)
 		{
-			log.log(Level.WARNING, "20 Hit, Finishing before next run");
+			log.log(Level.WARNING, maxQueueCount + " Hit - Finishing before next run");
 			removeJob(jobPoolName);
-			registerJobPool(jobPoolName, Executors.newFixedThreadPool(Runtime.getRuntime()
+			service = registerJobPool(jobPoolName, Executors.newFixedThreadPool(Runtime.getRuntime()
 			                                                                 .availableProcessors()));
 		}
-		service.submit(thread);
+		service.execute(thread);
 		return service;
 	}
 
@@ -194,7 +178,7 @@ public class JobService
 		{
 			return;
 		}
-		ForkJoinPool service = (ForkJoinPool) serviceMap.get(jobName);
+		ExecutorService service = serviceMap.get(jobName);
 		service.shutdown();
 		try
 		{
@@ -261,31 +245,33 @@ public class JobService
 		serviceMap.forEach((key, value) ->
 		                   {
 			                   log.config("Shutting Down [" + key + "]");
-			                   value.shutdown();
-			                   try
-			                   {
-				                   value.awaitTermination(defaultWaitTime, defaultWaitUnit);
-			                   }
-			                   catch (Exception e)
-			                   {
-				                   log.config("Shutting Down Failed. [" + key + "] Forcing");
-				                   value.shutdownNow();
-			                   }
+			                   removeJob(key);
 		                   });
 		pollingMap.forEach((key, value) ->
 		                   {
 			                   log.config("Shutting Down Poll Job [" + key + "]");
-			                   value.shutdown();
-			                   try
-			                   {
-				                   value.awaitTermination(defaultWaitTime, defaultWaitUnit);
-			                   }
-			                   catch (Exception e)
-			                   {
-				                   log.config("Shutting Down Failed. [" + key + "] Forcing");
-				                   value.shutdownNow();
-			                   }
+			                   removePollingJob(key);
 		                   });
 		log.config("All jobs destroyed");
+	}
+
+	private int getCurrentTaskCount(ExecutorService service)
+	{
+		if(service instanceof ForkJoinPool )
+		{
+			ForkJoinPool pool = (ForkJoinPool) service;
+			return (int) pool.getQueuedTaskCount();
+		}else if(service instanceof ThreadPoolExecutor )
+		{
+			ThreadPoolExecutor executor = (ThreadPoolExecutor) service;
+			return (int) executor.getTaskCount();
+		}
+		return 0;
+	}
+
+	@Override
+	public void onDestroy()
+	{
+		destroy();
 	}
 }

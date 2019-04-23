@@ -894,6 +894,8 @@ public class GuiceContext
 			                                      .waitForJob("GuicePostStartupGroup",defaultWaitTime,defaultWaitUnit);
 			                          GuiceContext.log.fine("Completed with Post Startups Key [" + key + "]");
 		                          });
+		JobService.getInstance()
+		          .removeJob("GuicePostStartupGroup");
 	}
 
 	/**

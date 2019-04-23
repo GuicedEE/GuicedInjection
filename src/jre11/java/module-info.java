@@ -45,4 +45,5 @@ module com.jwebmp.guicedinjection {
 
 	provides com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder with com.jwebmp.guicedinjection.injections.ContextBinderGuice;
 	provides com.jwebmp.guicedinjection.interfaces.IGuiceModule with com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
+	provides com.jwebmp.guicedinjection.interfaces.IGuicePreDestroy with com.jwebmp.guicedinjection.interfaces.JobService;
 }
