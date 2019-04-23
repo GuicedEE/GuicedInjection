@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import com.jwebmp.guicedinjection.GuiceContext;
 import com.jwebmp.logger.LogFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -12,6 +13,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.jwebmp.guicedinjection.GuiceContext.*;
+import static java.util.concurrent.Executors.*;
+import static java.util.concurrent.TimeUnit.*;
 
 /**
  * Manages All Concurrent Threaded Jobs that execute asynchronously outside of the EE Context
@@ -21,9 +24,9 @@ import static com.jwebmp.guicedinjection.GuiceContext.*;
 public class JobService implements IGuicePreDestroy<JobService>
 {
 	private static final Logger log = LogFactory.getLog("JobService");
-	private static final Map<String, ExecutorService> serviceMap = new ConcurrentHashMap<>();
-	private static final Map<String, ScheduledExecutorService> pollingMap = new ConcurrentHashMap<>();
-	public static Integer maxQueueCount = 20;
+	private final Map<String, ExecutorService> serviceMap = new ConcurrentHashMap<>();
+	private final Map<String, ScheduledExecutorService> pollingMap = new ConcurrentHashMap<>();
+	private final Map<String, Integer> maxQueueCount = new ConcurrentHashMap<>();
 
 	public JobService()
 	{
@@ -64,6 +67,7 @@ public class JobService implements IGuicePreDestroy<JobService>
 			log.warning("Pool " + pool + " was not registered");
 			return null;
 		}
+
 		es.shutdown();
 		try
 		{
@@ -73,6 +77,10 @@ public class JobService implements IGuicePreDestroy<JobService>
 		catch (Exception e)
 		{
 			log.log(Level.SEVERE, "Couldn't shut down pool" + pool + " cleanly in 60 seconds. Forcing.");
+		}
+		if(!es.isShutdown())
+		{
+			es.shutdownNow();
 		}
 		serviceMap.remove(pool);
 		return es;
@@ -120,6 +128,18 @@ public class JobService implements IGuicePreDestroy<JobService>
 			removeJob(name);
 		}
 		serviceMap.put(name, executorService);
+		if(!maxQueueCount.containsKey(name))
+		{
+			maxQueueCount.put(name, 20);
+		}
+		if(executorService instanceof ForkJoinPool )
+		{
+			ForkJoinPool pool = (ForkJoinPool) executorService;
+		}else if(executorService instanceof ThreadPoolExecutor )
+		{
+			ThreadPoolExecutor executor = (ThreadPoolExecutor) executorService;
+		}
+
 		return executorService;
 	}
 
@@ -151,19 +171,43 @@ public class JobService implements IGuicePreDestroy<JobService>
 	{
 		if (!serviceMap.containsKey(jobPoolName))
 		{
-			registerJobPool(jobPoolName, Executors.newFixedThreadPool(Runtime.getRuntime()
+			registerJobPool(jobPoolName, newFixedThreadPool(Runtime.getRuntime()
 			                                                                 .availableProcessors()));
 		}
 
 		ExecutorService service = serviceMap.get(jobPoolName);
-		if (getCurrentTaskCount(service) >= maxQueueCount)
+		if (getCurrentTaskCount(service) >= maxQueueCount.get(jobPoolName))
 		{
 			log.log(Level.FINER, maxQueueCount + " Hit - Finishing before next run");
 			removeJob(jobPoolName);
-			service = registerJobPool(jobPoolName, Executors.newFixedThreadPool(Runtime.getRuntime()
-			                                                                 .availableProcessors()));
+			service = registerJobPool(jobPoolName, newFixedThreadPool(Runtime.getRuntime()
+			                                                                           .availableProcessors()));
 		}
 		service.execute(thread);
+		return service;
+	}
+
+	/**
+	 * Adds a static run once job to the monitored collections
+	 *
+	 * @param jobPoolName
+	 * @param thread
+	 */
+	public ExecutorService addJob(String jobPoolName, Callable<?> thread)
+	{
+		if (!serviceMap.containsKey(jobPoolName))
+		{
+			registerJobPool(jobPoolName, newFixedThreadPool(8));
+		}
+
+		ExecutorService service = serviceMap.get(jobPoolName);
+		if (getCurrentTaskCount(service) >= maxQueueCount.get(jobPoolName))
+		{
+			log.log(Level.FINER, maxQueueCount + " Hit - Finishing before next run");
+			removeJob(jobPoolName);
+			service = registerJobPool(jobPoolName, newFixedThreadPool(8));
+		}
+		service.submit(thread);
 		return service;
 	}
 
@@ -267,6 +311,11 @@ public class JobService implements IGuicePreDestroy<JobService>
 			return (int) executor.getTaskCount();
 		}
 		return 0;
+	}
+
+	public void setMaxQueueCount(String queueName, int queueCount)
+	{
+		maxQueueCount.put(queueName, queueCount);
 	}
 
 	@Override
