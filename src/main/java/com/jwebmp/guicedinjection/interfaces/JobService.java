@@ -21,7 +21,8 @@ import static java.util.concurrent.TimeUnit.*;
  */
 
 @Singleton
-public class JobService implements IGuicePreDestroy<JobService>
+public class JobService
+		implements IGuicePreDestroy<JobService>
 {
 	private static final Logger log = LogFactory.getLog("JobService");
 	private final Map<String, ExecutorService> serviceMap = new ConcurrentHashMap<>();
@@ -78,7 +79,7 @@ public class JobService implements IGuicePreDestroy<JobService>
 		{
 			log.log(Level.SEVERE, "Couldn't shut down pool" + pool + " cleanly in 60 seconds. Forcing.");
 		}
-		if(!es.isShutdown())
+		if (!es.isShutdown())
 		{
 			es.shutdownNow();
 		}
@@ -111,6 +112,10 @@ public class JobService implements IGuicePreDestroy<JobService>
 			log.log(Level.SEVERE, "Couldn't shut down pool" + pool + " cleanly in 60 seconds. Forcing.");
 			es.shutdownNow();
 		}
+		if (!es.isTerminated())
+		{
+			es.shutdownNow();
+		}
 		pollingMap.remove(pool);
 		return es;
 	}
@@ -128,16 +133,20 @@ public class JobService implements IGuicePreDestroy<JobService>
 			removeJob(name);
 		}
 		serviceMap.put(name, executorService);
-		if(!maxQueueCount.containsKey(name))
+		if (!maxQueueCount.containsKey(name))
 		{
 			maxQueueCount.put(name, 20);
 		}
-		if(executorService instanceof ForkJoinPool )
+		if (executorService instanceof ForkJoinPool)
 		{
 			ForkJoinPool pool = (ForkJoinPool) executorService;
-		}else if(executorService instanceof ThreadPoolExecutor )
+		}
+		else if (executorService instanceof ThreadPoolExecutor)
 		{
 			ThreadPoolExecutor executor = (ThreadPoolExecutor) executorService;
+			executor.setMaximumPoolSize(maxQueueCount.get(name));
+			executor.setKeepAliveTime(defaultWaitTime, defaultWaitUnit);
+			executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
 		}
 
 		return executorService;
@@ -171,8 +180,7 @@ public class JobService implements IGuicePreDestroy<JobService>
 	{
 		if (!serviceMap.containsKey(jobPoolName))
 		{
-			registerJobPool(jobPoolName, newFixedThreadPool(Runtime.getRuntime()
-			                                                                 .availableProcessors()));
+			registerJobPool(jobPoolName, Executors.newWorkStealingPool());
 		}
 
 		ExecutorService service = serviceMap.get(jobPoolName);
@@ -180,8 +188,7 @@ public class JobService implements IGuicePreDestroy<JobService>
 		{
 			log.log(Level.FINER, maxQueueCount + " Hit - Finishing before next run");
 			removeJob(jobPoolName);
-			service = registerJobPool(jobPoolName, newFixedThreadPool(Runtime.getRuntime()
-			                                                                           .availableProcessors()));
+			service = registerJobPool(jobPoolName, newWorkStealingPool());
 		}
 		service.execute(thread);
 		return service;
@@ -197,7 +204,7 @@ public class JobService implements IGuicePreDestroy<JobService>
 	{
 		if (!serviceMap.containsKey(jobPoolName))
 		{
-			registerJobPool(jobPoolName, newFixedThreadPool(8));
+			registerJobPool(jobPoolName, newWorkStealingPool());
 		}
 
 		ExecutorService service = serviceMap.get(jobPoolName);
@@ -205,7 +212,7 @@ public class JobService implements IGuicePreDestroy<JobService>
 		{
 			log.log(Level.FINER, maxQueueCount + " Hit - Finishing before next run");
 			removeJob(jobPoolName);
-			service = registerJobPool(jobPoolName, newFixedThreadPool(8));
+			service = registerJobPool(jobPoolName, newWorkStealingPool());
 		}
 		service.submit(thread);
 		return service;
@@ -285,7 +292,7 @@ public class JobService implements IGuicePreDestroy<JobService>
 	 */
 	public void destroy()
 	{
-		log.config("Destroying all runnings jobs...");
+		log.config("Destroying all running jobs...");
 		serviceMap.forEach((key, value) ->
 		                   {
 			                   log.config("Shutting Down [" + key + "]");
@@ -301,11 +308,12 @@ public class JobService implements IGuicePreDestroy<JobService>
 
 	private int getCurrentTaskCount(ExecutorService service)
 	{
-		if(service instanceof ForkJoinPool )
+		if (service instanceof ForkJoinPool)
 		{
 			ForkJoinPool pool = (ForkJoinPool) service;
 			return (int) pool.getQueuedTaskCount();
-		}else if(service instanceof ThreadPoolExecutor )
+		}
+		else if (service instanceof ThreadPoolExecutor)
 		{
 			ThreadPoolExecutor executor = (ThreadPoolExecutor) service;
 			return (int) executor.getTaskCount();
@@ -322,5 +330,11 @@ public class JobService implements IGuicePreDestroy<JobService>
 	public void onDestroy()
 	{
 		destroy();
+	}
+
+	@Override
+	public Integer sortOrder()
+	{
+		return Integer.MIN_VALUE + 8;
 	}
 }

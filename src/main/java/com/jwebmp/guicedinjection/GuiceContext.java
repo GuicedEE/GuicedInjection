@@ -83,10 +83,13 @@ public class GuiceContext
 	 * The scan result built from everything - the core scanner.
 	 */
 	private ScanResult scanResult;
-
-	@SuppressWarnings("WeakerAccess")
+	/**
+	 * A standard default waiting time for threads
+	 */
 	public static long defaultWaitTime = 1;
-	@SuppressWarnings("WeakerAccess")
+	/**
+	 * The default wait unit for the thread time
+	 */
 	public static TimeUnit defaultWaitUnit = TimeUnit.MILLISECONDS;
 
 	/**
