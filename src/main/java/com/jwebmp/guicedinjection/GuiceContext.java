@@ -86,11 +86,11 @@ public class GuiceContext
 	/**
 	 * A standard default waiting time for threads
 	 */
-	public static long defaultWaitTime = 1;
+	public static long defaultWaitTime = 2;
 	/**
 	 * The default wait unit for the thread time
 	 */
-	public static TimeUnit defaultWaitUnit = TimeUnit.MILLISECONDS;
+	public static TimeUnit defaultWaitUnit = TimeUnit.SECONDS;
 
 	/**
 	 * Creates a new Guice context. Not necessary
