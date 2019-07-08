@@ -1,6 +1,7 @@
 package com.jwebmp.guicedinjection.pairing;
 
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 /**
  * Specifies a generic pair
@@ -13,6 +14,8 @@ import javax.validation.constraints.NotNull;
 public class Pair<K, V>
 		implements Comparable<Pair<K, V>>
 {
+	private static final Pair<?, ?> emptyPair = new Pair<>(null, null);
+
 	/**
 	 * The specified key
 	 */
@@ -78,7 +81,7 @@ public class Pair<K, V>
 	 *
 	 * @return this Pair
 	 */
-	public Pair<K,V> setValue(V value)
+	public Pair<K, V> setValue(V value)
 	{
 		this.value = value;
 		return this;
@@ -92,7 +95,7 @@ public class Pair<K, V>
 	 *
 	 * @return The pair
 	 */
-	public Pair<K,V> setKey(@NotNull K key)
+	public Pair<K, V> setKey(@NotNull K key)
 	{
 		this.key = key;
 		return this;
@@ -107,15 +110,63 @@ public class Pair<K, V>
 	}
 
 	/**
+	 * Returns an empty pair
+	 *
+	 * @return An empty pair
+	 */
+	@SuppressWarnings("unchecked")
+	public static <K, V> Pair<K, V>  empty()
+	{
+		return (Pair<K, V>) emptyPair;
+	}
+
+	/**
+	 * If the pair is empty
+	 *
+	 * @return if the key is null
+	 */
+	public boolean isEmpty()
+	{
+		return key == null;
+	}
+
+	/**
 	 * Returns a new instance of a pair
-	 * @param key The key
-	 * @param value The value
-	 * @param <K> The key type
-	 * @param <V> The value type
+	 *
+	 * @param key
+	 * 		The key
+	 * @param value
+	 * 		The value
+	 * @param <K>
+	 * 		The key type
+	 * @param <V>
+	 * 		The value type
+	 *
 	 * @return The new instance of Pair
 	 */
-	public static <K,V>  Pair<K,V> of(K key, V value)
+	public static <K, V> Pair<K, V> of(K key, V value)
 	{
 		return new Pair<>(key, value);
+	}
+
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		Pair<?, ?> pair = (Pair<?, ?>) o;
+		return Objects.equals(getKey(), pair.getKey());
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(getKey());
 	}
 }
