@@ -87,6 +87,13 @@
         </dependency>
 
         <dependency>
+            <groupId>com.jwebmp.jpms.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-datetime</artifactId>
+            <type>jar</type>
+        </dependency>
+
+
+        <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
             <version>${glassfish.jaxb.version}</version>

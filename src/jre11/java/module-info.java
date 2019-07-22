@@ -1,3 +1,4 @@
+
 module com.jwebmp.guicedinjection {
 
 	requires com.google.guice;
@@ -8,6 +9,8 @@ module com.jwebmp.guicedinjection {
 	requires com.fasterxml.jackson.core;
 	requires com.fasterxml.jackson.databind;
 	requires com.fasterxml.jackson.annotation;
+	requires com.fasterxml.jackson.datatype.jdk8;
+	requires com.fasterxml.jackson.datatype.jsr310;
 
 	requires java.logging;
 	requires transitive com.jwebmp.logmaster;
@@ -16,6 +19,7 @@ module com.jwebmp.guicedinjection {
 	requires javax.inject;
 
 	requires com.google.common;
+	requires com.fasterxml.jackson.module.guice;
 
 	exports com.jwebmp.guicedinjection;
 	exports com.jwebmp.guicedinjection.interfaces;
@@ -43,7 +47,7 @@ module com.jwebmp.guicedinjection {
 	provides com.jwebmp.guicedinjection.interfaces.IGuiceScanJarExclusions with com.jwebmp.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 	provides com.jwebmp.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.jwebmp.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 
-	provides com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder with com.jwebmp.guicedinjection.injections.ContextBinderGuice;
+	provides com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder with com.jwebmp.guicedinjection.injections.ContextBinderGuice,com.jwebmp.guicedinjection.implementations.ObjectMapperBinder;
 	provides com.jwebmp.guicedinjection.interfaces.IGuiceModule with com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
 	provides com.jwebmp.guicedinjection.interfaces.IGuicePreDestroy with com.jwebmp.guicedinjection.interfaces.JobService;
 }
