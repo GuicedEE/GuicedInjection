@@ -6,8 +6,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8JacksonModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeJacksonModule;
 import com.fasterxml.jackson.module.guice.ObjectMapperModule;
 import com.jwebmp.guicedinjection.GuiceContext;
 import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
@@ -37,8 +35,6 @@ public class ObjectMapperBinder
 
 		module.bind(DefaultObjectMapper)
 		      .toInstance(new ObjectMapper()
-				                  .registerModule(new JavaTimeJacksonModule())
-				                  .registerModule(new Jdk8JacksonModule())
 				                  .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 				                  .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
 				                  .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
