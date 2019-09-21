@@ -124,6 +124,8 @@ public class GuiceContext
 				            .loadPreStartups();
 				GuiceContext.instance()
 				            .loadConfiguration();
+
+
 				if (GuiceContext.instance()
 				                .getConfig()
 				                .isPathScanning() ||
@@ -131,8 +133,13 @@ public class GuiceContext
 				                .getConfig()
 				                .isClasspathScanning())
 				{
+					GuiceContext.log.info("Starting Scanner");
 					GuiceContext.instance()
 					            .loadScanner();
+				}
+				else
+				{
+					log.config("Not loading a Class Path scanner");
 				}
 				List cModules = GuiceContext.instance()
 				                            .loadDefaultBinders();
@@ -140,10 +147,8 @@ public class GuiceContext
 				GuiceContext.buildingInjector = false;
 				GuiceContext.instance()
 				            .loadPostStartups();
-
 				Runtime.getRuntime()
 				       .addShutdownHook(new Thread(GuiceContext::destroy));
-
 				GuiceContext.log.config("Injection System Ready");
 			}
 			catch (Throwable e)
@@ -454,7 +459,7 @@ public class GuiceContext
 		configureScanner(scanner);
 		try
 		{
-			scanResult = scanner.scan();
+			scanResult = scanner.scan(Runtime.getRuntime().availableProcessors());
 			stopwatch.stop();
 			Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
 			fileScans.forEach((key, value) ->
