@@ -30,8 +30,8 @@ A Java Guice Assistant that allows you to perform multiple and dynamic binding, 
 <dependency>
     <groupId>com.jwebmp</groupId>
     M<artifactId>guiced-injection</artifactId>
-    <version>LATEST</version>
-</dependency>
+    <version>LATEST</version><type>jar</type>
+            </dependency>
 ```
 
 
