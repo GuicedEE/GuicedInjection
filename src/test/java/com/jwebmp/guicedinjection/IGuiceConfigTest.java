@@ -12,6 +12,7 @@ public class IGuiceConfigTest
 	public void testConfig()
 	{
 		GuiceConfig config = GuiceContext.get(GuiceConfig.class);
+
 		assertTrue(config.isAnnotationScanning());
 		assertTrue(config.isFieldInfo());
 		assertTrue(config.isIgnoreFieldVisibility());

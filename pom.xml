@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                       https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>com.jwebmp.guicedee</groupId>
+        <groupId>com.jwebmp.jpms.guicedee</groupId>
         <artifactId>guiced-ee-modules</artifactId>
         <version>0.0.0_0-SNAPSHOT</version>
     </parent>
@@ -19,15 +19,17 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.jwebmp.guicedee</groupId>
+            <groupId>com.jwebmp.jpms.guicedee</groupId>
             <artifactId>guiced-log-master</artifactId>
             <type>jar</type>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.jwebmp.jpms.thirdparty</groupId>
             <artifactId>aopalliance-core</artifactId>
             <type>jar</type>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -37,21 +39,24 @@
         </dependency>
 
         <dependency>
-            <groupId>com.jwebmp.inject</groupId>
+            <groupId>com.jwebmp.jpms.thirdparty</groupId>
             <artifactId>guice</artifactId>
             <type>jar</type>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.jwebmp.jpms.thirdparty</groupId>
             <artifactId>javax.inject</artifactId>
             <type>jar</type>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.jwebmp.jpms.thirdparty</groupId>
             <artifactId>guava</artifactId>
             <type>jar</type>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Jackson Support-->
@@ -93,6 +98,7 @@
             <groupId>com.jwebmp.jpms.thirdparty</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
             <type>jar</type>
+            <version>${project.version}</version>
         </dependency>
 
 
@@ -125,6 +131,7 @@
             <groupId>com.jwebmp.jpms.thirdparty</groupId>
             <artifactId>jakarta.validation-api</artifactId>
             <type>jar</type>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
