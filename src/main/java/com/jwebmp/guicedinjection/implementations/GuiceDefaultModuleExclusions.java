@@ -1,7 +1,7 @@
-package com.jwebmp.guicedinjection.implementations;
+package com.guicedee.guicedinjection.implementations;
 
-import com.jwebmp.guicedinjection.interfaces.IGuiceScanJarExclusions;
-import com.jwebmp.guicedinjection.interfaces.IGuiceScanModuleExclusions;
+import com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
+import com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
@@ -9,15 +9,13 @@ import java.util.Set;
 
 public class GuiceDefaultModuleExclusions
 		implements IGuiceScanModuleExclusions<GuiceDefaultModuleExclusions>,
-				           IGuiceScanJarExclusions<GuiceDefaultModuleExclusions>
-{
+				   IGuiceScanJarExclusions<GuiceDefaultModuleExclusions> {
 	@Override
-	public @NotNull Set<String> excludeModules()
-	{
+	public @NotNull Set<String> excludeModules() {
 		Set<String> strings = new HashSet<>();
 
-		strings.add("com.jwebmp.guicedinjection");
-		strings.add("com.jwebmp.logmaster");
+		strings.add("com.guicedee.jpms.guicedinjection");
+		strings.add("com.guicedee.jpms.logmaster");
 
 		strings.add("com.google.guice");
 
@@ -40,8 +38,7 @@ public class GuiceDefaultModuleExclusions
 
 	@NotNull
 	@Override
-	public Set<String> excludeJars()
-	{
+	public Set<String> excludeJars() {
 		Set<String> jarExclusions = new HashSet<>();
 		jarExclusions.add("guiced-injection-*");
 		jarExclusions.add("jwebmp-log-master-*");
@@ -82,4 +79,6 @@ public class GuiceDefaultModuleExclusions
 
 		return jarExclusions;
 	}
+
+
 }

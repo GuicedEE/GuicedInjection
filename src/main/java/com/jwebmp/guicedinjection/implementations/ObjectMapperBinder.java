@@ -1,4 +1,4 @@
-package com.jwebmp.guicedinjection.implementations;
+package com.guicedee.guicedinjection.implementations;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -7,16 +7,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.module.guice.ObjectMapperModule;
-import com.jwebmp.guicedinjection.GuiceContext;
-import com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
-import com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder;
-import com.jwebmp.logger.LogFactory;
-
-import static com.jwebmp.guicedinjection.interfaces.ObjectBinderKeys.*;
+import com.guicedee.guicedinjection.GuiceContext;
+import com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
+import com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder;
+import com.guicedee.guicedinjection.interfaces.ObjectBinderKeys;
+import com.guicedee.logger.LogFactory;
 
 public class ObjectMapperBinder
-		implements IGuiceDefaultBinder<ObjectMapperBinder, GuiceInjectorModule>
-{
+		implements IGuiceDefaultBinder<ObjectMapperBinder, GuiceInjectorModule> {
 	/**
 	 * Field log
 	 */
@@ -25,55 +23,54 @@ public class ObjectMapperBinder
 	/**
 	 * Method onBind ...
 	 *
-	 * @param module
-	 * 		of type GuiceInjectorModule
+	 * @param module of type GuiceInjectorModule
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
-	public void onBind(GuiceInjectorModule module)
-	{
+	public void onBind(GuiceInjectorModule module) {
 		module.install(new ObjectMapperModule());
 
-		module.bind(DefaultObjectMapper)
-		      .toInstance(new ObjectMapper()
-				                  .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-				                  .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-				                  .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
-				                  .setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)
-				                  .setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE)
-		                 );
+		module.bind(ObjectBinderKeys.DefaultObjectMapper)
+			  .toInstance(new ObjectMapper()
+					  .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+					  .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+					  .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
+					  .setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)
+					  .setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE)
+			  );
 
 		log.fine("Bound ObjectWriter.class @Named(JSON)");
 
-		module.bind(JSONObjectWriter)
-		      .toProvider(() ->
-				                  GuiceContext.get(DefaultObjectMapper)
-				                              .writerWithDefaultPrettyPrinter()
-				                              .with(SerializationFeature.INDENT_OUTPUT)
-				                              .with(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
-				                              .with(JsonGenerator.Feature.QUOTE_FIELD_NAMES)
-				                              .without(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-				                              .withoutFeatures(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS));
+		module.bind(ObjectBinderKeys.JSONObjectWriter)
+			  .toProvider(() ->
+					  GuiceContext.get(ObjectBinderKeys.DefaultObjectMapper)
+								  .writerWithDefaultPrettyPrinter()
+								  .with(SerializationFeature.INDENT_OUTPUT)
+								  .with(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
+								  .with(JsonGenerator.Feature.QUOTE_FIELD_NAMES)
+								  .without(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+								  .withoutFeatures(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS));
 
-		module.bind(JSONObjectWriterTiny)
-		      .toProvider(() ->
-				                  GuiceContext.get(DefaultObjectMapper)
-				                              .writer()
-				                              .without(SerializationFeature.INDENT_OUTPUT)
-				                              .with(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
-				                              .with(JsonGenerator.Feature.QUOTE_FIELD_NAMES)
-				                              .without(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-				                              .withoutFeatures(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS));
+		module.bind(ObjectBinderKeys.JSONObjectWriterTiny)
+			  .toProvider(() ->
+					  GuiceContext.get(ObjectBinderKeys.DefaultObjectMapper)
+								  .writer()
+								  .without(SerializationFeature.INDENT_OUTPUT)
+								  .with(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
+								  .with(JsonGenerator.Feature.QUOTE_FIELD_NAMES)
+								  .without(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+								  .withoutFeatures(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS));
 
-
-		module.bind(JSONObjectReader)
-		      .toProvider(() ->
-				                  GuiceContext.get(DefaultObjectMapper)
-				                              .reader()
-				                              .with(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-				                              .with(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT)
-				                              .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-		                 );
-
+		module.bind(ObjectBinderKeys.JSONObjectReader)
+			  .toProvider(() ->
+					  GuiceContext.get(ObjectBinderKeys.DefaultObjectMapper)
+								  .reader()
+								  .with(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+								  .with(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT)
+								  .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+			  );
 
 	}
+
+
 }

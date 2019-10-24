@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jwebmp.guicedinjection.interfaces;
+package com.guicedee.guicedinjection.interfaces;
 
 /**
  * Executes immediately after Guice has been initialized
@@ -23,8 +23,7 @@ package com.jwebmp.guicedinjection.interfaces;
  * @since 15 May 2017
  */
 public interface IGuicePostStartup<J extends IGuicePostStartup<J>>
-		extends IDefaultService<J>, Runnable
-{
+		extends IDefaultService<J>, Runnable {
 
 	/**
 	 * Runs immediately after the post load
@@ -37,13 +36,12 @@ public interface IGuicePostStartup<J extends IGuicePostStartup<J>>
 	 * @return the sort order to return
 	 */
 	@Override
-	default Integer sortOrder()
-	{
+	default Integer sortOrder() {
 		return 50;
 	}
 
-	default void run()
-	{
+	default void run() {
 		postLoad();
 	}
+
 }

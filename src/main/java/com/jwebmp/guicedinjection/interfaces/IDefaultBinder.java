@@ -14,25 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jwebmp.guicedinjection.interfaces;
+package com.guicedee.guicedinjection.interfaces;
 
 import com.google.inject.AbstractModule;
 
 /**
- * @param <M>
- * 		The module to bind
- *
+ * @param <M> The module to bind
  * @author GedMarc
  */
 @FunctionalInterface
-public interface IDefaultBinder<M extends AbstractModule>
-{
+public interface IDefaultBinder<M extends AbstractModule> {
 
 	/**
 	 * Performs the binding with the injection module that is required
 	 *
-	 * @param module
-	 * 		The module being passed in
+	 * @param module The module being passed in
 	 */
 	void onBind(M module);
+
+
 }

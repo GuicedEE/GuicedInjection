@@ -14,10 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jwebmp.guicedinjection.abstractions;
+package com.guicedee.guicedinjection.abstractions;
 
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Binder;
+import com.google.inject.Binding;
+import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.Provider;
+import com.google.inject.Scope;
+import com.google.inject.TypeLiteral;
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.AnnotatedConstantBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
@@ -25,10 +31,10 @@ import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.Message;
 import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.TypeListener;
-import com.jwebmp.guicedinjection.GuiceContext;
-import com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder;
-import com.jwebmp.guicedinjection.interfaces.IGuiceModule;
-import com.jwebmp.logger.LogFactory;
+import com.guicedee.guicedinjection.GuiceContext;
+import com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder;
+import com.guicedee.guicedinjection.interfaces.IGuiceModule;
+import com.guicedee.logger.LogFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -48,8 +54,7 @@ import java.util.logging.Logger;
  */
 public class GuiceInjectorModule
 		extends AbstractModule
-		implements IGuiceModule<GuiceInjectorModule>
-{
+		implements IGuiceModule<GuiceInjectorModule> {
 
 	/**
 	 * Field log
@@ -59,8 +64,7 @@ public class GuiceInjectorModule
 	/**
 	 * Constructs a new instance of the module
 	 */
-	public GuiceInjectorModule()
-	{
+	public GuiceInjectorModule() {
 		//Nothing Needed
 	}
 
@@ -68,8 +72,7 @@ public class GuiceInjectorModule
 	 * Executes the runBinders method
 	 */
 	@Override
-	public void configure()
-	{
+	public void configure() {
 		runBinders();
 	}
 
@@ -77,12 +80,10 @@ public class GuiceInjectorModule
 	 * Executes the linked binders to perform any custom binding
 	 */
 	@SuppressWarnings("unchecked")
-	private void runBinders()
-	{
+	private void runBinders() {
 		Set<IGuiceDefaultBinder> loader = GuiceContext.instance()
-		                                              .getLoader(IGuiceDefaultBinder.class, true, ServiceLoader.load(IGuiceDefaultBinder.class));
-		for (IGuiceDefaultBinder binder : loader)
-		{
+													  .getLoader(IGuiceDefaultBinder.class, true, ServiceLoader.load(IGuiceDefaultBinder.class));
+		for (IGuiceDefaultBinder binder : loader) {
 			log.log(Level.CONFIG, "Loading IGuiceDefaultBinder - " + binder.getClass());
 			binder.onBind(this);
 		}
@@ -92,8 +93,7 @@ public class GuiceInjectorModule
 	 * Gets direct access to the underlying {@code Binder}.
 	 */
 	@Override
-	public Binder binder()
-	{
+	public Binder binder() {
 		return super.binder();
 	}
 
@@ -101,8 +101,7 @@ public class GuiceInjectorModule
 	 * @see Binder#bindScope(Class, Scope)
 	 */
 	@Override
-	public void bindScope(Class<? extends Annotation> scopeAnnotation, Scope scope)
-	{
+	public void bindScope(Class<? extends Annotation> scopeAnnotation, Scope scope) {
 		super.bindScope(scopeAnnotation, scope);
 	}
 
@@ -110,8 +109,7 @@ public class GuiceInjectorModule
 	 * @see Binder#bind(Key)
 	 */
 	@Override
-	public <T> LinkedBindingBuilder<T> bind(Key<T> key)
-	{
+	public <T> LinkedBindingBuilder<T> bind(Key<T> key) {
 		return super.bind(key);
 	}
 
@@ -119,8 +117,7 @@ public class GuiceInjectorModule
 	 * @see Binder#bind(TypeLiteral)
 	 */
 	@Override
-	public <T> AnnotatedBindingBuilder<T> bind(TypeLiteral<T> typeLiteral)
-	{
+	public <T> AnnotatedBindingBuilder<T> bind(TypeLiteral<T> typeLiteral) {
 		return super.bind(typeLiteral);
 	}
 
@@ -128,8 +125,7 @@ public class GuiceInjectorModule
 	 * @see Binder#bind(Class)
 	 */
 	@Override
-	public <T> AnnotatedBindingBuilder<T> bind(Class<T> clazz)
-	{
+	public <T> AnnotatedBindingBuilder<T> bind(Class<T> clazz) {
 		return super.bind(clazz);
 	}
 
@@ -137,8 +133,7 @@ public class GuiceInjectorModule
 	 * @see Binder#bindConstant()
 	 */
 	@Override
-	public AnnotatedConstantBindingBuilder bindConstant()
-	{
+	public AnnotatedConstantBindingBuilder bindConstant() {
 		return super.bindConstant();
 	}
 
@@ -146,8 +141,7 @@ public class GuiceInjectorModule
 	 * @see Binder#install(Module)
 	 */
 	@Override
-	public void install(Module module)
-	{
+	public void install(Module module) {
 		super.install(module);
 	}
 
@@ -155,8 +149,7 @@ public class GuiceInjectorModule
 	 * @see Binder#addError(String, Object[])
 	 */
 	@Override
-	public void addError(String message, Object... arguments)
-	{
+	public void addError(String message, Object... arguments) {
 		super.addError(message, arguments);
 	}
 
@@ -164,8 +157,7 @@ public class GuiceInjectorModule
 	 * @see Binder#addError(Throwable)
 	 */
 	@Override
-	public void addError(Throwable t)
-	{
+	public void addError(Throwable t) {
 		super.addError(t);
 	}
 
@@ -174,8 +166,7 @@ public class GuiceInjectorModule
 	 * @since 2.0
 	 */
 	@Override
-	public void addError(Message message)
-	{
+	public void addError(Message message) {
 		super.addError(message);
 	}
 
@@ -184,8 +175,7 @@ public class GuiceInjectorModule
 	 * @since 2.0
 	 */
 	@Override
-	public void requestInjection(Object instance)
-	{
+	public void requestInjection(Object instance) {
 		super.requestInjection(instance);
 	}
 
@@ -193,18 +183,16 @@ public class GuiceInjectorModule
 	 * @see Binder#requestStaticInjection(Class[])
 	 */
 	@Override
-	public void requestStaticInjection(Class<?>... types)
-	{
+	public void requestStaticInjection(Class<?>... types) {
 		super.requestStaticInjection(types);
 	}
 
 	/**
 	 * @see Binder#bindInterceptor(com.google.inject.matcher.Matcher,
-	 *        com.google.inject.matcher.Matcher, org.aopalliance.intercept.MethodInterceptor[])
+	 * com.google.inject.matcher.Matcher, org.aopalliance.intercept.MethodInterceptor[])
 	 */
 	@Override
-	public void bindInterceptor(Matcher<? super Class<?>> classMatcher, Matcher<? super Method> methodMatcher, org.aopalliance.intercept.MethodInterceptor... interceptors)
-	{
+	public void bindInterceptor(Matcher<? super Class<?>> classMatcher, Matcher<? super Method> methodMatcher, org.aopalliance.intercept.MethodInterceptor... interceptors) {
 		binder().bindInterceptor(classMatcher, methodMatcher, interceptors);
 	}
 
@@ -213,8 +201,7 @@ public class GuiceInjectorModule
 	 * @since 2.0
 	 */
 	@Override
-	public <T> Provider<T> getProvider(Key<T> key)
-	{
+	public <T> Provider<T> getProvider(Key<T> key) {
 		return super.getProvider(key);
 	}
 
@@ -223,8 +210,7 @@ public class GuiceInjectorModule
 	 * @since 2.0
 	 */
 	@Override
-	public <T> Provider<T> getProvider(Class<T> type)
-	{
+	public <T> Provider<T> getProvider(Class<T> type) {
 		return super.getProvider(type);
 	}
 
@@ -233,8 +219,7 @@ public class GuiceInjectorModule
 	 * @since 2.0
 	 */
 	@Override
-	public void bindListener(Matcher<? super TypeLiteral<?>> typeMatcher, TypeListener listener)
-	{
+	public void bindListener(Matcher<? super TypeLiteral<?>> typeMatcher, TypeListener listener) {
 		super.bindListener(typeMatcher, listener);
 	}
 
@@ -243,8 +228,9 @@ public class GuiceInjectorModule
 	 * @since 2.0
 	 */
 	@Override
-	public void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener)
-	{
+	public void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener) {
 		super.bindListener(bindingMatcher, listener);
 	}
+
+
 }

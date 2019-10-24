@@ -1,4 +1,4 @@
-package com.jwebmp.guicedinjection.interfaces;
+package com.guicedee.guicedinjection.interfaces;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -6,8 +6,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
-public class ObjectBinderKeys
-{
+public class ObjectBinderKeys {
 	/**
 	 * The default object mapping
 	 */

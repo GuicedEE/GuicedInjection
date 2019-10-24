@@ -1,2 +1,2 @@
-com.jwebmp.guicedinjection.injections.ContextBinderGuice
-com.jwebmp.guicedinjection.implementations.ObjectMapperBinder
+com.guicedee.guicedinjection.injections.ContextBinderGuice
+com.guicedee.guicedinjection.implementations.ObjectMapperBinder

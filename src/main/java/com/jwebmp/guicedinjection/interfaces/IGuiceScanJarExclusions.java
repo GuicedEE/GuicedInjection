@@ -1,4 +1,4 @@
-package com.jwebmp.guicedinjection.interfaces;
+package com.guicedee.guicedinjection.interfaces;
 
 import javax.validation.constraints.NotNull;
 import java.util.Set;
@@ -8,12 +8,13 @@ import java.util.Set;
  */
 @FunctionalInterface
 public interface IGuiceScanJarExclusions<J extends IGuiceScanJarExclusions<J>>
-		extends IDefaultService<J>
-{
+		extends IDefaultService<J> {
 	/**
 	 * Excludes the given jars for scanning
 	 *
 	 * @return
 	 */
 	@NotNull Set<String> excludeJars();
+
+
 }

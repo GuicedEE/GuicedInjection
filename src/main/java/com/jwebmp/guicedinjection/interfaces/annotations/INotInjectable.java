@@ -1,4 +1,4 @@
-package com.jwebmp.guicedinjection.interfaces.annotations;
+package com.guicedee.guicedinjection.interfaces.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,6 +14,5 @@ import java.lang.annotation.Target;
 				ElementType.TYPE, ElementType.TYPE_USE
 		})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface INotInjectable
-{
+public @interface INotInjectable {
 }

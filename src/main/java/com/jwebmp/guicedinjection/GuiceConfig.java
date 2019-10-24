@@ -1,4 +1,4 @@
-package com.jwebmp.guicedinjection;
+package com.guicedee.guicedinjection;
 
 import com.google.inject.Singleton;
 
@@ -7,10 +7,9 @@ import javax.validation.constraints.NotNull;
 /**
  * The configuration class for Guice Context and the Classpath Scanner
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue"})
+@SuppressWarnings({ "WeakerAccess", "unused", "UnusedReturnValue" })
 @Singleton
-public class GuiceConfig<J extends GuiceConfig<J>>
-{
+public class GuiceConfig<J extends GuiceConfig<J>> {
 	/**
 	 * Property to use when everything is found in the boot module
 	 */
@@ -79,8 +78,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Configures the Guice Context and Reflection Identifier
 	 */
-	public GuiceConfig()
-	{
+	public GuiceConfig() {
 		//No Config
 	}
 
@@ -89,23 +87,19 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return mandatory result
 	 */
-	public boolean isFieldScanning()
-	{
+	public boolean isFieldScanning() {
 		return fieldScanning;
 	}
 
 	/**
 	 * Enables scanning of fields
 	 *
-	 * @param fieldScanning
-	 * 		If field scanning should happen
-	 *
+	 * @param fieldScanning If field scanning should happen
 	 * @return Mandatory field scanning
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setFieldScanning(boolean fieldScanning)
-	{
+	public J setFieldScanning(boolean fieldScanning) {
 		this.fieldScanning = fieldScanning;
 		return (J) this;
 	}
@@ -115,23 +109,19 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return not null
 	 */
-	public boolean isAnnotationScanning()
-	{
+	public boolean isAnnotationScanning() {
 		return annotationScanning;
 	}
 
 	/**
 	 * Enables scanning of field annotations
 	 *
-	 * @param annotationScanning
-	 * 		if the field annotation scanning
-	 *
+	 * @param annotationScanning if the field annotation scanning
 	 * @return the field annotation scanning
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setAnnotationScanning(boolean annotationScanning)
-	{
+	public J setAnnotationScanning(boolean annotationScanning) {
 		this.annotationScanning = annotationScanning;
 		return (J) this;
 	}
@@ -141,23 +131,19 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return always this
 	 */
-	public boolean isMethodInfo()
-	{
+	public boolean isMethodInfo() {
 		return methodInfo;
 	}
 
 	/**
 	 * Sets if method info should be kept
 	 *
-	 * @param methodInfo
-	 * 		if method information should be collected
-	 *
+	 * @param methodInfo if method information should be collected
 	 * @return always this
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setMethodInfo(boolean methodInfo)
-	{
+	public J setMethodInfo(boolean methodInfo) {
 		this.methodInfo = methodInfo;
 		return (J) this;
 	}
@@ -167,23 +153,19 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return if field visibility is being used
 	 */
-	public boolean isIgnoreFieldVisibility()
-	{
+	public boolean isIgnoreFieldVisibility() {
 		return ignoreFieldVisibility;
 	}
 
 	/**
 	 * Sets to ignore field visibility
 	 *
-	 * @param ignoreFieldVisibility
-	 * 		if the field should be visible
-	 *
+	 * @param ignoreFieldVisibility if the field should be visible
 	 * @return always this
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setIgnoreFieldVisibility(boolean ignoreFieldVisibility)
-	{
+	public J setIgnoreFieldVisibility(boolean ignoreFieldVisibility) {
 		this.ignoreFieldVisibility = ignoreFieldVisibility;
 		return (J) this;
 	}
@@ -193,23 +175,19 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return if method is visibility ignored
 	 */
-	public boolean isIgnoreMethodVisibility()
-	{
+	public boolean isIgnoreMethodVisibility() {
 		return ignoreMethodVisibility;
 	}
 
 	/**
 	 * Sets to ignore method visibility
 	 *
-	 * @param ignoreMethodVisibility
-	 * 		the ignore method
-	 *
+	 * @param ignoreMethodVisibility the ignore method
 	 * @return always This
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setIgnoreMethodVisibility(boolean ignoreMethodVisibility)
-	{
+	public J setIgnoreMethodVisibility(boolean ignoreMethodVisibility) {
 		this.ignoreMethodVisibility = ignoreMethodVisibility;
 		return (J) this;
 	}
@@ -217,29 +195,25 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Sets if packages must be white listed.
 	 * <p>
-	 * Use META-INF/services/com.jwebmp.guiceinjection.scanners.IPackageContentsScanner to register your packages
+	 * Use META-INF/services/com.guicedee.jpms.guiceinjection.scanners.IPackageContentsScanner to register your packages
 	 *
 	 * @return if whitelisting is enabled
 	 */
-	public boolean isWhiteListPackages()
-	{
+	public boolean isWhiteListPackages() {
 		return whiteListPackages;
 	}
 
 	/**
 	 * Sets if packages must be white listed.
 	 * * <p>
-	 * * Use META-INF/services/com.jwebmp.guiceinjection.scanners.IPackageContentsScanner to register your packages
+	 * * Use META-INF/services/com.guicedee.jpms.guiceinjection.scanners.IPackageContentsScanner to register your packages
 	 *
-	 * @param whiteListPackages
-	 * 		if packages should be white listed
-	 *
+	 * @param whiteListPackages if packages should be white listed
 	 * @return Always this
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setWhiteListPackages(boolean whiteListPackages)
-	{
+	public J setWhiteListPackages(boolean whiteListPackages) {
 		this.whiteListPackages = whiteListPackages;
 		return (J) this;
 	}
@@ -249,23 +223,19 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return if field info is included
 	 */
-	public boolean isFieldInfo()
-	{
+	public boolean isFieldInfo() {
 		return fieldInfo;
 	}
 
 	/**
 	 * Sets if the field info should be in the field result
 	 *
-	 * @param fieldInfo
-	 * 		if field info should be scanned
-	 *
+	 * @param fieldInfo if field info should be scanned
 	 * @return always this object
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setFieldInfo(boolean fieldInfo)
-	{
+	public J setFieldInfo(boolean fieldInfo) {
 		this.fieldInfo = fieldInfo;
 		return (J) this;
 	}
@@ -277,8 +247,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return the verbose (type boolean) of this GuiceConfig object.
 	 */
-	public boolean isVerbose()
-	{
+	public boolean isVerbose() {
 		return verbose;
 	}
 
@@ -287,15 +256,12 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * <p>
 	 * Whether or not to log very verbose
 	 *
-	 * @param verbose
-	 * 		the verbose of this GuiceConfig object.
-	 *
+	 * @param verbose the verbose of this GuiceConfig object.
 	 * @return J
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setVerbose(boolean verbose)
-	{
+	public J setVerbose(boolean verbose) {
 		this.verbose = verbose;
 
 		return (J) this;
@@ -308,8 +274,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return the classpathScanning (type boolean) of this GuiceConfig object.
 	 */
-	public boolean isClasspathScanning()
-	{
+	public boolean isClasspathScanning() {
 		return classpathScanning;
 	}
 
@@ -318,15 +283,12 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * <p>
 	 * If classpath scanning is enabled.
 	 *
-	 * @param classpathScanning
-	 * 		the classpathScanning of this GuiceConfig object.
-	 *
+	 * @param classpathScanning the classpathScanning of this GuiceConfig object.
 	 * @return J
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setClasspathScanning(boolean classpathScanning)
-	{
+	public J setClasspathScanning(boolean classpathScanning) {
 		this.classpathScanning = classpathScanning;
 		return (J) this;
 	}
@@ -336,23 +298,19 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return is modules/jars are excluded from scans
 	 */
-	public boolean isExcludeModulesAndJars()
-	{
+	public boolean isExcludeModulesAndJars() {
 		return excludeModulesAndJars;
 	}
 
 	/**
 	 * Excludes modules and jars from scanning - may and may not make it faster depending on your pc
 	 *
-	 * @param excludeModulesAndJars
-	 * 		to exclude them
-	 *
+	 * @param excludeModulesAndJars to exclude them
 	 * @return J
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setExcludeModulesAndJars(boolean excludeModulesAndJars)
-	{
+	public J setExcludeModulesAndJars(boolean excludeModulesAndJars) {
 		this.excludeModulesAndJars = excludeModulesAndJars;
 		return (J) this;
 	}
@@ -362,23 +320,19 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return boolean
 	 */
-	public boolean isExcludePaths()
-	{
+	public boolean isExcludePaths() {
 		return excludePaths;
 	}
 
 	/**
 	 * Excludes paths from scanning - excellent for minizing path scanning on web application
 	 *
-	 * @param excludePaths
-	 * 		If the default paths must be automatically excluded
-	 *
+	 * @param excludePaths If the default paths must be automatically excluded
 	 * @return J
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setExcludePaths(boolean excludePaths)
-	{
+	public J setExcludePaths(boolean excludePaths) {
 		this.excludePaths = excludePaths;
 		return (J) this;
 	}
@@ -389,24 +343,23 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * @return String
 	 */
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "GuiceConfig{" +
-		       "fieldInfo=" + fieldInfo +
-		       ", fieldScanning=" + fieldScanning +
-		       ", annotationScanning=" + annotationScanning +
-		       ", methodInfo=" + methodInfo +
-		       ", ignoreFieldVisibility=" + ignoreFieldVisibility +
-		       ", ignoreMethodVisibility=" + ignoreMethodVisibility +
-		       ", whiteListPackages=" + whiteListPackages +
-		       ", verbose=" + verbose +
-		       ", pathScanning=" + pathScanning +
-		       ", classpathScanning=" + classpathScanning +
-		       ", excludeModulesAndJars=" + excludeModulesAndJars +
-		       ", excludePaths=" + excludePaths +
-		       ", whitelistPaths=" + whitelistPaths +
-		       ", whitelistJarsAndModules=" + whitelistJarsAndModules +
-		       '}';
+				"fieldInfo=" + fieldInfo +
+				", fieldScanning=" + fieldScanning +
+				", annotationScanning=" + annotationScanning +
+				", methodInfo=" + methodInfo +
+				", ignoreFieldVisibility=" + ignoreFieldVisibility +
+				", ignoreMethodVisibility=" + ignoreMethodVisibility +
+				", whiteListPackages=" + whiteListPackages +
+				", verbose=" + verbose +
+				", pathScanning=" + pathScanning +
+				", classpathScanning=" + classpathScanning +
+				", excludeModulesAndJars=" + excludeModulesAndJars +
+				", excludePaths=" + excludePaths +
+				", whitelistPaths=" + whitelistPaths +
+				", whitelistJarsAndModules=" + whitelistJarsAndModules +
+				'}';
 	}
 
 	/**
@@ -416,8 +369,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return the whitelistPaths (type boolean) of this GuiceConfig object.
 	 */
-	public boolean isWhitelistPaths()
-	{
+	public boolean isWhitelistPaths() {
 		return whitelistPaths;
 	}
 
@@ -426,13 +378,10 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * <p>
 	 * Excludes paths from scanning - excellent for minizing path scanning on web application
 	 *
-	 * @param whitelistPaths
-	 * 		the whitelistPaths of this GuiceConfig object.
-	 *
+	 * @param whitelistPaths the whitelistPaths of this GuiceConfig object.
 	 * @return GuiceConfig J
 	 */
-	public GuiceConfig<J> setWhitelistPaths(boolean whitelistPaths)
-	{
+	public GuiceConfig<J> setWhitelistPaths(boolean whitelistPaths) {
 		this.whitelistPaths = whitelistPaths;
 		return this;
 	}
@@ -444,8 +393,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return the whitelistJarsAndModules (type boolean) of this GuiceConfig object.
 	 */
-	public boolean isWhitelistJarsAndModules()
-	{
+	public boolean isWhitelistJarsAndModules() {
 		return whitelistJarsAndModules;
 	}
 
@@ -454,13 +402,10 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * <p>
 	 * Provides a list of whitelist jars/modules to scan
 	 *
-	 * @param whitelistJarsAndModules
-	 * 		the whitelistJarsAndModules of this GuiceConfig object.
-	 *
+	 * @param whitelistJarsAndModules the whitelistJarsAndModules of this GuiceConfig object.
 	 * @return GuiceConfig J
 	 */
-	public GuiceConfig<J> setWhitelistJarsAndModules(boolean whitelistJarsAndModules)
-	{
+	public GuiceConfig<J> setWhitelistJarsAndModules(boolean whitelistJarsAndModules) {
 		this.whitelistJarsAndModules = whitelistJarsAndModules;
 		return this;
 	}
@@ -472,8 +417,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return the pathScanning (type boolean) of this GuiceConfig object.
 	 */
-	public boolean isPathScanning()
-	{
+	public boolean isPathScanning() {
 		return pathScanning;
 	}
 
@@ -482,13 +426,10 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * <p>
 	 * If the path should be scanned
 	 *
-	 * @param pathScanning
-	 * 		the pathScanning of this GuiceConfig object.
-	 *
+	 * @param pathScanning the pathScanning of this GuiceConfig object.
 	 * @return GuiceConfig J
 	 */
-	public GuiceConfig<J> setPathScanning(boolean pathScanning)
-	{
+	public GuiceConfig<J> setPathScanning(boolean pathScanning) {
 		this.pathScanning = pathScanning;
 		return this;
 	}
@@ -501,8 +442,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * @return the excludeParentModules (type boolean) of this GuiceConfig object.
 	 */
 	@SuppressWarnings("unused")
-	public boolean isExcludeParentModules()
-	{
+	public boolean isExcludeParentModules() {
 		return excludeParentModules;
 	}
 
@@ -511,14 +451,11 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * <p>
 	 * Property to use when everything is found in the boot module
 	 *
-	 * @param excludeParentModules
-	 * 		the excludeParentModules of this GuiceConfig object.
-	 *
+	 * @param excludeParentModules the excludeParentModules of this GuiceConfig object.
 	 * @return GuiceConfig J
 	 */
 	@SuppressWarnings("unused")
-	public GuiceConfig<J> setExcludeParentModules(boolean excludeParentModules)
-	{
+	public GuiceConfig<J> setExcludeParentModules(boolean excludeParentModules) {
 		this.excludeParentModules = excludeParentModules;
 		return this;
 	}
@@ -530,8 +467,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return the excludePackages (type boolean) of this GuiceConfig object.
 	 */
-	public boolean isBlackListPackages()
-	{
+	public boolean isBlackListPackages() {
 		return excludePackages;
 	}
 
@@ -540,14 +476,13 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * <p>
 	 * Excludes packages from scanning - excellent for minimizing path scanning on web application
 	 *
-	 * @param excludePackages
-	 * 		the excludePackages of this GuiceConfig object.
-	 *
+	 * @param excludePackages the excludePackages of this GuiceConfig object.
 	 * @return GuiceConfig J
 	 */
-	public GuiceConfig<J> setExcludePackages(boolean excludePackages)
-	{
+	public GuiceConfig<J> setExcludePackages(boolean excludePackages) {
 		this.excludePackages = excludePackages;
 		return this;
 	}
+
+
 }

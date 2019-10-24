@@ -1,4 +1,4 @@
-package com.jwebmp.guicedinjection.pairing;
+package com.guicedee.guicedinjection.pairing;
 
 import javax.validation.constraints.NotNull;
 import java.util.Optional;
@@ -6,53 +6,42 @@ import java.util.Optional;
 /**
  * Specifies a generic pair
  *
- * @param <K>
- * 		Key
- * @param <V>
- * 		Value
+ * @param <K> Key
+ * @param <V> Value
  */
 public class OptionalPair<K, V>
-		extends Pair<K, V>
-{
+		extends Pair<K, V> {
 
 	/**
 	 * Constructs a new blank pair
 	 */
-	public OptionalPair()
-	{
+	public OptionalPair() {
 		//No config required
 	}
 
 	/**
 	 * Constructs a new key value pair
 	 *
-	 * @param key
-	 * 		The key to use
-	 * @param value
-	 * 		the value to use
+	 * @param key   The key to use
+	 * @param value the value to use
 	 */
-	public OptionalPair(K key, V value)
-	{
+	public OptionalPair(K key, V value) {
 		super(key, value);
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "Key[" + getKey() + "];Value[" + getValue() + "]";
 	}
 
 	/**
 	 * Sets the value for the given pair
 	 *
-	 * @param value
-	 * 		The value to set
-	 *
+	 * @param value The value to set
 	 * @return Optional nullable of the value
 	 */
 	@Override
-	public OptionalPair<K, V> setValue(V value)
-	{
+	public OptionalPair<K, V> setValue(V value) {
 		super.setValue(value);
 		return this;
 	}
@@ -60,20 +49,16 @@ public class OptionalPair<K, V>
 	/**
 	 * Sets the key for the given pair
 	 *
-	 * @param key
-	 * 		The key to return
-	 *
+	 * @param key The key to return
 	 * @return The optional pair
 	 */
 	@Override
-	public OptionalPair<K, V> setKey(@NotNull K key)
-	{
+	public OptionalPair<K, V> setKey(@NotNull K key) {
 		super.setKey(key);
 		return this;
 	}
 
-	public Optional<K> getKeyOptional()
-	{
+	public Optional<K> getKeyOptional() {
 		return Optional.ofNullable(getKey());
 	}
 
@@ -82,9 +67,9 @@ public class OptionalPair<K, V>
 	 *
 	 * @return Optional nullable of the value
 	 */
-	public Optional<V> getValueOptional()
-	{
+	public Optional<V> getValueOptional() {
 		return Optional.ofNullable(getValue());
 	}
+
 
 }

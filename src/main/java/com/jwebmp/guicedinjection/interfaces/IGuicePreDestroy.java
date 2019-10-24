@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jwebmp.guicedinjection.interfaces;
+package com.guicedee.guicedinjection.interfaces;
 
 import java.util.Comparator;
 
@@ -25,8 +25,7 @@ import java.util.Comparator;
  * @since 15 May 2017
  */
 public interface IGuicePreDestroy<J extends IGuicePreDestroy<J>>
-		extends Comparator<J>, Comparable<J>
-{
+		extends Comparator<J>, Comparable<J> {
 
 	/**
 	 * Runs on startup
@@ -34,36 +33,31 @@ public interface IGuicePreDestroy<J extends IGuicePreDestroy<J>>
 	void onDestroy();
 
 	@Override
-	default int compare(J o1, J o2)
-	{
+	default int compare(J o1, J o2) {
 		return o1.sortOrder()
-		         .compareTo(o2.sortOrder());
+				 .compareTo(o2.sortOrder());
 	}
-
 
 	/**
 	 * Sort order for startup, Default 100.
 	 *
 	 * @return the sort order never null
 	 */
-	default Integer sortOrder()
-	{
+	default Integer sortOrder() {
 		return 100;
 	}
 
 	@Override
-	default int compareTo(J o)
-	{
-		if (o == null)
-		{
+	default int compareTo(J o) {
+		if (o == null) {
 			return -1;
 		}
 		int result = sortOrder().compareTo(o.sortOrder());
-		if (getClass().equals(o.getClass()))
-		{
+		if (getClass().equals(o.getClass())) {
 			return 0;
 		}
 		return result == 0 ? 1 : result;
 	}
+
 
 }

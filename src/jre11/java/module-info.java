@@ -1,5 +1,10 @@
+import com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
+import com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
+import com.guicedee.guicedinjection.implementations.ObjectMapperBinder;
+import com.guicedee.guicedinjection.injections.ContextBinderGuice;
+import com.guicedee.guicedinjection.interfaces.*;
 
-module com.jwebmp.guicedinjection {
+module com.guicedee.guicedinjection {
 
 	requires com.google.guice;
 
@@ -9,9 +14,10 @@ module com.jwebmp.guicedinjection {
 	requires com.fasterxml.jackson.core;
 	requires com.fasterxml.jackson.databind;
 	requires com.fasterxml.jackson.annotation;
+	requires com.fasterxml.jackson.datatype.jdk8;
 
 	requires java.logging;
-	requires transitive com.jwebmp.logmaster;
+	requires transitive com.guicedee.logmaster;
 
 	requires aopalliance;
 	requires javax.inject;
@@ -19,35 +25,36 @@ module com.jwebmp.guicedinjection {
 	requires com.google.common;
 	requires com.fasterxml.jackson.module.guice;
 
-	exports com.jwebmp.guicedinjection;
-	exports com.jwebmp.guicedinjection.interfaces;
-	exports com.jwebmp.guicedinjection.interfaces.annotations;
-	exports com.jwebmp.guicedinjection.abstractions;
-	exports com.jwebmp.guicedinjection.pairing;
-	exports com.jwebmp.guicedinjection.properties;
+	exports com.guicedee.guicedinjection;
+	exports com.guicedee.guicedinjection.interfaces;
+	exports com.guicedee.guicedinjection.interfaces.annotations;
+	exports com.guicedee.guicedinjection.abstractions;
+	exports com.guicedee.guicedinjection.pairing;
+	exports com.guicedee.guicedinjection.properties;
 
-	uses com.jwebmp.guicedinjection.interfaces.IPackageContentsScanner;
-	uses com.jwebmp.guicedinjection.interfaces.IFileContentsScanner;
-	uses com.jwebmp.guicedinjection.interfaces.IGuiceConfigurator;
-	uses com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder;
-	uses com.jwebmp.guicedinjection.interfaces.IGuicePreStartup;
-	uses com.jwebmp.guicedinjection.interfaces.IGuicePreDestroy;
-	uses com.jwebmp.guicedinjection.interfaces.IGuiceModule;
-	uses com.jwebmp.guicedinjection.interfaces.IGuicePostStartup;
-	uses com.jwebmp.guicedinjection.interfaces.IPathContentsScanner;
-	uses com.jwebmp.guicedinjection.interfaces.IPathContentsBlacklistScanner;
-	uses com.jwebmp.guicedinjection.interfaces.IGuiceScanJarExclusions;
-	uses com.jwebmp.guicedinjection.interfaces.IGuiceScanModuleExclusions;
-	uses com.jwebmp.guicedinjection.interfaces.IGuiceScanJarInclusions;
-	uses com.jwebmp.guicedinjection.interfaces.IGuiceScanModuleInclusions;
-	uses com.jwebmp.guicedinjection.interfaces.IPackageBlackListScanner;
+	uses IPackageContentsScanner;
+	uses IFileContentsScanner;
+	uses IGuiceConfigurator;
+	uses IGuiceDefaultBinder;
+	uses IGuicePreStartup;
+	uses IGuicePreDestroy;
+	uses IGuiceModule;
+	uses IGuicePostStartup;
+	uses IPathContentsScanner;
+	uses IPathContentsBlacklistScanner;
+	uses IGuiceScanJarExclusions;
+	uses IGuiceScanModuleExclusions;
+	uses IGuiceScanJarInclusions;
+	uses IGuiceScanModuleInclusions;
+	uses IPackageBlackListScanner;
 
-	provides com.jwebmp.guicedinjection.interfaces.IGuiceScanJarExclusions with com.jwebmp.guicedinjection.implementations.GuiceDefaultModuleExclusions;
-	provides com.jwebmp.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.jwebmp.guicedinjection.implementations.GuiceDefaultModuleExclusions;
+	provides IGuiceScanJarExclusions with GuiceDefaultModuleExclusions;
+	provides IGuiceScanModuleExclusions with GuiceDefaultModuleExclusions;
 
-	provides com.jwebmp.guicedinjection.interfaces.IGuiceDefaultBinder with com.jwebmp.guicedinjection.injections.ContextBinderGuice,com.jwebmp.guicedinjection.implementations.ObjectMapperBinder;
-	provides com.jwebmp.guicedinjection.interfaces.IGuiceModule with com.jwebmp.guicedinjection.abstractions.GuiceInjectorModule;
-	provides com.jwebmp.guicedinjection.interfaces.IGuicePreDestroy with com.jwebmp.guicedinjection.interfaces.JobService;
+	provides IGuiceDefaultBinder with ContextBinderGuice, ObjectMapperBinder;
+	provides IGuiceModule with GuiceInjectorModule;
+	provides IGuicePreDestroy with JobService;
 
-	opens com.jwebmp.guicedinjection.properties to com.fasterxml.jackson.databind;
+	opens com.guicedee.guicedinjection to com.fasterxml.jackson.databind;
+	opens com.guicedee.guicedinjection.properties to com.fasterxml.jackson.databind;
 }

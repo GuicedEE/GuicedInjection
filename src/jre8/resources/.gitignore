@@ -13,6 +13,5 @@ Thumbs.db
 **/*.tloh
 **/*.tlog
 **/*.db
-**/*.project
+
 **/*.factorypath
-**/*.classpath

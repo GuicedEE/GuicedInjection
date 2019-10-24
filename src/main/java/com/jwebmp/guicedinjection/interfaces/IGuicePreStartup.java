@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jwebmp.guicedinjection.interfaces;
+package com.guicedee.guicedinjection.interfaces;
 
 /**
  * Initializes before Guice has been injected
@@ -23,8 +23,7 @@ package com.jwebmp.guicedinjection.interfaces;
  * @since 15 May 2017
  */
 public interface IGuicePreStartup<J extends IGuicePreStartup<J>>
-		extends IDefaultService<J>
-{
+		extends IDefaultService<J> {
 
 	/**
 	 * Runs on startup
@@ -37,8 +36,9 @@ public interface IGuicePreStartup<J extends IGuicePreStartup<J>>
 	 * @return the sort order never null
 	 */
 	@Override
-	default Integer sortOrder()
-	{
+	default Integer sortOrder() {
 		return 100;
 	}
+
+
 }

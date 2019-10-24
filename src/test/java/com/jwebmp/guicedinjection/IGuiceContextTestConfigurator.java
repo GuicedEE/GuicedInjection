@@ -1,14 +1,14 @@
-package com.jwebmp.guicedinjection;
+package com.guicedee.guicedinjection;
 
-import com.jwebmp.guicedinjection.interfaces.IGuiceConfigurator;
+import com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
 
 public class IGuiceContextTestConfigurator
-		implements IGuiceConfigurator
-{
+		implements IGuiceConfigurator {
 	@Override
-	public GuiceConfig configure(GuiceConfig config)
-	{
+	public GuiceConfig configure(GuiceConfig config) {
 
 		return config;
 	}
+
+
 }

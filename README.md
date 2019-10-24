@@ -65,7 +65,7 @@ By default all Guice Injection libraries white list themselves.
 Package scanning utilizes the Service Loader pattern (https://docs.oracle.com/javase/tutorial/ext/basics/spi.html)
 
 Create a file in the direcory META-INF/services/
-za.co.mmagon.guiceinjection.scanners.PackageContentsScanner
+com.jwebmp.guicedinjection.scanners.PackageContentsScanner
 
 Add an entry for your class that implements PackageContentsScanner.
 
@@ -90,7 +90,7 @@ Guice Injection allows you to specify files that must be scanned on the complete
 Guice Injection uses File Contents Scanning to find any persistence.xml files (JPA2.1) and loads up the guice-persistence extension with the given annotations for these Jar modules
 
 Create a file in the direcory META-INF/services/
-za.co.mmagon.guiceinjection.scanners.PackageContentsScanner
+com.jwebmp.guicedinjection.scanners.PackageContentsScanner
 
 Add an entry for your class that implements FileContentsScanner.
 

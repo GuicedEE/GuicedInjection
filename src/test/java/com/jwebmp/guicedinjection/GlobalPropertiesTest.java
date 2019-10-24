@@ -1,6 +1,6 @@
-package com.jwebmp.guicedinjection;
+package com.guicedee.guicedinjection;
 
-import com.jwebmp.guicedinjection.properties.GlobalProperties;
+import com.guicedee.guicedinjection.properties.GlobalProperties;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -9,16 +9,13 @@ import java.util.TreeMap;
 /**
  * @author bpmm097
  */
-public class GlobalPropertiesTest
-{
+public class GlobalPropertiesTest {
 
-	public GlobalPropertiesTest()
-	{
+	public GlobalPropertiesTest() {
 	}
 
 	@Test
-	public void testSomeMethod()
-	{
+	public void testSomeMethod() {
 		GlobalProperties g = new GlobalProperties();
 		g.addProperty("key", "property", "value");
 		g.getProperty("key", "property");
@@ -34,5 +31,6 @@ public class GlobalPropertiesTest
 
 		System.out.println(g.toString());
 	}
+
 
 }

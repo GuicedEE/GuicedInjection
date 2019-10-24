@@ -1,4 +1,4 @@
-package com.jwebmp.guicedinjection.interfaces;
+package com.guicedee.guicedinjection.interfaces;
 
 import java.util.Set;
 
@@ -55,8 +55,7 @@ import java.util.Set;
  * path (or won't call your custom ClassLoader), due to class caching.)
  */
 @FunctionalInterface
-public interface IPathContentsScanner
-{
+public interface IPathContentsScanner {
 	/**
 	 * If you only need to scan resources and not classes, .enableClassInfo() or .enableAllInfo() should not be called, for speed. Also, if you don't need to scan classes, you
 	 * should specify the whitelist by calling .whitelistPaths() and using path separators (/), rather than by calling .whitelistPackages() and using package separators (.). Path
@@ -66,4 +65,6 @@ public interface IPathContentsScanner
 	 * @return the set of string
 	 */
 	Set<String> searchFor();
+
+
 }

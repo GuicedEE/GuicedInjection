@@ -1,18 +1,15 @@
-package com.jwebmp.guicedinjection;
+package com.guicedee.guicedinjection;
 
-import com.jwebmp.guicedinjection.interfaces.IGuiceConfigurator;
+import com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IGuiceConfigTest
-		implements IGuiceConfigurator
-{
+		implements IGuiceConfigurator {
 	@Test
-	public void testConfig()
-	{
+	public void testConfig() {
 		GuiceConfig config = GuiceContext.get(GuiceConfig.class);
-
 		assertTrue(config.isAnnotationScanning());
 		assertTrue(config.isFieldInfo());
 		assertTrue(config.isIgnoreFieldVisibility());
@@ -23,15 +20,16 @@ public class IGuiceConfigTest
 	}
 
 	@Override
-	public GuiceConfig configure(GuiceConfig config)
-	{
+	public GuiceConfig configure(GuiceConfig config) {
 		config.setIgnoreMethodVisibility(true)
-		      .setWhiteListPackages(true)
-		      .setAnnotationScanning(true)
-		      .setFieldInfo(true)
-		      .setFieldScanning(true)
-		      .setIgnoreFieldVisibility(true)
-		      .setMethodInfo(true);
+			  .setWhiteListPackages(true)
+			  .setAnnotationScanning(true)
+			  .setFieldInfo(true)
+			  .setFieldScanning(true)
+			  .setIgnoreFieldVisibility(true)
+			  .setMethodInfo(true);
 		return config;
 	}
+
+
 }

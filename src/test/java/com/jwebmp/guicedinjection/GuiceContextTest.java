@@ -3,14 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.jwebmp.guicedinjection;
+package com.guicedee.guicedinjection;
 
-import com.jwebmp.logger.LogFactory;
-import com.jwebmp.logger.handlers.ConsoleSTDOutputHandler;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import za.co.mmagon.externalpackage.NotEnhanceableClass;
-import za.co.mmagon.externalpackage.PostConstructTestI;
+import com.guicedee.logger.LogFactory;
+import com.guicedee.logger.handlers.ConsoleSTDOutputHandler;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -19,27 +17,23 @@ import java.util.logging.Logger;
 /**
  * @author GedMarc
  */
-public class GuiceContextTest
-{
+public class GuiceContextTest {
 
 	@BeforeAll
-	public static void pre()
-	{
+	public static void pre() {
 		Handler[] handles = Logger.getLogger("")
-		                          .getHandlers();
-		for (Handler handle : handles)
-		{
+								  .getHandlers();
+		for (Handler handle : handles) {
 			handle.setLevel(Level.FINE);
 		}
 		LogFactory.setDefaultLevel(Level.FINE);
 		Logger.getLogger("")
-		      .addHandler(ConsoleSTDOutputHandler.getInstance()
-		                                         .setColoured(true));
+			  .addHandler(ConsoleSTDOutputHandler.getInstance()
+												 .setColoured(true));
 	}
 
 	@Test
-	public void main()
-	{
+	public void main() {
 		GuiceContext.inject();
 		GuiceContext.get(PostConstructTestI.class);
 		GuiceContext.get(NotEnhanceableClass.class);
@@ -47,9 +41,9 @@ public class GuiceContextTest
 	}
 
 	@Test
-	public void testInjection()
-	{
+	public void testInjection() {
 		GuiceContext.inject();
 	}
+
 
 }
