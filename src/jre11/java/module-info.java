@@ -1,9 +1,3 @@
-import com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
-import com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
-import com.guicedee.guicedinjection.implementations.ObjectMapperBinder;
-import com.guicedee.guicedinjection.injections.ContextBinderGuice;
-import com.guicedee.guicedinjection.interfaces.*;
-
 module com.guicedee.guicedinjection {
 
 	requires com.google.guice;
@@ -32,28 +26,28 @@ module com.guicedee.guicedinjection {
 	exports com.guicedee.guicedinjection.pairing;
 	exports com.guicedee.guicedinjection.properties;
 
-	uses IPackageContentsScanner;
-	uses IFileContentsScanner;
-	uses IGuiceConfigurator;
-	uses IGuiceDefaultBinder;
-	uses IGuicePreStartup;
-	uses IGuicePreDestroy;
-	uses IGuiceModule;
-	uses IGuicePostStartup;
-	uses IPathContentsScanner;
-	uses IPathContentsBlacklistScanner;
-	uses IGuiceScanJarExclusions;
-	uses IGuiceScanModuleExclusions;
-	uses IGuiceScanJarInclusions;
-	uses IGuiceScanModuleInclusions;
-	uses IPackageBlackListScanner;
+	uses com.guicedee.guicedinjection.interfaces.IPackageContentsScanner;
+	uses com.guicedee.guicedinjection.interfaces.IFileContentsScanner;
+	uses com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
+	uses com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder;
+	uses com.guicedee.guicedinjection.interfaces.IGuicePreStartup;
+	uses com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
+	uses com.guicedee.guicedinjection.interfaces.IGuiceModule;
+	uses com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
+	uses com.guicedee.guicedinjection.interfaces.IPathContentsScanner;
+	uses com.guicedee.guicedinjection.interfaces.IPathContentsBlacklistScanner;
+	uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
+	uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions;
+	uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarInclusions;
+	uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions;
+	uses com.guicedee.guicedinjection.interfaces.IPackageBlackListScanner;
 
-	provides IGuiceScanJarExclusions with GuiceDefaultModuleExclusions;
-	provides IGuiceScanModuleExclusions with GuiceDefaultModuleExclusions;
+	provides com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
+	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 
-	provides IGuiceDefaultBinder with ContextBinderGuice, ObjectMapperBinder;
-	provides IGuiceModule with GuiceInjectorModule;
-	provides IGuicePreDestroy with JobService;
+	provides com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder with com.guicedee.guicedinjection.injections.ContextBinderGuice, com.guicedee.guicedinjection.implementations.ObjectMapperBinder;
+	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
+	provides com.guicedee.guicedinjection.interfaces.IGuicePreDestroy with com.guicedee.guicedinjection.interfaces.JobService;
 
 	opens com.guicedee.guicedinjection to com.fasterxml.jackson.databind;
 	opens com.guicedee.guicedinjection.properties to com.fasterxml.jackson.databind;

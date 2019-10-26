@@ -33,14 +33,6 @@ public class GuiceContextTest {
 	}
 
 	@Test
-	public void main() {
-		GuiceContext.inject();
-		GuiceContext.get(PostConstructTestI.class);
-		GuiceContext.get(NotEnhanceableClass.class);
-
-	}
-
-	@Test
 	public void testInjection() {
 		GuiceContext.inject();
 	}
