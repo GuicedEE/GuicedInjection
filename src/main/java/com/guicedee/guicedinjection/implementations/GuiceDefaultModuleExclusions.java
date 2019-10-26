@@ -14,8 +14,8 @@ public class GuiceDefaultModuleExclusions
 	public @NotNull Set<String> excludeModules() {
 		Set<String> strings = new HashSet<>();
 
-		strings.add("com.guicedee.jpms.guicedinjection");
-		strings.add("com.guicedee.jpms.logmaster");
+		strings.add("com.guicedee.guicedinjection");
+		strings.add("com.guicedee.logmaster");
 
 		strings.add("com.google.guice");
 

@@ -195,7 +195,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> {
 	/**
 	 * Sets if packages must be white listed.
 	 * <p>
-	 * Use META-INF/services/com.guicedee.jpms.guiceinjection.scanners.IPackageContentsScanner to register your packages
+	 * Use META-INF/services/com.guicedee.guiceinjection.scanners.IPackageContentsScanner to register your packages
 	 *
 	 * @return if whitelisting is enabled
 	 */
@@ -206,7 +206,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> {
 	/**
 	 * Sets if packages must be white listed.
 	 * * <p>
-	 * * Use META-INF/services/com.guicedee.jpms.guiceinjection.scanners.IPackageContentsScanner to register your packages
+	 * * Use META-INF/services/com.guicedee.guiceinjection.scanners.IPackageContentsScanner to register your packages
 	 *
 	 * @param whiteListPackages if packages should be white listed
 	 * @return Always this
