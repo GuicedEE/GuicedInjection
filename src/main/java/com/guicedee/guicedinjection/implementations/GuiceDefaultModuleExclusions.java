@@ -14,13 +14,13 @@ public class GuiceDefaultModuleExclusions
 	public @NotNull Set<String> excludeModules() {
 		Set<String> strings = new HashSet<>();
 
-		strings.add("com.guicedee.guicedinjection");
-		strings.add("com.guicedee.logmaster");
+		strings.add("za.co.bayport.jpms.guicedinjection");
+		strings.add("za.co.bayport.jpms.logmaster");
 
 		strings.add("com.google.guice");
 
 		strings.add("io.github.classgraph");
-		strings.add("java.validation");
+
 
 		strings.add("com.fasterxml.jackson.core");
 		strings.add("com.fasterxml.jackson.databind");
@@ -32,6 +32,47 @@ public class GuiceDefaultModuleExclusions
 		strings.add("javax.inject");
 		strings.add("com.fasterxml.jackson.annotation");
 		strings.add("com.google.common");
+		strings.add("com.fasterxml.jackson.module.guice");
+		strings.add("dom4j");
+		strings.add("io.undertow.parser.generator");
+		strings.add("jakarta.activation");
+		strings.add("jandex");
+		strings.add("net.bytebuddy");
+		strings.add("org.apache.commons.codec");
+		strings.add("org.apache.commons.collections4");
+		strings.add("org.apache.commons.compress");
+		strings.add("org.apache.commons.io");
+		strings.add("org.apache.commons.lang3");
+		strings.add("org.apache.commons.logging");
+		strings.add("org.apache.commons.math3");
+		strings.add("org.apache.cxf");
+		strings.add("org.apache.poi");
+		strings.add("org.apache.poi.ooxml");
+		strings.add("org.apache.xmlbeans");
+		strings.add("org.hibernate.commons.annotations");
+		strings.add("org.hibernate.orm.core");
+		strings.add("org.hibernate.validator");
+		strings.add("org.jboss.logging");
+		strings.add("org.json");
+		strings.add("tm.bitronix.btm");
+		strings.add("undertow.core");
+		strings.add("undertow.servlet");
+		strings.add("undertow.websockets.jsr");
+		strings.add("xnio");
+		strings.add("java.annotation");
+		strings.add("java.compiler");
+		strings.add("java.json");
+		strings.add("java.validation");
+		strings.add("java.ws.rs");
+		strings.add("java.xml");
+		strings.add("java.xml.bind");
+		strings.add("java.xml.crypto");
+		strings.add("java.xml.soap");
+		strings.add("java.xml.ws");
+		strings.add("javassist");
+		strings.add("javax.el");
+		strings.add("javax.servlet.api");
+		strings.add("javax.websocket.api");
 
 		return strings;
 	}
