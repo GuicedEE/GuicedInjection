@@ -663,7 +663,7 @@ public class GuiceContext
 		return getAllLoadedServices().get(loaderType);
 	}
 
-	/**
+	/*
 	 * Returns a complete list of generic exclusions
 	 *
 	 * @return A string list of packages to be scanned
@@ -925,7 +925,7 @@ public class GuiceContext
 	public @NotNull
 	Set<IGuicePostStartup> loadPostStartupServices()
 	{
-		return getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class));
+		return getLoader(IGuicePostStartup.class,true, ServiceLoader.load(IGuicePostStartup.class));
 	}
 
 	/**
