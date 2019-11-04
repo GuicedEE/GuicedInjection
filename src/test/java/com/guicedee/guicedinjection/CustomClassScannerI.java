@@ -14,6 +14,4 @@ public class CustomClassScannerI
 		map.put("customfile.sql", (resource, byteArray) -> System.out.println("Found custom sql in test... - " + resource.getPathRelativeToClasspathElement()));
 		return map;
 	}
-
-
 }

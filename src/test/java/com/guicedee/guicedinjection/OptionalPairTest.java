@@ -13,6 +13,9 @@ public class OptionalPairTest {
 
 	@Test
 	public void testOptionalPair() {
+		GuiceContext.instance()
+		            .getConfig()
+		            .setServiceLoadWithClassPath(true);
 		OptionalPair<String, String> op = new OptionalPair<>();
 		op.setKey("key");
 		op.setValue("value");

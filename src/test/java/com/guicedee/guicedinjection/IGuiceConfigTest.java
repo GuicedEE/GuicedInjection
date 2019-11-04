@@ -1,15 +1,26 @@
 package com.guicedee.guicedinjection;
 
 import com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
+import com.guicedee.logger.LogFactory;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.logging.Level;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IGuiceConfigTest
-		implements IGuiceConfigurator {
+		implements IGuiceConfigurator
+{
 	@Test
-	public void testConfig() {
+	public void testConfig()
+	{
+		LogFactory.configureConsoleColourOutput(Level.FINE);
+		GuiceContext.instance()
+		            .getConfig()
+		            .setServiceLoadWithClassPath(true);
 		GuiceConfig config = GuiceContext.get(GuiceConfig.class);
+
+		assertTrue(config.isServiceLoadWithClassPath());
 		assertTrue(config.isAnnotationScanning());
 		assertTrue(config.isFieldInfo());
 		assertTrue(config.isIgnoreFieldVisibility());
@@ -20,14 +31,15 @@ public class IGuiceConfigTest
 	}
 
 	@Override
-	public GuiceConfig configure(GuiceConfig config) {
+	public GuiceConfig configure(GuiceConfig config)
+	{
 		config.setIgnoreMethodVisibility(true)
-			  .setWhiteListPackages(true)
-			  .setAnnotationScanning(true)
-			  .setFieldInfo(true)
-			  .setFieldScanning(true)
-			  .setIgnoreFieldVisibility(true)
-			  .setMethodInfo(true);
+		      .setWhiteListPackages(true)
+		      .setAnnotationScanning(true)
+		      .setFieldInfo(true)
+		      .setFieldScanning(true)
+		      .setIgnoreFieldVisibility(true)
+		      .setMethodInfo(true);
 		return config;
 	}
 

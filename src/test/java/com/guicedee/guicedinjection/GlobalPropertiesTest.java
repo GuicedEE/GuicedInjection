@@ -1,21 +1,24 @@
 package com.guicedee.guicedinjection;
 
 import com.guicedee.guicedinjection.properties.GlobalProperties;
+import com.guicedee.logger.LogFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.TreeMap;
+import java.util.logging.Level;
 
 /**
  * @author bpmm097
  */
 public class GlobalPropertiesTest {
 
-	public GlobalPropertiesTest() {
-	}
-
 	@Test
 	public void testSomeMethod() {
+		LogFactory.configureConsoleColourOutput(Level.FINE);
+		GuiceContext.instance()
+		            .getConfig()
+		            .setServiceLoadWithClassPath(true);
 		GlobalProperties g = new GlobalProperties();
 		g.addProperty("key", "property", "value");
 		g.getProperty("key", "property");

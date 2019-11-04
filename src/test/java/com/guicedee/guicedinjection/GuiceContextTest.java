@@ -21,21 +21,15 @@ public class GuiceContextTest {
 
 	@BeforeAll
 	public static void pre() {
-		Handler[] handles = Logger.getLogger("")
-								  .getHandlers();
-		for (Handler handle : handles) {
-			handle.setLevel(Level.FINE);
-		}
-		LogFactory.setDefaultLevel(Level.FINE);
-		Logger.getLogger("")
-			  .addHandler(ConsoleSTDOutputHandler.getInstance()
-												 .setColoured(true));
+		LogFactory.configureConsoleColourOutput(Level.FINE);
+		GuiceContext.instance()
+		            .getConfig()
+		            .setServiceLoadWithClassPath(true);
 	}
 
 	@Test
 	public void testInjection() {
 		GuiceContext.inject();
 	}
-
 
 }
