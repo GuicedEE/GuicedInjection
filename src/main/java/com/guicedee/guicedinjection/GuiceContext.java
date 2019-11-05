@@ -119,8 +119,6 @@ public class GuiceContext
 				GuiceContext.buildingInjector = true;
 				GuiceContext.log.info("Starting up Guice Context");
 				GuiceContext.instance()
-				            .loadPreStartups();
-				GuiceContext.instance()
 				            .loadConfiguration();
 				if (GuiceContext.instance()
 				                .getConfig()
@@ -132,6 +130,8 @@ public class GuiceContext
 					GuiceContext.instance()
 					            .loadScanner();
 				}
+				GuiceContext.instance()
+				            .loadPreStartups();
 				List cModules = GuiceContext.instance()
 				                            .loadDefaultBinders();
 				GuiceContext.instance().injector = Guice.createInjector(cModules);
@@ -424,11 +424,16 @@ public class GuiceContext
 	 */
 	private void loadConfiguration()
 	{
-		Set<IGuiceConfigurator> guiceConfigurators = getLoader(IGuiceConfigurator.class, true, ServiceLoader.load(IGuiceConfigurator.class));
 		if (GuiceContext.config == null)
 		{
 			GuiceContext.config = new GuiceConfig<>();
 		}
+		else if (GuiceContext.config.isServiceLoadWithClassPath())
+		{
+			//Load Scanner Here, before everything
+			loadScanner();
+		}
+		Set<IGuiceConfigurator> guiceConfigurators = getLoader(IGuiceConfigurator.class, true, ServiceLoader.load(IGuiceConfigurator.class));
 		for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
 		{
 			GuiceContext.log.config("Loading IGuiceConfigurator - " +
@@ -444,15 +449,16 @@ public class GuiceContext
 	 */
 	private void loadScanner()
 	{
-		if (this.scanResult == null)
+		if (buildingInjector && scanner == null)
 		{
+			scanner = new ClassGraph();
 			Stopwatch stopwatch = Stopwatch.createStarted();
 			GuiceContext.log.info("Loading Classpath Scanner");
 			if (GuiceContext.config == null)
 			{
 				loadConfiguration();
 			}
-			scanner = new ClassGraph();
+
 			configureScanner(scanner);
 			try
 			{
@@ -830,15 +836,15 @@ public class GuiceContext
 	@SuppressWarnings("unchecked")
 	private List loadDefaultBinders()
 	{
-		Set<IGuiceModule> preStartups = getLoader(IGuiceModule.class, true, ServiceLoader.load(IGuiceModule.class));
-		Set<IGuiceModule> startups = new TreeSet<>(preStartups);
+		Set<IGuiceModule> preStartups = loadIGuiceModules();
+		Set<IGuiceModule> modules = new TreeSet<>(preStartups);
 		List output = new ArrayList<>();
-		for (IGuiceModule startup : startups)
+		for (IGuiceModule module : modules)
 		{
 			GuiceContext.log.config("Loading IGuiceModule  - " +
-			                        startup.getClass()
-			                               .getCanonicalName());
-			output.add(startup);
+			                        module.getClass()
+			                              .getCanonicalName());
+			output.add(module);
 		}
 		return output;
 	}
@@ -925,7 +931,18 @@ public class GuiceContext
 	public @NotNull
 	Set<IGuicePostStartup> loadPostStartupServices()
 	{
-		return getLoader(IGuicePostStartup.class,true, ServiceLoader.load(IGuicePostStartup.class));
+		return getLoader(IGuicePostStartup.class, true, ServiceLoader.load(IGuicePostStartup.class));
+	}
+
+	/**
+	 * Loads the service lists of post startup's for manual additions
+	 *
+	 * @return The list of guice post startups
+	 */
+	public @NotNull
+	Set<IGuiceModule> loadIGuiceModules()
+	{
+		return getLoader(IGuiceModule.class, true, ServiceLoader.load(IGuiceModule.class));
 	}
 
 	/**
@@ -940,12 +957,12 @@ public class GuiceContext
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public <T> Set<T> getLoader(Class<T> loaderType, ServiceLoader<T> serviceLoader)
+	public <T extends Comparable<T>> Set<T> getLoader(Class<T> loaderType, ServiceLoader<T> serviceLoader)
 	{
 		if (!getAllLoadedServices().containsKey(loaderType))
 		{
 			Set<T> loader;
-			if (GuiceContext.buildingInjector)
+			if (GuiceContext.buildingInjector || injector == null)
 			{
 				loader = IDefaultService.loaderToSetNoInjection(serviceLoader);
 			}

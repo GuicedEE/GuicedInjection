@@ -110,6 +110,14 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	public J setServiceLoadWithClassPath(boolean serviceLoadWithClassPath)
 	{
 		this.serviceLoadWithClassPath = serviceLoadWithClassPath;
+		setClasspathScanning(true);
+		setAnnotationScanning(true);
+		setFieldScanning(true);
+		setFieldInfo(true);
+		setMethodInfo(true);
+		setIgnoreFieldVisibility(true);
+		setIgnoreMethodVisibility(true);
+		setExcludeModulesAndJars(true);
 		return (J) this;
 	}
 

@@ -1,10 +1,13 @@
 package com.guicedee.guicedinjection.interfaces;
 
 import com.guicedee.guicedinjection.GuiceConfig;
+import com.guicedee.guicedinjection.GuiceContext;
+import com.guicedee.logger.LogFactory;
 import io.github.classgraph.ClassInfo;
 
 import javax.validation.constraints.NotNull;
 import java.util.*;
+import java.util.logging.Level;
 
 import static com.guicedee.guicedinjection.GuiceContext.*;
 
@@ -26,11 +29,10 @@ public interface IDefaultService<J extends IDefaultService<J>>
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	static <T> Set<T> loaderToSet(ServiceLoader<T> loader)
+	static <T extends Comparable<T>> Set<T> loaderToSet(ServiceLoader<T> loader)
 	{
 		Set<Class<T>> loadeds = new HashSet<>();
-		Set<T> output = new TreeSet<>();
-		GuiceConfig config = get(GuiceConfig.class);
+		GuiceConfig config = GuiceContext.instance().getConfig();
 		String type = loader.toString();
 		type = type.replace("java.util.ServiceLoader[", "");
 		type = type.substring(0, type.length() - 1);
@@ -42,10 +44,9 @@ public interface IDefaultService<J extends IDefaultService<J>>
 			{
 				Class<T> load = (Class<T>) classInfo.loadClass();
 				loadeds.add(load);
-				output.add(get(load));
 			}
 		}
-
+		Set<T> output = new TreeSet<>();
 		for (T newInstance : loader)
 		{
 			if (!loadeds.contains(newInstance.getClass()))
@@ -68,10 +69,43 @@ public interface IDefaultService<J extends IDefaultService<J>>
 	@NotNull
 	static <T> Set<T> loaderToSetNoInjection(ServiceLoader<T> loader)
 	{
+		Set<Class<T>> loadeds = new HashSet<>();
+		GuiceConfig config = GuiceContext.instance().getConfig();
+		String type = loader.toString();
+		type = type.replace("java.util.ServiceLoader[", "");
+		type = type.substring(0, type.length() - 1);
+		if (config.isServiceLoadWithClassPath() && !buildingInjector)
+		{
+			for (ClassInfo classInfo : instance()
+					                           .getScanResult()
+					                           .getClassesImplementing(type))
+			{
+				Class<T> load = (Class<T>) classInfo.loadClass();
+				loadeds.add(load);
+			}
+		}
+		Set<Class<T>> completed = new LinkedHashSet<>();
 		Set<T> output = new LinkedHashSet<>();
 		for (T newInstance : loader)
 		{
 			output.add(newInstance);
+			completed.add((Class<T>) newInstance.getClass());
+		}
+		for (Class<T> newInstance : loadeds)
+		{
+			if (completed.contains(newInstance))
+			{
+				continue;
+			}
+			try
+			{
+				output.add((T) newInstance.getDeclaredConstructor());
+			}
+			catch (NoSuchMethodException e)
+			{
+				LogFactory.getLog("IDefaultService")
+				          .log(Level.SEVERE, "Cannot load a service through default constructor", e);
+			}
 		}
 		return output;
 	}
