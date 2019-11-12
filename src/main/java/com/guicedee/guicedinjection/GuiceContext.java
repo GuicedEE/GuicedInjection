@@ -331,7 +331,7 @@ public class GuiceContext
 	public static void destroy()
 	{
 		Set<IGuicePreDestroy> destroyers = GuiceContext.instance()
-		                                               .getLoader(IGuicePreDestroy.class, ServiceLoader.load(IGuicePreDestroy.class));
+		                                               .getLoader(IGuicePreDestroy.class,true, ServiceLoader.load(IGuicePreDestroy.class));
 		for (IGuicePreDestroy destroyer : destroyers)
 		{
 			IGuicePreDestroy instance = GuiceContext.get(destroyer.getClass());
