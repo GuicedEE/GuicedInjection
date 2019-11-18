@@ -117,8 +117,6 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		setMethodInfo(true);
 		setIgnoreFieldVisibility(true);
 		setIgnoreMethodVisibility(true);
-		setExcludeModulesAndJars(true);
-		setExcludePaths(true);
 		return (J) this;
 	}
 

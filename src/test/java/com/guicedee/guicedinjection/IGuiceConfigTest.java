@@ -16,8 +16,9 @@ public class IGuiceConfigTest
 	{
 		LogFactory.configureConsoleColourOutput(Level.FINE);
 		GuiceContext.instance()
-		            .getConfig()
-		            .setServiceLoadWithClassPath(true);
+		            .loadIGuiceConfigs()
+		            .add(new IGuiceConfigTest());
+		GuiceContext.inject();
 		GuiceConfig config = GuiceContext.get(GuiceConfig.class);
 
 		assertTrue(config.isServiceLoadWithClassPath());

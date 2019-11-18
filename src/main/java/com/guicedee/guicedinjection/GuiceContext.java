@@ -376,23 +376,6 @@ public class GuiceContext
 	}
 
 	/**
-	 * Method loadPreStartups gets the pre startups and loads them up
-	 */
-	private void loadPreStartups()
-	{
-		Set<IGuicePreStartup> preStartups = getLoader(IGuicePreStartup.class, true, ServiceLoader.load(IGuicePreStartup.class));
-		List<IGuicePreStartup> startups = new ArrayList<>(preStartups);
-		startups.sort(Comparator.comparing(IGuicePreStartup::sortOrder));
-		for (IGuicePreStartup startup : startups)
-		{
-			GuiceContext.log.config("Loading IGuicePreStartup - " +
-			                        startup.getClass()
-			                               .getCanonicalName());
-			startup.onStartup();
-		}
-	}
-
-	/**
 	 * Returns the current scan result
 	 *
 	 * @return The physical Scan Result from the complete class scanner
@@ -433,7 +416,7 @@ public class GuiceContext
 			//Load Scanner Here, before everything
 			loadScanner();
 		}
-		Set<IGuiceConfigurator> guiceConfigurators = getLoader(IGuiceConfigurator.class, true, ServiceLoader.load(IGuiceConfigurator.class));
+		Set<IGuiceConfigurator> guiceConfigurators = loadIGuiceConfigs();
 		for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
 		{
 			GuiceContext.log.config("Loading IGuiceConfigurator - " +
@@ -877,7 +860,7 @@ public class GuiceContext
 	 */
 	private void loadPostStartups()
 	{
-		Set<IGuicePostStartup> startupSet = getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class));
+		Set<IGuicePostStartup> startupSet = loadPostStartupServices();
 
 		Map<Integer, Set<IGuicePostStartup>> postStartupGroups = new TreeMap<>();
 		for (IGuicePostStartup postStartup : startupSet)
@@ -935,6 +918,16 @@ public class GuiceContext
 	}
 
 	/**
+	 * Returns the set of service lists of pre startup's for manual additions
+	 *
+	 * @return The list of guice post startups
+	 */
+	public @NotNull
+	Set<IGuicePreStartup> loadPreStartupServices()
+	{
+		return getLoader(IGuicePreStartup.class, true, ServiceLoader.load(IGuicePreStartup.class));
+	}
+	/**
 	 * Loads the service lists of post startup's for manual additions
 	 *
 	 * @return The list of guice post startups
@@ -943,6 +936,33 @@ public class GuiceContext
 	Set<IGuiceModule> loadIGuiceModules()
 	{
 		return getLoader(IGuiceModule.class, true, ServiceLoader.load(IGuiceModule.class));
+	}
+	/**
+	 * Loads the service lists of guice configurators (before pre-startup) for manual additions
+	 *
+	 * @return The list of guice configs
+	 */
+	public @NotNull
+	Set<IGuiceConfigurator> loadIGuiceConfigs()
+	{
+		return getLoader(IGuiceConfigurator.class, true, ServiceLoader.load(IGuiceConfigurator.class));
+	}
+
+	/**
+	 * Method loadPreStartups gets the pre startups and loads them up
+	 */
+	private void loadPreStartups()
+	{
+		Set<IGuicePreStartup> preStartups = loadPreStartupServices();
+		List<IGuicePreStartup> startups = new ArrayList<>(preStartups);
+		startups.sort(Comparator.comparing(IGuicePreStartup::sortOrder));
+		for (IGuicePreStartup startup : startups)
+		{
+			GuiceContext.log.config("Loading IGuicePreStartup - " +
+			                        startup.getClass()
+			                               .getCanonicalName());
+			startup.onStartup();
+		}
 	}
 
 	/**
