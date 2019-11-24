@@ -46,7 +46,7 @@ import java.util.logging.Logger;
  * @since Nov 14, 2016
  */
 @SuppressWarnings("MissingClassJavaDoc")
-public class GuiceContext
+public class GuiceContext<J extends GuiceContext<J>>
 {
 	/**
 	 * Field log
@@ -319,7 +319,7 @@ public class GuiceContext
 	 *
 	 * @return The singleton instance of this
 	 */
-	public static GuiceContext instance()
+	public static GuiceContext<?> instance()
 	{
 		return GuiceContext.instance;
 	}
