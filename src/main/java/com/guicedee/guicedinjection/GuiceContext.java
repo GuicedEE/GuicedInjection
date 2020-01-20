@@ -20,6 +20,7 @@ import com.google.common.base.Stopwatch;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.Module;
 import com.guicedee.guicedinjection.interfaces.*;
 import com.guicedee.guicedinjection.interfaces.annotations.INotEnhanceable;
 import com.guicedee.guicedinjection.interfaces.annotations.INotInjectable;
@@ -55,12 +56,11 @@ public class GuiceContext<J extends GuiceContext<J>>
 	/**
 	 * This particular instance of the class
 	 */
-	private static final GuiceContext instance = new GuiceContext();
+	private static final GuiceContext<?> instance = new GuiceContext<>();
 	/**
 	 * A list of all the loaded singleton sets
 	 */
-	@SuppressWarnings("unchecked")
-	private static final Map<Class, Set> allLoadedServices = Collections.synchronizedMap(new LinkedHashMap());
+	private static final Map<Class, Set> allLoadedServices = Collections.synchronizedMap(new LinkedHashMap<>());
 	/**
 	 * The building injector
 	 */
@@ -132,8 +132,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 				}
 				GuiceContext.instance()
 				            .loadPreStartups();
-				List cModules = GuiceContext.instance()
-				                            .loadDefaultBinders();
+				List<? extends Module> cModules = GuiceContext.instance()
+				                                              .loadDefaultBinders();
 				GuiceContext.instance().injector = Guice.createInjector(cModules);
 				GuiceContext.buildingInjector = false;
 				GuiceContext.instance()
