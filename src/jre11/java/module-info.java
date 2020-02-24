@@ -17,7 +17,7 @@ module com.guicedee.guicedinjection {
 	requires javax.inject;
 
 	requires com.google.common;
-	requires static com.fasterxml.jackson.module.guice;
+	requires com.fasterxml.jackson.module.guice;
 
 	exports com.guicedee.guicedinjection;
 	exports com.guicedee.guicedinjection.interfaces;
