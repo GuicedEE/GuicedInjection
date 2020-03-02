@@ -14,7 +14,7 @@ module com.guicedee.guicedinjection {
 	requires transitive com.guicedee.logmaster;
 
 	requires aopalliance;
-	requires javax.inject;
+	requires transitive javax.inject;
 
 	requires com.google.common;
 	requires com.fasterxml.jackson.module.guice;
@@ -42,7 +42,6 @@ module com.guicedee.guicedinjection {
 	uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions;
 	uses com.guicedee.guicedinjection.interfaces.IPackageBlackListScanner;
 
-	provides com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 
 	provides com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder with com.guicedee.guicedinjection.injections.ContextBinderGuice, com.guicedee.guicedinjection.implementations.ObjectMapperBinder;
