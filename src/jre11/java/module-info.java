@@ -1,13 +1,13 @@
 module com.guicedee.guicedinjection {
 
-	requires com.google.guice;
+	requires transitive com.google.guice;
 
 	requires io.github.classgraph;
-	requires java.validation;
+	requires transitive java.validation;
 
 	requires com.fasterxml.jackson.core;
-	requires com.fasterxml.jackson.databind;
-	requires com.fasterxml.jackson.annotation;
+	requires transitive com.fasterxml.jackson.databind;
+	requires transitive  com.fasterxml.jackson.annotation;
 	requires com.fasterxml.jackson.datatype.jdk8;
 
 	requires java.logging;
@@ -15,15 +15,15 @@ module com.guicedee.guicedinjection {
 
 	requires aopalliance;
 	requires transitive javax.inject;
-
 	requires com.google.common;
-	requires com.fasterxml.jackson.module.guice;
+	requires transitive org.apache.commons.lang3;
 
 	exports com.guicedee.guicedinjection;
 	exports com.guicedee.guicedinjection.interfaces;
 	exports com.guicedee.guicedinjection.interfaces.annotations;
 	exports com.guicedee.guicedinjection.abstractions;
 	exports com.guicedee.guicedinjection.pairing;
+	exports com.guicedee.guicedinjection.json;
 	exports com.guicedee.guicedinjection.properties;
 
 	uses com.guicedee.guicedinjection.interfaces.IPackageContentsScanner;
@@ -50,4 +50,5 @@ module com.guicedee.guicedinjection {
 
 	opens com.guicedee.guicedinjection to com.fasterxml.jackson.databind;
 	opens com.guicedee.guicedinjection.properties to com.fasterxml.jackson.databind;
+	opens com.guicedee.guicedinjection.json to com.fasterxml.jackson.databind;
 }

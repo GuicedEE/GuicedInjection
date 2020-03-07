@@ -3,21 +3,22 @@ package com.guicedee.guicedinjection.implementations;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.module.guice.ObjectMapperModule;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
 import com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder;
 import com.guicedee.guicedinjection.interfaces.ObjectBinderKeys;
-import com.guicedee.guicedinjection.interfaces.LocalDateTimeDeserializer;
-import com.guicedee.guicedinjection.interfaces.LocalDateTimeSerializer;
+import com.guicedee.guicedinjection.json.*;
 import com.guicedee.logger.LogFactory;
 
+import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class ObjectMapperBinder
@@ -38,11 +39,36 @@ public class ObjectMapperBinder
 	@Override
 	public void onBind(GuiceInjectorModule module)
 	{
-		module.install(new ObjectMapperModule());
-
-		SimpleModule sm = new SimpleModule("LocalDateTime", Version.unknownVersion());
-		sm.addSerializer(LocalDateTime.class,new LocalDateTimeSerializer());
-		sm.addDeserializer(LocalDateTime.class,new LocalDateTimeDeserializer());
+		SimpleModule sm = new SimpleModule("GuicedTimeHandler", Version.unknownVersion());
+		sm.addDeserializer(Boolean.class, new StringToBoolean())
+				.addDeserializer(boolean.class, new JsonDeserializer()
+				{
+					@Override
+					public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
+					{
+						return new StringToBool().deserialize(p, ctxt);
+					}
+				})
+				.addDeserializer(int.class, new JsonDeserializer()
+				{
+					@Override
+					public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
+					{
+						return new StringToIntRelaxed().deserialize(p, ctxt);
+					}
+				})
+				.addDeserializer(Integer.class, new JsonDeserializer()
+				{
+					@Override
+					public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
+					{
+						return new StringToIntegerRelaxed().deserialize(p, ctxt);
+					}
+				})
+				.addDeserializer(Duration.class, new StringToDurationTimeSeconds())
+				.addDeserializer(LocalDate.class, new LocalDateDeserializer())
+				.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer())
+				.addDeserializer(Integer.class, new StringToIntegerRelaxed());
 
 		module.bind(ObjectBinderKeys.DefaultObjectMapper)
 		      .toInstance(new ObjectMapper()
