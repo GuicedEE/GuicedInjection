@@ -13,12 +13,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+import static com.guicedee.guicedinjection.json.StaticStrings.*;
 
 
 public class LocalDateDeserializer
         extends JsonDeserializer<LocalDate> {
     private static final NumberFormat eFormatter = new DecimalFormat("0.000000E0");
-
 
     public static String LocalDateTimeFormat = "yyyy-MM-dd";
     public static String LocalDateTimeFormat2 = "yyyyMMdd";
@@ -35,14 +35,14 @@ public class LocalDateDeserializer
     @Override
     public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
         String name = p.getValueAsString();
-        if (Strings.isNullOrEmpty(name) || "NULL".equals(name) || "0".equals(name)) {
+        if (Strings.isNullOrEmpty(name) || STRING_NULL.equals(name) || STRING_0.equals(name)) {
             return null;
         }
-        if (name.contains("E")) {
-            name = name.replaceAll("\\.", "").substring(0, name.indexOf('E') - 1);
+        if (name.contains(E)) {
+            name = name.replaceAll(STRING_DOT_ESCAPED, STRING_EMPTY).substring(0, name.indexOf(E) - 1);
         }
         if (name.length() == 7) {
-            name = new StringBuilder(name).insert(name.length() - 1, '0').toString();
+            name = new StringBuilder(name).insert(name.length() - 1, 0).toString();
         }
         LocalDate time = null;
         for (DateTimeFormatter format : formats) {
@@ -54,7 +54,7 @@ public class LocalDateDeserializer
             }
         }
         if (time == null) {
-            throw new IOException("Unable to determine localdate from string - " + name);
+            throw new IOException("Unable to determine local date from string - " + name);
         }
         return time;
     }

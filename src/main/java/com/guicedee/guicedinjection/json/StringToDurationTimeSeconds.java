@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.time.Duration;
 
+import static com.guicedee.guicedinjection.json.StaticStrings.*;
+
 /**
  * Converts most of the string knowns to boolean
  */
@@ -23,31 +25,35 @@ public class StringToDurationTimeSeconds extends JsonDeserializer<Duration> {
 
     @Override
     public Duration deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        String value = p.getValueAsString();
-        if (Strings.isNullOrEmpty(value) || "NULL".equals(value) || "0".equals(value)) {
-            return null;
-        }
-        if (value.contains("E")) {
-            value = value.replaceAll("\\.", "").substring(0, value.indexOf('E') - 1);
-        }
+        String name = p.getValueAsString();
+	    if (Strings.isNullOrEmpty(name) || STRING_NULL.equals(name) || STRING_0.equals(name)) {
+		    return null;
+	    }
+	    if (name.contains(E)) {
+		    name = name.replaceAll(STRING_DOT_ESCAPED, STRING_EMPTY).substring(0, name.indexOf(E) - 1);
+	    }
 
-        if (value.contains(".")) {
-            Double d = Double.parseDouble(value);
-            value = String.valueOf(d.intValue());
-        }
+	    if (name.contains(STRING_DOT)) {
+		    double d = Double.parseDouble(name);
+		    name = String.valueOf((int) d);
+	    }
 
-        value = value.trim();
-        if (value.length() < 6) {
-            value = StringUtils.leftPad(value, value.length() + 1, '0');
+        name = name.trim();
+	    if (name.length() == 4) {
+		    return new StringToDurationTime().deserialize(p, ctxt);
+	    }
+
+        if (name.length() < 6) {
+            name = StringUtils.leftPad(name, name.length() + 1, STRING_0);
         }
-        if (value.indexOf('P') < 0) {
+        if (!name.contains(P)) {
             //Numeric
-            int hours = Integer.parseInt(value.substring(0, 2));
-            int minutes = Integer.parseInt(value.substring(2, 4));
-            int seconds = Integer.parseInt(value.substring(4, 6));
-            return Duration.parse("PT" + nf.format(hours) + "H" + nf.format(minutes) + "M" + nf.format(seconds) + "S");
+            int hours = Integer.parseInt(name.substring(0, 2));
+            int minutes = Integer.parseInt(name.substring(2, 4));
+            int seconds = Integer.parseInt(name.substring(4, 6));
+            return Duration.parse(STRING_DURATION_TIME + nf.format(hours) + H + nf.format(minutes) + M + nf.format(seconds) + S);
         } else {
-            return Duration.parse(value);
+            return Duration.parse(name);
         }
     }
 }

@@ -331,7 +331,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	public static void destroy()
 	{
 		Set<IGuicePreDestroy> destroyers = GuiceContext.instance()
-		                                               .getLoader(IGuicePreDestroy.class,true, ServiceLoader.load(IGuicePreDestroy.class));
+		                                               .getLoader(IGuicePreDestroy.class, true, ServiceLoader.load(IGuicePreDestroy.class));
 		for (IGuicePreDestroy destroyer : destroyers)
 		{
 			IGuicePreDestroy instance = GuiceContext.get(destroyer.getClass());
@@ -485,46 +485,16 @@ public class GuiceContext<J extends GuiceContext<J>>
 			}
 		}
 
-		if (config.isWhitelistJarsAndModules())
-		{
-			if (getJavaVersion() < 9)
-			{
-				String[] jarBlacklist = getJarsWhiteList();
-				if (jarBlacklist.length != 0)
-				{
-					graph.blacklistJars(jarBlacklist);
-				}
-			}
-			else
-			{
-				String[] modulesBlacklist = getModulesWhiteList();
-				if (modulesBlacklist.length != 0)
-				{
-					graph.whitelistModules(modulesBlacklist);
-				}
-			}
-		}
 		if (GuiceContext.config.isExcludeModulesAndJars())
 		{
-			if (getJavaVersion() < 9)
+			String[] modulesBlacklist = getModulesBlacklistList();
+			if (modulesBlacklist.length != 0)
 			{
-				String[] jarBlacklist = getJarsBlacklistList();
-				if (jarBlacklist.length != 0)
-				{
-					graph.blacklistJars(jarBlacklist);
-				}
+				graph.blacklistModules(modulesBlacklist);
 			}
 			else
 			{
-				String[] modulesBlacklist = getModulesBlacklistList();
-				if (modulesBlacklist.length != 0)
-				{
-					graph.blacklistModules(modulesBlacklist);
-				}
-				else
-				{
-					graph.ignoreParentModuleLayers();
-				}
+				graph.ignoreParentModuleLayers();
 			}
 		}
 
@@ -708,75 +678,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * @return A string list of packages to be scanned
 	 */
 	@SuppressWarnings("unchecked")
-	private String[] getJarsWhiteList()
-	{
-		Set<String> strings = new TreeSet<>();
-		Set<IGuiceScanJarInclusions> exclusions = getLoader(IGuiceScanJarInclusions.class, true, ServiceLoader.load(IGuiceScanJarInclusions.class));
-		if (exclusions.iterator()
-		              .hasNext())
-		{
-			for (IGuiceScanJarInclusions exclusion : exclusions)
-			{
-				Set<String> searches = exclusion.includeJars();
-				strings.addAll(searches);
-			}
-			GuiceContext.log.log(Level.FINE, "IGuiceScanJarInclusions - " + strings.toString());
-		}
-		return strings.toArray(new String[0]);
-	}
-
-	/**
-	 * Returns a complete list of generic exclusions
-	 *
-	 * @return A string list of packages to be scanned
-	 */
-	@SuppressWarnings("unchecked")
-	private String[] getModulesWhiteList()
-	{
-		Set<String> strings = new TreeSet<>();
-		Set<IGuiceScanModuleInclusions> exclusions = getLoader(IGuiceScanModuleInclusions.class, true, ServiceLoader.load(IGuiceScanModuleInclusions.class));
-		if (exclusions.iterator()
-		              .hasNext())
-		{
-			for (IGuiceScanModuleInclusions exclusion : exclusions)
-			{
-				Set<String> searches = exclusion.includeModules();
-				strings.addAll(searches);
-			}
-			GuiceContext.log.log(Level.FINE, "IGuiceScanModuleInclusions - " + strings.toString());
-		}
-		return strings.toArray(new String[0]);
-	}
-
-	/**
-	 * Returns a complete list of generic exclusions
-	 *
-	 * @return A string list of packages to be scanned
-	 */
-	@SuppressWarnings("unchecked")
-	private String[] getJarsBlacklistList()
-	{
-		Set<String> strings = new TreeSet<>();
-		Set<IGuiceScanJarExclusions> exclusions = getLoader(IGuiceScanJarExclusions.class, true, ServiceLoader.load(IGuiceScanJarExclusions.class));
-		if (exclusions.iterator()
-		              .hasNext())
-		{
-			for (IGuiceScanJarExclusions exclusion : exclusions)
-			{
-				Set<String> searches = exclusion.excludeJars();
-				strings.addAll(searches);
-			}
-			GuiceContext.log.log(Level.FINE, "IGuiceScanJarExclusions - " + strings.toString());
-		}
-		return strings.toArray(new String[0]);
-	}
-
-	/**
-	 * Returns a complete list of generic exclusions
-	 *
-	 * @return A string list of packages to be scanned
-	 */
-	@SuppressWarnings("unchecked")
 	private String[] getModulesBlacklistList()
 	{
 		Set<String> strings = new TreeSet<>();
@@ -927,6 +828,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		return getLoader(IGuicePreStartup.class, true, ServiceLoader.load(IGuicePreStartup.class));
 	}
+
 	/**
 	 * Loads the service lists of post startup's for manual additions
 	 *
@@ -937,6 +839,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		return getLoader(IGuiceModule.class, true, ServiceLoader.load(IGuiceModule.class));
 	}
+
 	/**
 	 * Loads the service lists of guice configurators (before pre-startup) for manual additions
 	 *

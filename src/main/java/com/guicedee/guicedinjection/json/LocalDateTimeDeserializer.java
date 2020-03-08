@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+import static com.guicedee.guicedinjection.json.StaticStrings.*;
+
 
 public class LocalDateTimeDeserializer
         extends JsonDeserializer<LocalDateTime> {
@@ -30,12 +32,12 @@ public class LocalDateTimeDeserializer
     @Override
     public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
         String name = p.getValueAsString();
-        if (Strings.isNullOrEmpty(name) || "NULL".equals(name) || "0".equals(name)) {
-            return null;
-        }
-        if (name.contains("E")) {
-            name = name.replaceAll("\\.", "").substring(name.indexOf('E'));
-        }
+	    if (Strings.isNullOrEmpty(name) || STRING_NULL.equals(name) || STRING_0.equals(name)) {
+		    return null;
+	    }
+	    if (name.contains(E)) {
+		    name = name.replaceAll(STRING_DOT_ESCAPED, STRING_EMPTY).substring(0, name.indexOf(E) - 1);
+	    }
         LocalDateTime time = null;
         for (DateTimeFormatter format : formats) {
             try {
@@ -46,7 +48,7 @@ public class LocalDateTimeDeserializer
             }
         }
         if (time == null) {
-            throw new IOException("Unable to determine localdatetime from string - [name]");
+            throw new IOException("Unable to determine local date time from string - [name]");
         }
         return time;
     }

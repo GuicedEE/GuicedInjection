@@ -1,9 +1,6 @@
 module com.guicedee.guicedinjection {
-
 	requires transitive com.google.guice;
-
-	requires io.github.classgraph;
-	requires transitive java.validation;
+	requires transitive io.github.classgraph;
 
 	requires com.fasterxml.jackson.core;
 	requires transitive com.fasterxml.jackson.databind;
@@ -12,11 +9,6 @@ module com.guicedee.guicedinjection {
 
 	requires java.logging;
 	requires transitive com.guicedee.logmaster;
-
-	requires aopalliance;
-	requires transitive javax.inject;
-	requires com.google.common;
-	requires transitive org.apache.commons.lang3;
 
 	exports com.guicedee.guicedinjection;
 	exports com.guicedee.guicedinjection.interfaces;
@@ -36,10 +28,10 @@ module com.guicedee.guicedinjection {
 	uses com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
 	uses com.guicedee.guicedinjection.interfaces.IPathContentsScanner;
 	uses com.guicedee.guicedinjection.interfaces.IPathContentsBlacklistScanner;
-	uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
+	//uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
 	uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions;
-	uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarInclusions;
-	uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions;
+	//uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarInclusions;
+	//uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions;
 	uses com.guicedee.guicedinjection.interfaces.IPackageBlackListScanner;
 
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;

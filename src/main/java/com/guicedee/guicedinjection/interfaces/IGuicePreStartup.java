@@ -16,12 +16,15 @@
  */
 package com.guicedee.guicedinjection.interfaces;
 
+import com.guicedee.guicedinjection.interfaces.annotations.INotInjectable;
+
 /**
  * Initializes before Guice has been injected
  *
  * @author GedMarc
  * @since 15 May 2017
  */
+@INotInjectable
 public interface IGuicePreStartup<J extends IGuicePreStartup<J>>
 		extends IDefaultService<J> {
 

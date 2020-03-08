@@ -1,6 +1,5 @@
 package com.guicedee.guicedinjection.implementations;
 
-import com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
 import com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions;
 
 import javax.validation.constraints.NotNull;
@@ -8,8 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class GuiceDefaultModuleExclusions
-		implements IGuiceScanModuleExclusions<GuiceDefaultModuleExclusions>,
-				   IGuiceScanJarExclusions<GuiceDefaultModuleExclusions> {
+		implements IGuiceScanModuleExclusions<GuiceDefaultModuleExclusions> {
 	@Override
 	public @NotNull Set<String> excludeModules() {
 		Set<String> strings = new HashSet<>();
@@ -106,128 +104,4 @@ public class GuiceDefaultModuleExclusions
 
 		return strings;
 	}
-
-	@NotNull
-	@Override
-	public Set<String> excludeJars() {
-		Set<String> strings = new HashSet<>();
-		strings.add("guiced-persistence-hibernateproperties-reader-*");
-		strings.add("guiced-persistence-systemproperties-reader-*");
-		strings.add("guiced-injection-*");
-		strings.add("jwebmp-undertow-*");
-		strings.add("guiced-persistence-wildfly-*");
-		strings.add("uadetector-core-*");
-		strings.add("uadetector-servlet-*");
-		strings.add("uadetector-websockets-*");
-		strings.add("jwebmp-websockets-*");
-		strings.add("commons-io-*");
-		strings.add("commons-lang3-*");
-		strings.add("commons-text-*");
-		strings.add("javax.websocket-api-*");
-		strings.add("xnio-api-*");
-		strings.add("xnio-nio-*");
-		strings.add("jwebmp-log-master-*");
-		strings.add("c3p0-*");
-		strings.add("guiced-servlets-request-scoper-*");
-		strings.add("mchange-commons-*");
-		strings.add("hibernate-c3p0-*");
-		strings.add("btm-*");
-		strings.add("guiced-persistence-jpa-*");
-		strings.add("guice-servlet-*");
-		strings.add("guiced-servlets-*");
-
-		strings.add("javax.servlet-api-*");
-		strings.add("animal-sniffer-annotations-*");
-		strings.add("antlr-*");
-		strings.add("aopalliance-*");
-		strings.add("apiguardian-api-*");
-		strings.add("assertj-*");
-		strings.add("classmate-*");
-		strings.add("guice-*");
-		strings.add("checker-qual-*");
-		strings.add("classgraph-*");
-		strings.add("guiced-servlets-jsf-*");
-		strings.add("javax.faces-*");
-		strings.add("javax.el-*");
-		strings.add("javax.servlet-*");
-		strings.add("guiced-servlets-jsf-*");
-		strings.add("javax.faces-*");
-		strings.add("javax.el-*");
-		strings.add("javax.servlet-*");
-		strings.add("guiced-persistence-*");
-		strings.add("guiced-persistence-*");
-
-		strings.add("byte-buddy-*");
-
-		strings.add("dom4j-*");
-		strings.add("guice-persist-*");
-
-		strings.add("hibernate-core-*");
-		strings.add("hibernate-commons-annotations-*");
-		strings.add("hibernate-jcache-*");
-		strings.add("hibernate-jpamodelgen-*");
-		strings.add("hibernate-validator-*");
-
-		strings.add("javax.persistence-*");
-
-		strings.add("javax.transaction-api-*");
-		strings.add("javax.persistence-api-*");
-
-		strings.add("jaxb-api-*");
-		strings.add("jboss-logging-*");
-
-		strings.add("byte-buddy-*");
-
-		strings.add("dom4j-*");
-		strings.add("guice-persist-*");
-
-		strings.add("hibernate-core-*");
-		strings.add("hibernate-commons-annotations-*");
-		strings.add("hibernate-jcache-*");
-		strings.add("hibernate-jpamodelgen-*");
-		strings.add("hibernate-validator-*");
-
-		strings.add("javax.persistence-*");
-
-		strings.add("javax.transaction-api-*");
-		strings.add("javax.persistence-api-*");
-
-		strings.add("jaxb-api-*");
-		strings.add("jboss-logging-*");
-
-		strings.add("hazelcast-*");
-		strings.add("cache-annotations-ri-guice-*");
-		strings.add("hibernate-jcache-*");
-		strings.add("jboss-logging-*");
-		strings.add("cache-annotations-ri-common-*");
-		strings.add("cache-api-*");
-
-		strings.add("error-prone-annotations-*");
-		strings.add("guava-*");
-		strings.add("j2objc-*");
-		strings.add("j2objc-annotations-*");
-
-		strings.add("jackson-annotations-*");
-		strings.add("jackson-core-*");
-		strings.add("jackson-databind-*");
-		strings.add("jackson-datatype-jdk8-*");
-		strings.add("jackson-datatype-jsr310-*");
-		strings.add("jackson-module-parameter-names-*");
-
-		strings.add("javax.inject-*");
-		strings.add("validation-api-*");
-
-		//Testing
-		strings.add("hamcrest-*");
-		strings.add("sl4j-*");
-
-		strings.add("junit-*");
-		strings.add("mockito-*");
-		strings.add("objenesis-*");
-		strings.add("opentest4j-*");
-
-		return strings;
-	}
-
-
 }
