@@ -2,12 +2,9 @@ module com.guicedee.guicedinjection {
 	requires transitive com.google.guice;
 	requires transitive io.github.classgraph;
 
-	requires com.fasterxml.jackson.core;
 	requires transitive com.fasterxml.jackson.databind;
-	requires transitive  com.fasterxml.jackson.annotation;
 	requires com.fasterxml.jackson.datatype.jdk8;
 
-	requires java.logging;
 	requires transitive com.guicedee.logmaster;
 
 	exports com.guicedee.guicedinjection;
@@ -28,10 +25,7 @@ module com.guicedee.guicedinjection {
 	uses com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
 	uses com.guicedee.guicedinjection.interfaces.IPathContentsScanner;
 	uses com.guicedee.guicedinjection.interfaces.IPathContentsBlacklistScanner;
-	//uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
 	uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions;
-	//uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarInclusions;
-	//uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions;
 	uses com.guicedee.guicedinjection.interfaces.IPackageBlackListScanner;
 
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
