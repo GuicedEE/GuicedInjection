@@ -21,7 +21,6 @@ public class GuiceDefaultModuleExclusions
 		strings.add("com.fasterxml.jackson.databind");
 		strings.add("com.fasterxml.jackson.datatype.jdk8");
 		strings.add("com.fasterxml.jackson.datatype.jsr310");
-		strings.add("com.fasterxml.jackson.module.guice");
 		strings.add("com.google.common");
 		strings.add("com.google.guice");
 		strings.add("com.google.guice.extensions.persist");
@@ -98,10 +97,6 @@ public class GuiceDefaultModuleExclusions
 		strings.add("undertow.websockets.jsr");
 		strings.add("xnio");
 		strings.add("xnio.api");
-		strings.add("za.co.bayport.jpms.guicedinjection");
-		strings.add("za.co.bayport.jpms.logmaster");
-
-
 		return strings;
 	}
 }

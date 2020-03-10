@@ -37,6 +37,9 @@ public class StringToDurationTime extends JsonDeserializer<Duration> {
             name = String.valueOf((int) d);
         }
 
+        if(name.length() > 4)
+        	return new StringToDurationTimeSeconds().deserialize(p,ctxt);
+
         name = name.trim();
         if (!name.contains(P)) {
             //Numeric
