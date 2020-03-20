@@ -47,12 +47,18 @@ public interface IDefaultService<J extends IDefaultService<J>>
 			}
 		}
 		Set<T> output = new TreeSet<>();
-		for (T newInstance : loader)
+		try
 		{
-			if (!loadeds.contains(newInstance.getClass()))
+			for (T newInstance : loader)
 			{
-				output.add((T) get(newInstance.getClass()));
+				if (!loadeds.contains(newInstance.getClass()))
+				{
+					output.add((T) get(newInstance.getClass()));
+				}
 			}
+		}catch(Throwable T)
+		{
+			LogFactory.getLog("IDefaultService").log(Level.SEVERE, "Unable to provide instance of " + type + " to TreeSet", T);
 		}
 		return output;
 	}
