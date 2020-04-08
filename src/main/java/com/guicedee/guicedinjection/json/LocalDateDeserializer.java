@@ -17,45 +17,60 @@ import static com.guicedee.guicedinjection.json.StaticStrings.*;
 
 
 public class LocalDateDeserializer
-        extends JsonDeserializer<LocalDate> {
-    private static final NumberFormat eFormatter = new DecimalFormat("0.000000E0");
+		extends JsonDeserializer<LocalDate>
+{
+	public static String LocalDateTimeFormat = "yyyy-MM-dd";
+	public static String LocalDateTimeFormat2 = "yyyyMMdd";
+	public static String LocalDateTimeFormat3 = "yyyy/MM/dd";
+	public static String LocalDateTimeFormat4 = "yyyyMMd";
 
-    public static String LocalDateTimeFormat = "yyyy-MM-dd";
-    public static String LocalDateTimeFormat2 = "yyyyMMdd";
-    public static String LocalDateTimeFormat3 = "yyyy/MM/dd";
-    public static String LocalDateTimeFormat4 = "yyyyMMd";
+	private static final DateTimeFormatter[] formats = new DateTimeFormatter[]
+			                                                   {DateTimeFormatter.ofPattern(LocalDateTimeFormat),
+			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat2),
+			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat3),
+			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat4)
+			                                                   };
 
-    private static final DateTimeFormatter[] formats = new DateTimeFormatter[]
-            {DateTimeFormatter.ofPattern(LocalDateTimeFormat),
-                    DateTimeFormatter.ofPattern(LocalDateTimeFormat2),
-                    DateTimeFormatter.ofPattern(LocalDateTimeFormat3),
-                    DateTimeFormatter.ofPattern(LocalDateTimeFormat4)
-            };
+	@Override
+	public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
+	{
+		String name = p.getValueAsString();
+		return convert(name);
+	}
 
-    @Override
-    public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        String name = p.getValueAsString();
-        if (Strings.isNullOrEmpty(name) || STRING_NULL.equals(name) || STRING_0.equals(name)) {
-            return null;
-        }
-        if (name.contains(E)) {
-            name = name.replaceAll(STRING_DOT_ESCAPED, STRING_EMPTY).substring(0, name.indexOf(E) - 1);
-        }
-        if (name.length() == 7) {
-            name = new StringBuilder(name).insert(name.length() - 1, 0).toString();
-        }
-        LocalDate time = null;
-        for (DateTimeFormatter format : formats) {
-            try {
-                time = LocalDate.parse(name, format);
-                break;
-            } catch (DateTimeParseException dtpe) {
-                //try the next one
-            }
-        }
-        if (time == null) {
-            throw new IOException("Unable to determine local date from string - " + name);
-        }
-        return time;
-    }
+	public LocalDate convert(String name) throws IOException
+	{
+		if (Strings.isNullOrEmpty(name) || STRING_NULL.equals(name) || STRING_0.equals(name))
+		{
+			return null;
+		}
+		if (name.contains(E))
+		{
+			name = name.replaceAll(STRING_DOT_ESCAPED, STRING_EMPTY)
+			           .substring(0, name.indexOf(E) - 1);
+		}
+		if (name.length() == 7)
+		{
+			name = new StringBuilder(name).insert(name.length() - 1, 0)
+			                              .toString();
+		}
+		LocalDate time = null;
+		for (DateTimeFormatter format : formats)
+		{
+			try
+			{
+				time = LocalDate.parse(name, format);
+				break;
+			}
+			catch (DateTimeParseException dtpe)
+			{
+				//try the next one
+			}
+		}
+		if (time == null)
+		{
+			throw new IOException("Unable to determine local date from string - " + name);
+		}
+		return time;
+	}
 }
