@@ -27,6 +27,9 @@ public class StaticStrings
     public static final String STRING_EQUALS = "=";
     public static final String STRING_NEWLINE_TEXT = "\n";
     public static final String STRING_DOUBLE_COLON = ":";
+    public static final String STRING_ASTERISK = "*";
+    public static final String STRING_QUESTIONMARK = "?";
+	public static final String STRING_SPACE_DOUBLE_COLON_SPACE = " : ";
     public static final String STRING_SINGLE_QUOTES = "'";
     public static final String STRING_DOUBLE_QUOTES = "\"";
     public static final String STRING_SINGLE_QUOTES_SPACE = "' ";
@@ -40,6 +43,7 @@ public class StaticStrings
     public static final String STRING_SHARP_BRACE_CLOSED = ">";
     public static final String STRING_HASH = "#";
     public static final String STRING_DASH = "-";
+    public static final String STRING_SPACE_DASH_SPACE = " - ";
     public static final String STRING_COMMNA = ",";
     public static final String STRING_COMMNA_SPACE = ", ";
     public static final String STRING_COMMNA_SEMICOLON = ",'";
@@ -50,6 +54,8 @@ public class StaticStrings
     public static final String STRING_BRACES_CLOSE = "}";
     public static final String STRING_CLOSING_BRACKET_SEMICOLON = ");";
     public static final String STRING_SPACE_OPEN_BRACKET = " (";
+    public static final String STRING_AMPERSAND = "&";
+
 
     public static final String FAKE_KEY = "fake";
 
@@ -66,8 +72,18 @@ public class StaticStrings
 	public static final String STRING_0 = "0";
 	public static final String STRING_1 = "1";
 
+	public static final String STRING_AUTHORIZATION = "Authorization: ";
+	public static final String STRING_AUTHORIZATION_HEADER = "Authorization";
+	public static final String STRING_AUTHORIZATION_BASIC = "Basic";
+	public static final String STRING_AUTHORIZATION_BASIC_SPACE = "Basic ";
+	public static final String STRING_AUTHORIZATION_BEARER = "Bearer";
+	public static final String STRING_AUTHORIZATION_BEARER_SPACE = "Bearer ";
 
 	public static final String STRING_DURATION_TIME = "PT";
+
+
+	public static final String STRING_HMAC_256 = "HMAC256";
+	public static final String STRING_HMAC_512 = "HMAC512";
 
     /**
      * A default regex to identify query parameters
@@ -105,6 +121,7 @@ public class StaticStrings
     public static final char CHAR_DOT = '.';
     public static final char CHAR_EQUALS = '=';
     public static final char CHAR_COMMA = ',';
+    public static final char CHAR_DOUBLE_COLON = ':';
     public static final char CHAR_UNDERSCORE = '_';
     public static final char CHAR_PERCENT = '%';
     public static final char CHAR_DOLLAR = '$';
