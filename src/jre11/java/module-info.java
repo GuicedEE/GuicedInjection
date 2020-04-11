@@ -3,7 +3,7 @@ module com.guicedee.guicedinjection {
 	requires transitive io.github.classgraph;
 
 	requires transitive com.fasterxml.jackson.databind;
-	requires com.fasterxml.jackson.datatype.jdk8;
+	requires transitive com.fasterxml.jackson.datatype.jdk8;
 
 	requires transitive com.guicedee.logmaster;
 
