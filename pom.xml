@@ -43,6 +43,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.guicedee.services</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>

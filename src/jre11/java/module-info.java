@@ -4,6 +4,7 @@ module com.guicedee.guicedinjection {
 
 	requires transitive com.fasterxml.jackson.databind;
 	requires transitive com.fasterxml.jackson.datatype.jdk8;
+	requires transitive com.fasterxml.jackson.module.jaxb;
 
 	requires transitive com.guicedee.logmaster;
 

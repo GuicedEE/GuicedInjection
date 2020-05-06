@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
 import com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder;
@@ -79,6 +80,7 @@ public class ObjectMapperBinder
 		      .toInstance(new ObjectMapper()
 				                  .registerModule(new Jdk8Module())
 				                  .registerModule(sm)
+				                  .registerModule(new JaxbAnnotationModule())
 				                  .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 				                  .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
 				                  .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
