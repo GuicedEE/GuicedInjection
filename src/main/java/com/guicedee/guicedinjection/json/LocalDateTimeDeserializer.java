@@ -72,7 +72,8 @@ public class LocalDateTimeDeserializer
 		}
 		if (time == null)
 		{
-			throw new IOException("Unable to determine local date time from string - [name]");
+			throw new IOException("Unable to determine local date time from string - [" + name + "]");
+
 		}
 		return time;
 	}
