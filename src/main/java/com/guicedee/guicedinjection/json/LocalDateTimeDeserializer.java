@@ -20,6 +20,9 @@ public class LocalDateTimeDeserializer
 	public static String LocalDateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS";
 	public static String LocalDateTimeFormat2 = "yyyy-MM-dd HH:mm:ss.SSSSSSSS";
 	public static String LocalDateTimeFormat3 = "yyyy-MM-dd HH:mm:ss";
+	public static String LocalDateTimeFormat7 = "yyyy-MM-dd HH:mm";
+	public static String LocalDateTimeFormat8 = "yyyy-MM-dd HHmm";
+	public static String LocalDateTimeFormat9 = "yyyy-MM-dd'T'HHmm";
 	public static String LocalDateTimeFormat4 = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static String LocalDateTimeFormat5 = "yyyyMMddHHmmss";
 	public static String LocalDateTimeFormat6 = "yyyy-MM-dd HH:mm:ss.SSSSSSS";
@@ -30,8 +33,11 @@ public class LocalDateTimeDeserializer
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat2),
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat3),
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat4),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat5)
-			                                                   };
+			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat5),
+			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat7),
+			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat8),
+			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat9),
+			                                                    };
 
 	@Override
 	public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
