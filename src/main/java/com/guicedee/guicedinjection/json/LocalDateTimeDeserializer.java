@@ -19,6 +19,7 @@ public class LocalDateTimeDeserializer
 {
 	public static String LocalDateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS";
 	public static String LocalDateTimeFormat10 = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+	public static String LocalDateTimeFormat11 = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS";
 	public static String LocalDateTimeFormat2 = "yyyy-MM-dd HH:mm:ss.SSSSSSSS";
 	public static String LocalDateTimeFormat3 = "yyyy-MM-dd HH:mm:ss";
 	public static String LocalDateTimeFormat7 = "yyyy-MM-dd HH:mm";
@@ -31,6 +32,7 @@ public class LocalDateTimeDeserializer
 	private static final DateTimeFormatter[] formats = new DateTimeFormatter[]
 			                                                   {DateTimeFormatter.ofPattern(LocalDateTimeFormat),
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat10),
+			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat11),
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat6),
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat2),
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat3),
