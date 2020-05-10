@@ -28,11 +28,13 @@ public class LocalDateTimeDeserializer
 	public static String LocalDateTimeFormat4 = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static String LocalDateTimeFormat5 = "yyyyMMddHHmmss";
 	public static String LocalDateTimeFormat6 = "yyyy-MM-dd HH:mm:ss.SSSSSSS";
+	public static String LocalDateTimeFormat12 = "yyyy-MM-dd HH:mm:ss.SSSSSS";
 
 	private static final DateTimeFormatter[] formats = new DateTimeFormatter[]
 			                                                   {DateTimeFormatter.ofPattern(LocalDateTimeFormat),
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat10),
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat11),
+			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat12),
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat6),
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat2),
 			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat3),

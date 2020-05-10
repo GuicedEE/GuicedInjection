@@ -69,7 +69,6 @@ public class ObjectMapperBinder
 		  .addDeserializer(LocalDate.class, new LocalDateDeserializer())
 		  .addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer())
 		  .addDeserializer(Integer.class, new StringToIntegerRelaxed())
-
 		  .addSerializer(LocalDate.class, new LocalDateSerializer())
 		  .addSerializer(LocalDateTime.class, new LocalDateTimeSerializer())
 		  .addSerializer(Duration.class, new DurationToString())
