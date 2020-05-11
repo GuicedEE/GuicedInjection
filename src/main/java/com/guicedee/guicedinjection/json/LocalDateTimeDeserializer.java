@@ -9,7 +9,9 @@ import com.google.common.base.Strings;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 
 import static com.guicedee.guicedinjection.json.StaticStrings.*;
 
@@ -17,32 +19,29 @@ import static com.guicedee.guicedinjection.json.StaticStrings.*;
 public class LocalDateTimeDeserializer
 		extends JsonDeserializer<LocalDateTime>
 {
-	public static String LocalDateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS";
-	public static String LocalDateTimeFormat10 = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-	public static String LocalDateTimeFormat11 = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS";
-	public static String LocalDateTimeFormat2 = "yyyy-MM-dd HH:mm:ss.SSSSSSSS";
 	public static String LocalDateTimeFormat3 = "yyyy-MM-dd HH:mm:ss";
 	public static String LocalDateTimeFormat7 = "yyyy-MM-dd HH:mm";
 	public static String LocalDateTimeFormat8 = "yyyy-MM-dd HHmm";
 	public static String LocalDateTimeFormat9 = "yyyy-MM-dd'T'HHmm";
-	public static String LocalDateTimeFormat4 = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static String LocalDateTimeFormat5 = "yyyyMMddHHmmss";
-	public static String LocalDateTimeFormat6 = "yyyy-MM-dd HH:mm:ss.SSSSSSS";
-	public static String LocalDateTimeFormat12 = "yyyy-MM-dd HH:mm:ss.SSSSSS";
 
 	private static final DateTimeFormatter[] formats = new DateTimeFormatter[]
-			                                                   {DateTimeFormatter.ofPattern(LocalDateTimeFormat),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat10),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat11),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat12),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat6),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat2),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat3),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat4),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat5),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat7),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat8),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat9)
+			                                                   {
+					                                                   new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE)
+					                                                                                 .optionalStart()
+					                                                                                 .appendLiteral('T')
+					                                                                                 .optionalEnd()
+					                                                                                 .optionalStart()
+					                                                                                 .appendLiteral(' ')
+					                                                                                 .optionalEnd()
+					                                                                                 .appendPattern("HH:mm:ss")
+					                                                                                 .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+							                                                   .toFormatter(),
+					                                                   DateTimeFormatter.ofPattern(LocalDateTimeFormat3),
+					                                                   DateTimeFormatter.ofPattern(LocalDateTimeFormat5),
+					                                                   DateTimeFormatter.ofPattern(LocalDateTimeFormat7),
+					                                                   DateTimeFormatter.ofPattern(LocalDateTimeFormat8),
+					                                                   DateTimeFormatter.ofPattern(LocalDateTimeFormat9)
 			                                                   };
 
 	@Override
@@ -52,23 +51,24 @@ public class LocalDateTimeDeserializer
 		return convert(name);
 	}
 
-	public LocalDateTime convert(String name) throws IOException
+	public LocalDateTime convert(String value) throws IOException
 	{
-		if (Strings.isNullOrEmpty(name) || STRING_NULL.equals(name) || STRING_0.equals(name))
+		if (Strings.isNullOrEmpty(value) || STRING_NULL.equals(value) || STRING_0.equals(value))
 		{
 			return null;
 		}
-		if (name.contains(E))
+		if (value.contains(E))
 		{
-			name = name.replaceAll(STRING_DOT_ESCAPED, STRING_EMPTY)
-			           .substring(0, name.indexOf(E) - 1);
+			value = value.replaceAll(STRING_DOT_ESCAPED, STRING_EMPTY)
+			             .substring(0, value.indexOf(E) - 1);
 		}
+		value = value.replace(' ', 'T');
 		LocalDateTime time = null;
 		for (DateTimeFormatter format : formats)
 		{
 			try
 			{
-				time = LocalDateTime.parse(name, format);
+				time = LocalDateTime.parse(value, format);
 				break;
 			}
 			catch (DateTimeParseException dtpe)
@@ -78,7 +78,7 @@ public class LocalDateTimeDeserializer
 		}
 		if (time == null)
 		{
-			throw new IOException("Unable to determine local date time from string - [" + name + "]");
+			throw new IOException("Unable to determine local date time from string - [" + value + "]");
 
 		}
 		return time;
