@@ -19,29 +19,96 @@ import static com.guicedee.guicedinjection.json.StaticStrings.*;
 public class LocalDateTimeDeserializer
 		extends JsonDeserializer<LocalDateTime>
 {
-	public static String LocalDateTimeFormat3 = "yyyy-MM-dd HH:mm:ss";
-	public static String LocalDateTimeFormat7 = "yyyy-MM-dd HH:mm";
-	public static String LocalDateTimeFormat8 = "yyyy-MM-dd HHmm";
-	public static String LocalDateTimeFormat9 = "yyyy-MM-dd'T'HHmm";
-	public static String LocalDateTimeFormat5 = "yyyyMMddHHmmss";
-
 	private static final DateTimeFormatter[] formats = new DateTimeFormatter[]
 			                                                   {
-					                                                   new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE)
-					                                                                                 .optionalStart()
-					                                                                                 .appendLiteral('T')
-					                                                                                 .optionalEnd()
-					                                                                                 .optionalStart()
-					                                                                                 .appendLiteral(' ')
-					                                                                                 .optionalEnd()
-					                                                                                 .appendPattern("HH:mm:ss")
-					                                                                                 .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
-							                                                   .toFormatter(),
-					                                                   DateTimeFormatter.ofPattern(LocalDateTimeFormat3),
-					                                                   DateTimeFormatter.ofPattern(LocalDateTimeFormat5),
-					                                                   DateTimeFormatter.ofPattern(LocalDateTimeFormat7),
-					                                                   DateTimeFormatter.ofPattern(LocalDateTimeFormat8),
-					                                                   DateTimeFormatter.ofPattern(LocalDateTimeFormat9)
+					                                                   new DateTimeFormatterBuilder().appendOptional(DateTimeFormatter.ISO_LOCAL_DATE)
+					                                                                                 .appendOptional(DateTimeFormatter.ISO_ZONED_DATE_TIME)
+					                                                                                 .appendOptional(
+							                                                                                 new DateTimeFormatterBuilder().appendOptional(
+									                                                                                 DateTimeFormatter.ISO_LOCAL_DATE)
+							                                                                                                               .optionalStart()
+							                                                                                                               .appendLiteral('T')
+							                                                                                                               .optionalEnd()
+							                                                                                                               .optionalStart()
+							                                                                                                               .appendLiteral(' ')
+							                                                                                                               .optionalEnd()
+							                                                                                                               .appendPattern("HH:mm:ss")
+							                                                                                                               .appendFraction(
+									                                                                                                               ChronoField.NANO_OF_SECOND, 0, 9,
+									                                                                                                               true)
+							                                                                                                               .toFormatter()
+					                                                                                                )
+					                                                                                 .appendOptional(
+							                                                                                 new DateTimeFormatterBuilder()
+									                                                                                 .appendPattern("yyyy")
+
+									                                                                                 .optionalStart()
+									                                                                                 .appendLiteral("/")
+									                                                                                 .optionalEnd()
+
+									                                                                                 .optionalStart()
+									                                                                                 .appendLiteral("-")
+									                                                                                 .optionalEnd()
+
+									                                                                                 .optionalStart()
+									                                                                                 .appendPattern("MM")
+									                                                                                 .optionalStart()
+									                                                                                 .appendLiteral("/")
+									                                                                                 .optionalEnd()
+									                                                                                 .optionalStart()
+									                                                                                 .appendLiteral("-")
+									                                                                                 .optionalEnd()
+									                                                                                 .optionalEnd()
+
+									                                                                                 .optionalStart()
+									                                                                                 .appendPattern("dd")
+									                                                                                 .optionalEnd()
+									                                                                                 .optionalStart()
+									                                                                                 .appendPattern("d")
+									                                                                                 .optionalEnd()
+
+									                                                                                 .optionalStart()
+									                                                                                 .appendLiteral('T')
+									                                                                                 .optionalEnd()
+									                                                                                 .optionalStart()
+									                                                                                 .appendLiteral(' ')
+									                                                                                 .optionalEnd()
+
+									                                                                                 .optionalStart()
+
+									                                                                                 .optionalStart()
+									                                                                                 .appendPattern("HH")
+
+
+									                                                                                 .optionalStart()
+									                                                                                 .appendLiteral(':')
+									                                                                                 .optionalEnd()
+									                                                                                 .optionalEnd()
+
+									                                                                                 .optionalStart()
+									                                                                                 .appendPattern("mm")
+									                                                                                 .optionalEnd()
+
+									                                                                                 .optionalStart()
+									                                                                                 .appendLiteral(':')
+									                                                                                 .optionalEnd()
+
+									                                                                                 .optionalStart()
+									                                                                                 .appendPattern("ss")
+									                                                                                 .optionalEnd()
+
+									                                                                                 .optionalEnd()
+
+									                                                                                 .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+									                                                                                 .toFormatter()
+					                                                                                                )
+					                                                                                 .parseDefaulting(ChronoField.MONTH_OF_YEAR, 1L)
+					                                                                                 .parseDefaulting(ChronoField.DAY_OF_MONTH, 1L)
+					                                                                                 .parseDefaulting(ChronoField.HOUR_OF_DAY, 0L)
+					                                                                                 .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0L)
+					                                                                                 .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0L)
+					                                                                                 .parseDefaulting(ChronoField.NANO_OF_SECOND, 0L)
+							                                                   .toFormatter()
 			                                                   };
 
 	@Override
@@ -62,7 +129,6 @@ public class LocalDateTimeDeserializer
 			value = value.replaceAll(STRING_DOT_ESCAPED, STRING_EMPTY)
 			             .substring(0, value.indexOf(E) - 1);
 		}
-		value = value.replace(' ', 'T');
 		LocalDateTime time = null;
 		for (DateTimeFormatter format : formats)
 		{
