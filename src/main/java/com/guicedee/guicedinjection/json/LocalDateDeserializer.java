@@ -1,17 +1,16 @@
 package com.guicedee.guicedinjection.json;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.google.common.base.Strings;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 
 import static com.guicedee.guicedinjection.json.StaticStrings.*;
 
@@ -19,20 +18,44 @@ import static com.guicedee.guicedinjection.json.StaticStrings.*;
 public class LocalDateDeserializer
 		extends JsonDeserializer<LocalDate>
 {
-	public static String LocalDateTimeFormat = "yyyy-MM-dd";
-	public static String LocalDateTimeFormat2 = "yyyyMMdd";
-	public static String LocalDateTimeFormat3 = "yyyy/MM/dd";
-	public static String LocalDateTimeFormat4 = "yyyyMMd";
-
 	private static final DateTimeFormatter[] formats = new DateTimeFormatter[]
-			                                                   {DateTimeFormatter.ofPattern(LocalDateTimeFormat),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat2),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat3),
-			                                                    DateTimeFormatter.ofPattern(LocalDateTimeFormat4)
-			                                                   };
+			                                                   {new DateTimeFormatterBuilder().appendOptional(DateTimeFormatter.ISO_LOCAL_DATE)
+			                                                                                  .appendOptional(
+					                                                                                  new DateTimeFormatterBuilder()
+							                                                                                  .appendPattern("yyyy")
+
+							                                                                                  .optionalStart()
+							                                                                                  .appendLiteral("/")
+							                                                                                  .optionalEnd()
+
+							                                                                                  .optionalStart()
+							                                                                                  .appendLiteral("-")
+							                                                                                  .optionalEnd()
+
+							                                                                                  .optionalStart()
+							                                                                                  .appendPattern("MM")
+							                                                                                  .optionalStart()
+							                                                                                  .appendLiteral("/")
+							                                                                                  .optionalEnd()
+							                                                                                  .optionalStart()
+							                                                                                  .appendLiteral("-")
+							                                                                                  .optionalEnd()
+							                                                                                  .optionalEnd()
+
+							                                                                                  .optionalStart()
+							                                                                                  .appendPattern("dd")
+							                                                                                  .optionalEnd()
+							                                                                                  .optionalStart()
+							                                                                                  .appendPattern("d")
+							                                                                                  .optionalEnd()
+							                                                                                  .toFormatter()
+			                                                                                                 )
+			                                                                                  .parseDefaulting(ChronoField.MONTH_OF_YEAR, 1L)
+			                                                                                  .parseDefaulting(ChronoField.DAY_OF_MONTH, 1L)
+					                                                    .toFormatter()};
 
 	@Override
-	public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
+	public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
 	{
 		String name = p.getValueAsString();
 		return convert(name);
