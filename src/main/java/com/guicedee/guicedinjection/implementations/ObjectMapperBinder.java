@@ -17,9 +17,7 @@ import com.guicedee.guicedinjection.json.*;
 import com.guicedee.logger.LogFactory;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 
 import static com.guicedee.guicedinjection.interfaces.ObjectBinderKeys.*;
 
@@ -75,6 +73,13 @@ public class ObjectMapperBinder
 		  .addSerializer(LocalDate.class, new LocalDateSerializer())
 		  .addSerializer(LocalDateTime.class, new LocalDateTimeSerializer())
 		  .addSerializer(Duration.class, new DurationToString())
+		  .addDeserializer(Instant.class, new InstantDeserializer())
+		  .addSerializer(Instant.class, new InstantSerializer())
+		  .addDeserializer(OffsetDateTime.class, new OffsetDateTimeDeserializer())
+		  .addSerializer(OffsetDateTime.class, new OffsetDateTimeSerializer())
+		  .addDeserializer(OffsetTime.class, new OffsetTimeDeserializer())
+		  .addSerializer(OffsetTime.class, new OffsetTimeSerializer())
+		  .addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer())
 		;
 
 		module.bind(ObjectBinderKeys.DefaultObjectMapper)
