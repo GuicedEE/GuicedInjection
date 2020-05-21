@@ -7,9 +7,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class GuiceDefaultModuleExclusions
-		implements IGuiceScanModuleExclusions<GuiceDefaultModuleExclusions> {
+		implements IGuiceScanModuleExclusions<GuiceDefaultModuleExclusions>
+{
 	@Override
-	public @NotNull Set<String> excludeModules() {
+	public @NotNull
+	Set<String> excludeModules()
+	{
 		Set<String> strings = new HashSet<>();
 		strings.add("aopalliance");
 		strings.add("btm");
@@ -20,7 +23,6 @@ public class GuiceDefaultModuleExclusions
 		strings.add("com.fasterxml.jackson.core");
 		strings.add("com.fasterxml.jackson.databind");
 		strings.add("com.fasterxml.jackson.datatype.jdk8");
-		strings.add("com.fasterxml.jackson.datatype.jsr310");
 		strings.add("com.google.common");
 		strings.add("com.google.guice");
 		strings.add("com.google.guice.extensions.persist");

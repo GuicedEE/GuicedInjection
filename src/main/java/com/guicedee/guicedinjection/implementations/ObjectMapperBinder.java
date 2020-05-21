@@ -21,6 +21,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static com.guicedee.guicedinjection.interfaces.ObjectBinderKeys.*;
+
 public class ObjectMapperBinder
 		implements IGuiceDefaultBinder<ObjectMapperBinder, GuiceInjectorModule>
 {
@@ -28,6 +30,7 @@ public class ObjectMapperBinder
 	 * Field log
 	 */
 	private static final java.util.logging.Logger log = LogFactory.getLog("ObjectMapperBinding");
+
 
 	/**
 	 * Method onBind ...
@@ -75,14 +78,14 @@ public class ObjectMapperBinder
 		;
 
 		module.bind(ObjectBinderKeys.DefaultObjectMapper)
-		      .toInstance(new ObjectMapper()
-				                  .registerModule(new Jdk8Module())
-				                  .registerModule(sm)
-				                  .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-				                  .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-				                  .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
-				                  .setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)
-				                  .setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE)
+		      .toInstance(ObjectMapperInstance = new ObjectMapper()
+				                                         .registerModule(new Jdk8Module())
+				                                         .registerModule(sm)
+				                                         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+				                                         .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+				                                         .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
+				                                         .setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)
+				                                         .setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE)
 		                 );
 
 		log.fine("Bound ObjectWriter.class @Named(JSON)");

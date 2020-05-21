@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
-public class ObjectBinderKeys {
+public class ObjectBinderKeys
+{
 	/**
 	 * The default object mapping
 	 */
@@ -23,6 +24,8 @@ public class ObjectBinderKeys {
 	 * The object reader for tiny
 	 */
 	public static final Key<ObjectReader> JSONObjectReader = Key.get(ObjectReader.class, Names.named("JSON"));
+
+	public static ObjectMapper ObjectMapperInstance;
 
 
 }
