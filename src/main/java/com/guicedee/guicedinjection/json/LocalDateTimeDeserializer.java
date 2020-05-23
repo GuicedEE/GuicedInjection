@@ -22,6 +22,7 @@ public class LocalDateTimeDeserializer
 	private static final DateTimeFormatter[] formats = new DateTimeFormatter[]
 			                                                   {
 					                                                   new DateTimeFormatterBuilder().appendOptional(DateTimeFormatter.ISO_LOCAL_DATE)
+					                                                                                 .appendOptional(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 					                                                                                 .appendOptional(DateTimeFormatter.ISO_ZONED_DATE_TIME)
 					                                                                                 .appendOptional(
 							                                                                                 new DateTimeFormatterBuilder().appendOptional(
