@@ -101,6 +101,10 @@ public class LocalDateTimeDeserializer
 									                                                                                 .optionalEnd()
 
 									                                                                                 .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+
+									                                                                                 .optionalStart()
+									                                                                                 .appendLiteral('Z')
+									                                                                                 .optionalEnd()
 									                                                                                 .toFormatter()
 					                                                                                                )
 					                                                                                 .parseDefaulting(ChronoField.MONTH_OF_YEAR, 1L)
@@ -130,6 +134,11 @@ public class LocalDateTimeDeserializer
 			value = value.replaceAll(STRING_DOT_ESCAPED, STRING_EMPTY)
 			             .substring(0, value.indexOf(E) - 1);
 		}
+		if (value.endsWith("Z"))
+		{
+			value = value.substring(0, value.length() - 1);
+		}
+		value = value.replaceAll("-", "/");
 		LocalDateTime time = null;
 		for (DateTimeFormatter format : formats)
 		{
