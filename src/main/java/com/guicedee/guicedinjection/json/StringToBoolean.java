@@ -17,7 +17,11 @@ public class StringToBoolean
 	@Override
 	public Boolean deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
 	{
-		String value = p.getValueAsString();
+		return convert(p.getValueAsString());
+	}
+
+	public Boolean convert(String value)
+	{
 		if (Strings.isNullOrEmpty(value))
 		{
 			return null;

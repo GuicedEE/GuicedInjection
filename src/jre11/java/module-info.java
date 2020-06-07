@@ -18,6 +18,7 @@ module com.guicedee.guicedinjection {
 
 	uses com.guicedee.guicedinjection.interfaces.IPackageContentsScanner;
 	uses com.guicedee.guicedinjection.interfaces.IFileContentsScanner;
+	uses com.guicedee.guicedinjection.interfaces.IFileContentsPatternScanner;
 	uses com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
 	uses com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder;
 	uses com.guicedee.guicedinjection.interfaces.IGuicePreStartup;
@@ -38,4 +39,5 @@ module com.guicedee.guicedinjection {
 	opens com.guicedee.guicedinjection to com.fasterxml.jackson.databind;
 	opens com.guicedee.guicedinjection.properties to com.fasterxml.jackson.databind;
 	opens com.guicedee.guicedinjection.json to com.fasterxml.jackson.databind;
+	exports com.guicedee.guicedinjection.xml;
 }

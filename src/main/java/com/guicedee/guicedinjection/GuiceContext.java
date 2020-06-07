@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Provides an interface for reflection and injection in one.
@@ -66,6 +67,14 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 */
 	public static boolean buildingInjector = false;
 	/**
+	 * A standard default waiting time for threads
+	 */
+	public static long defaultWaitTime = 50;
+	/**
+	 * The default wait unit for the thread time
+	 */
+	public static TimeUnit defaultWaitUnit = TimeUnit.MILLISECONDS;
+	/**
 	 * The configuration object
 	 */
 	private static GuiceConfig<?> config;
@@ -81,14 +90,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * The scan result built from everything - the core scanner.
 	 */
 	private ScanResult scanResult;
-	/**
-	 * A standard default waiting time for threads
-	 */
-	public static long defaultWaitTime = 50;
-	/**
-	 * The default wait unit for the thread time
-	 */
-	public static TimeUnit defaultWaitUnit = TimeUnit.MILLISECONDS;
 
 	/**
 	 * Creates a new Guice context. Not necessary
@@ -315,16 +316,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	}
 
 	/**
-	 * Returns the actual context instance, provides access to methods existing a bit deeper
-	 *
-	 * @return The singleton instance of this
-	 */
-	public static GuiceContext<?> instance()
-	{
-		return GuiceContext.instance;
-	}
-
-	/**
 	 * Execute on Destroy
 	 */
 	@SuppressWarnings("unused")
@@ -403,6 +394,16 @@ public class GuiceContext<J extends GuiceContext<J>>
 	}
 
 	/**
+	 * Returns the actual context instance, provides access to methods existing a bit deeper
+	 *
+	 * @return The singleton instance of this
+	 */
+	public static GuiceContext<?> instance()
+	{
+		return GuiceContext.instance;
+	}
+
+	/**
 	 * Loads the IGuiceConfigurator
 	 */
 	private void loadConfiguration()
@@ -450,7 +451,12 @@ public class GuiceContext<J extends GuiceContext<J>>
 				Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
 				fileScans.forEach((key, value) ->
 						                  scanResult.getResourcesWithLeafName(key)
-						                            .forEachByteArray(value));
+						                            .forEachByteArrayIgnoringIOException(value));
+				quickScanFilesPattern().forEach(
+						(key, value) ->
+								scanResult.getResourcesMatchingPattern(key)
+								          .forEachByteArrayIgnoringIOException(value));
+
 			}
 			catch (Exception mpe)
 			{
@@ -598,30 +604,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 		return strings.toArray(new String[0]);
 	}
 
-	/**
-	 * A set
-	 *
-	 * @param loaderType
-	 * 		The service type
-	 * @param <T>
-	 * 		The type
-	 * @param dontInject
-	 * 		Don't inject
-	 *
-	 * @return A set of them
-	 */
-	@SuppressWarnings("unchecked")
-	@NotNull
-	public <T> Set<T> getLoader(Class<T> loaderType, @SuppressWarnings("unused") boolean dontInject, ServiceLoader<T> serviceLoader)
-	{
-		if (!getAllLoadedServices().containsKey(loaderType))
-		{
-			Set<T> loader = IDefaultService.loaderToSetNoInjection(serviceLoader);
-			getAllLoadedServices().put(loaderType, loader);
-		}
-		return getAllLoadedServices().get(loaderType);
-	}
-
 	/*
 	 * Returns a complete list of generic exclusions
 	 *
@@ -710,6 +692,49 @@ public class GuiceContext<J extends GuiceContext<J>>
 			fileScans.putAll(fileScanner.onMatch());
 		}
 		return fileScans;
+	}
+
+	/**
+	 * Registers the quick scan files
+	 */
+	private Map<Pattern, ResourceList.ByteArrayConsumer> quickScanFilesPattern()
+	{
+		Map<Pattern, ResourceList.ByteArrayConsumer> fileScans = new HashMap<>();
+		Set<IFileContentsPatternScanner> fileScanners = getLoader(IFileContentsPatternScanner.class, true, ServiceLoader.load(IFileContentsPatternScanner.class));
+		for (IFileContentsPatternScanner fileScanner : fileScanners)
+		{
+			GuiceContext.log.log(Level.CONFIG, "Loading IFileContentsPatternScanner - " +
+			                                   fileScanner.getClass()
+			                                              .getCanonicalName());
+			fileScans.putAll(fileScanner.onMatch());
+		}
+		return fileScans;
+	}
+
+	/**
+	 * A set
+	 *
+	 * @param loaderType
+	 * 		The service type
+	 * @param <T>
+	 * 		The type
+	 * @param dontInject
+	 * 		Don't inject
+	 *
+	 * @return A set of them
+	 */
+	@SuppressWarnings("unchecked")
+	@NotNull
+	public <T> Set<T> getLoader(Class<T> loaderType,
+	                            @SuppressWarnings("unused")
+			                            boolean dontInject, ServiceLoader<T> serviceLoader)
+	{
+		if (!getAllLoadedServices().containsKey(loaderType))
+		{
+			Set<T> loader = IDefaultService.loaderToSetNoInjection(serviceLoader);
+			getAllLoadedServices().put(loaderType, loader);
+		}
+		return getAllLoadedServices().get(loaderType);
 	}
 
 	/**
