@@ -87,6 +87,7 @@ public class ObjectMapperBinder
 				                                         .registerModule(new Jdk8Module())
 				                                         .registerModule(sm)
 				                                         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+				                                         .configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false)
 				                                         .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
 				                                         .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
 				                                         .setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)

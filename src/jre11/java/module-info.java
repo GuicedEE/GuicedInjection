@@ -39,5 +39,8 @@ module com.guicedee.guicedinjection {
 	opens com.guicedee.guicedinjection to com.fasterxml.jackson.databind;
 	opens com.guicedee.guicedinjection.properties to com.fasterxml.jackson.databind;
 	opens com.guicedee.guicedinjection.json to com.fasterxml.jackson.databind;
+
+	opens com.guicedee.guicedinjection.pairing;
+
 	exports com.guicedee.guicedinjection.xml;
 }
