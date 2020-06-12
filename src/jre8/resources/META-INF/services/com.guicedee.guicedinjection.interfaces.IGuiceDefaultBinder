@@ -1,0 +1,2 @@
+com.guicedee.guicedinjection.injections.ContextBinderGuice
+com.guicedee.guicedinjection.implementations.ObjectMapperBinder
