@@ -14,6 +14,7 @@ public class JrtUrlConnection
 {
 	private Path path;
 
+
 	protected JrtUrlConnection(URL url)
 	{
 		super(url);
