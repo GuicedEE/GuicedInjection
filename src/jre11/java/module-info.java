@@ -36,6 +36,8 @@ module com.guicedee.guicedinjection {
 	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
 	provides com.guicedee.guicedinjection.interfaces.IGuicePreDestroy with com.guicedee.guicedinjection.interfaces.JobService;
 
+	provides java.net.spi.URLStreamHandlerProvider with com.guicedee.guicedinjection.urls.JrtUrlHandler;
+
 	opens com.guicedee.guicedinjection to com.fasterxml.jackson.databind;
 	opens com.guicedee.guicedinjection.properties to com.fasterxml.jackson.databind;
 	opens com.guicedee.guicedinjection.json to com.fasterxml.jackson.databind;
