@@ -30,13 +30,8 @@ public class GuiceDefaultModuleExclusions
 		strings.add("com.guicedee.guicedhazelcast");
 		strings.add("com.guicedee.guicedinjection");
 		strings.add("com.guicedee.guicedpersistence");
-		strings.add("com.guicedee.guicedpersistence.btm");
 		strings.add("com.guicedee.guicedpersistence.c3p0");
-		strings.add("com.guicedee.guicedpersistence.jpa");
-		strings.add("com.guicedee.guicedpersistence.readers.hibernateproperties");
-		strings.add("com.guicedee.guicedpersistence.readers.systemproperties");
 		strings.add("com.guicedee.guicedservlets");
-		strings.add("com.guicedee.guicedservlets.jsf");
 		strings.add("com.guicedee.guicedservlets.requestscoped");
 		strings.add("com.guicedee.logmaster");
 		strings.add("com.guicedee.undertow");
@@ -76,6 +71,7 @@ public class GuiceDefaultModuleExclusions
 		strings.add("jboss.logging");
 		strings.add("net.bytebuddy");
 		strings.add("org.apache.commons.codec");
+		strings.add("org.apache.commons.beanutils");
 		strings.add("org.apache.commons.collections4");
 		strings.add("org.apache.commons.compress");
 		strings.add("org.apache.commons.io");
@@ -85,6 +81,7 @@ public class GuiceDefaultModuleExclusions
 		strings.add("org.apache.commons.text");
 		strings.add("org.apache.cxf");
 		strings.add("org.apache.poi");
+		strings.add("com.github.librepdf.openpdf");
 		strings.add("org.apache.poi.ooxml");
 		strings.add("org.apache.xmlbeans");
 		strings.add("org.hibernate.commons.annotations");
