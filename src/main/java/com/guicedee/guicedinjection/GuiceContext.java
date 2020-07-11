@@ -479,7 +479,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 			String[] paths = getPathsList();
 			if (paths.length != 0)
 			{
-				graph.whitelistPathsNonRecursive(paths);
+				graph.acceptPaths(paths);
 			}
 		}
 		if (GuiceContext.config.isExcludePaths())
@@ -487,7 +487,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 			String[] blacklistList = getPathsBlacklistList();
 			if (blacklistList.length != 0)
 			{
-				graph.blacklistPaths(blacklistList);
+				graph.rejectPaths(blacklistList);
 			}
 		}
 
@@ -496,7 +496,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 			String[] modulesBlacklist = getModulesBlacklistList();
 			if (modulesBlacklist.length != 0)
 			{
-				graph.blacklistModules(modulesBlacklist);
+				graph.rejectModules(modulesBlacklist);
 			}
 			else
 			{
@@ -667,7 +667,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 		if (exclusions.iterator()
 		              .hasNext())
 		{
-			for (IGuiceScanModuleExclusions exclusion : exclusions)
+			for (IGuiceScanModuleExclusions<?> exclusion : exclusions)
 			{
 				Set<String> searches = exclusion.excludeModules();
 				strings.addAll(searches);
