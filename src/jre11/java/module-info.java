@@ -29,8 +29,10 @@ module com.guicedee.guicedinjection {
 	uses com.guicedee.guicedinjection.interfaces.IPathContentsBlacklistScanner;
 	uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions;
 	uses com.guicedee.guicedinjection.interfaces.IPackageBlackListScanner;
+	uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
 
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
+	provides com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 
 	provides com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder with com.guicedee.guicedinjection.injections.ContextBinderGuice, com.guicedee.guicedinjection.implementations.ObjectMapperBinder;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;

@@ -428,6 +428,31 @@ public class GuiceContext<J extends GuiceContext<J>>
 		GuiceContext.log.config("IGuiceConfigurator  : " + GuiceContext.config.toString());
 	}
 
+
+	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	@SuppressWarnings("unchecked")
+	private String[] getJarsExclusionList()
+	{
+		Set<String> strings = new TreeSet<>();
+		Set<IGuiceScanJarExclusions> exclusions = getLoader(IGuiceScanJarExclusions.class, true, ServiceLoader.load(IGuiceScanJarExclusions.class));
+		if (exclusions.iterator()
+				.hasNext())
+		{
+			for (IGuiceScanJarExclusions exclusion : exclusions)
+			{
+				Set<String> searches = exclusion.excludeJars();
+				strings.addAll(searches);
+			}
+			GuiceContext.log.log(Level.FINE, "IGuiceScanJarExclusions - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
+	}
+
+
 	/**
 	 * Starts up Guice and the scanner
 	 */
@@ -493,14 +518,21 @@ public class GuiceContext<J extends GuiceContext<J>>
 
 		if (GuiceContext.config.isExcludeModulesAndJars())
 		{
-			String[] modulesBlacklist = getModulesBlacklistList();
-			if (modulesBlacklist.length != 0)
+			if (getJavaVersion() < 9)
 			{
-				graph.rejectModules(modulesBlacklist);
+				String[] jarRejections = getJarsExclusionList();
+				if (jarRejections.length != 0)
+				{
+					graph.rejectJars(jarRejections);
+				}
 			}
-			else
-			{
-				graph.ignoreParentModuleLayers();
+			else {
+				String[] modulesRejection = getModulesExclusionList();
+				if (modulesRejection.length != 0) {
+					graph.rejectModules(modulesRejection);
+				} else {
+					graph.ignoreParentModuleLayers();
+				}
 			}
 		}
 
@@ -660,7 +692,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * @return A string list of packages to be scanned
 	 */
 	@SuppressWarnings("unchecked")
-	private String[] getModulesBlacklistList()
+	private String[] getModulesExclusionList()
 	{
 		Set<String> strings = new TreeSet<>();
 		Set<IGuiceScanModuleExclusions> exclusions = getLoader(IGuiceScanModuleExclusions.class, true, ServiceLoader.load(IGuiceScanModuleExclusions.class));
