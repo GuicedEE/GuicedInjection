@@ -619,11 +619,11 @@ public class GuiceContext<J extends GuiceContext<J>>
 	private String[] getBlacklistPackages()
 	{
 		Set<String> strings = new LinkedHashSet<>();
-		Set<IPackageBlackListScanner> exclusions = getLoader(IPackageBlackListScanner.class, true, ServiceLoader.load(IPackageBlackListScanner.class));
+		Set<IPackageRejectListScanner> exclusions = getLoader(IPackageRejectListScanner.class, true, ServiceLoader.load(IPackageRejectListScanner.class));
 		if (exclusions.iterator()
 		              .hasNext())
 		{
-			for (IPackageBlackListScanner exclusion : exclusions)
+			for (IPackageRejectListScanner exclusion : exclusions)
 			{
 				GuiceContext.log.log(Level.CONFIG, "Loading IPackageContentsScanner - " +
 				                                   exclusion.getClass()
@@ -669,19 +669,19 @@ public class GuiceContext<J extends GuiceContext<J>>
 	private String[] getPathsBlacklistList()
 	{
 		Set<String> strings = new TreeSet<>();
-		Set<IPathContentsBlacklistScanner> exclusions = getLoader(IPathContentsBlacklistScanner.class, true, ServiceLoader.load(IPathContentsBlacklistScanner.class));
+		Set<IPathContentsRejectListScanner> exclusions = loadPathRejectScanners();
 		if (exclusions.iterator()
 		              .hasNext())
 		{
-			for (IPathContentsBlacklistScanner exclusion : exclusions)
+			for (IPathContentsRejectListScanner exclusion : exclusions)
 			{
-				GuiceContext.log.log(Level.CONFIG, "Loading IPathContentsBlacklistScanner - " +
+				GuiceContext.log.log(Level.CONFIG, "Loading IPathContentsRejectListScanner - " +
 				                                   exclusion.getClass()
 				                                            .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
-			GuiceContext.log.log(Level.FINE, "IPathContentsBlacklistScanner - " + strings.toString());
+			GuiceContext.log.log(Level.FINE, "IPathContentsRejectListScanner - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}
@@ -873,6 +873,17 @@ public class GuiceContext<J extends GuiceContext<J>>
 	Set<IGuicePostStartup> loadPostStartupServices()
 	{
 		return getLoader(IGuicePostStartup.class, true, ServiceLoader.load(IGuicePostStartup.class));
+	}
+
+	/**
+	 * Loads the service lists of post startup's for manual additions
+	 *
+	 * @return The list of guice post startups
+	 */
+	public @NotNull
+	Set<IPathContentsRejectListScanner> loadPathRejectScanners()
+	{
+		return getLoader(IPathContentsRejectListScanner.class, true, ServiceLoader.load(IPathContentsRejectListScanner.class));
 	}
 
 	/**
