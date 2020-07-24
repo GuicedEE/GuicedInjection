@@ -90,6 +90,10 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * The scan result built from everything - the core scanner.
 	 */
 	private ScanResult scanResult;
+	/**
+	 * If the scan should run async
+	 */
+	private boolean async;
 
 	/**
 	 * Creates a new Guice context. Not necessary
@@ -471,7 +475,10 @@ public class GuiceContext<J extends GuiceContext<J>>
 			configureScanner(scanner);
 			try
 			{
-				scanResult = scanner.scan();
+				if(async)
+					scanResult = scanner.scan(Runtime.getRuntime().availableProcessors());
+				else
+					scanResult = scanner.scan();
 				stopwatch.stop();
 				Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
 				fileScans.forEach((key, value) ->
@@ -993,5 +1000,19 @@ public class GuiceContext<J extends GuiceContext<J>>
 		return allLoadedServices;
 	}
 
+	/**
+	 * If this scanner is registered to run asynchronously
+	 * @return
+	 */
+	public boolean isAsync() {
+		return async;
+	}
 
+	/**
+	 * Sets if the scanner must run asynchronously
+	 * @param async
+	 */
+	public void setAsync(boolean async) {
+		this.async = async;
+	}
 }
