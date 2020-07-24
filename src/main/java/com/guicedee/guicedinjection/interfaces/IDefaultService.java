@@ -92,10 +92,14 @@ public interface IDefaultService<J extends IDefaultService<J>>
 		}
 		Set<Class<T>> completed = new LinkedHashSet<>();
 		Set<T> output = new LinkedHashSet<>();
-		for (T newInstance : loader)
+		try {
+			for (T newInstance : loader) {
+				output.add(newInstance);
+				completed.add((Class<T>) newInstance.getClass());
+			}
+		}catch(Throwable T)
 		{
-			output.add(newInstance);
-			completed.add((Class<T>) newInstance.getClass());
+			LogFactory.getLog("IDefaultService").log(Level.SEVERE,"Cannot load services - ",T);
 		}
 		for (Class<T> newInstance : loadeds)
 		{
