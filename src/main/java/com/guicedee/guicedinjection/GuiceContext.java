@@ -438,7 +438,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	private String[] getJarsExclusionList()
 	{
 		Set<String> strings = new TreeSet<>();
-		Set<IGuiceScanJarExclusions> exclusions = getLoader(IGuiceScanJarExclusions.class, true, ServiceLoader.load(IGuiceScanJarExclusions.class));
+		Set<IGuiceScanJarExclusions> exclusions = loadJarRejectScanners();
 		if (exclusions.iterator()
 				.hasNext())
 		{
@@ -885,6 +885,19 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		return getLoader(IPathContentsRejectListScanner.class, true, ServiceLoader.load(IPathContentsRejectListScanner.class));
 	}
+
+
+	/**
+	 * Loads the service lists of post startup's for manual additions
+	 *
+	 * @return The list of guice post startups
+	 */
+	public @NotNull
+	Set<IGuiceScanJarExclusions> loadJarRejectScanners()
+	{
+		return getLoader(IGuiceScanJarExclusions.class, true, ServiceLoader.load(IGuiceScanJarExclusions.class));
+	}
+
 
 	/**
 	 * Returns the set of service lists of pre startup's for manual additions
