@@ -70,11 +70,11 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * Excludes paths from scanning - excellent for minizing path scanning on web application
 	 */
-	private boolean whitelistPaths;
+	private boolean allowedPaths;
 	/**
 	 * Provides a list of whitelist jars/modules to scan
 	 */
-	private boolean whitelistJarsAndModules;
+	private boolean allowJarsAndModules;
 	/**
 	 * Configures the Guice Context and Reflection Identifier
 	 */
@@ -89,7 +89,6 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * <p>
 	 * Try to only use in test to load test modules. otherwise it may be a bad design
 	 *
-	 * @return
 	 */
 	public boolean isServiceLoadWithClassPath()
 	{
@@ -102,9 +101,9 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * <p>
 	 * Try to only use in test to load test modules. otherwise it may be a bad design
 	 *
-	 * @param serviceLoadWithClassPath
+	 * @param serviceLoadWithClassPath Should scanning with classpath instead of SPI be used?
 	 *
-	 * @return
+	 * @return this
 	 */
 	@SuppressWarnings("unchecked")
 	public J setServiceLoadWithClassPath(boolean serviceLoadWithClassPath)
@@ -448,36 +447,36 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		       ", classpathScanning=" + classpathScanning +
 		       ", excludeModulesAndJars=" + excludeModulesAndJars +
 		       ", excludePaths=" + excludePaths +
-		       ", whitelistPaths=" + whitelistPaths +
-		       ", whitelistJarsAndModules=" + whitelistJarsAndModules +
+		       ", allowedPaths=" + allowedPaths +
+		       ", whitelistJarsAndModules=" + allowJarsAndModules +
 		       '}';
 	}
 
 	/**
-	 * Method isWhitelistPaths returns the whitelistPaths of this GuiceConfig object.
+	 * Method isAllowPaths returns the allowed Paths of this GuiceConfig object.
 	 * <p>
 	 * Excludes paths from scanning - excellent for minizing path scanning on web application
 	 *
 	 * @return the whitelistPaths (type boolean) of this GuiceConfig object.
 	 */
-	public boolean isWhitelistPaths()
+	public boolean isAllowPaths()
 	{
-		return whitelistPaths;
+		return allowedPaths;
 	}
 
 	/**
-	 * Method setWhitelistPaths sets the whitelistPaths of this GuiceConfig object.
+	 * Method setAllowPaths sets the allowed Paths of this GuiceConfig object.
 	 * <p>
 	 * Excludes paths from scanning - excellent for minizing path scanning on web application
 	 *
-	 * @param whitelistPaths
-	 * 		the whitelistPaths of this GuiceConfig object.
+	 * @param allowedPaths
+	 * 		the allowedPaths of this GuiceConfig object.
 	 *
 	 * @return GuiceConfig J
 	 */
-	public GuiceConfig<J> setWhitelistPaths(boolean whitelistPaths)
+	public GuiceConfig<J> setAllowPaths(boolean allowedPaths)
 	{
-		this.whitelistPaths = whitelistPaths;
+		this.allowedPaths = allowedPaths;
 		return this;
 	}
 
@@ -488,24 +487,24 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return the whitelistJarsAndModules (type boolean) of this GuiceConfig object.
 	 */
-	public boolean isWhitelistJarsAndModules()
+	public boolean isAllowJarsAndModules()
 	{
-		return whitelistJarsAndModules;
+		return allowJarsAndModules;
 	}
 
 	/**
-	 * Method setWhitelistJarsAndModules sets the whitelistJarsAndModules of this GuiceConfig object.
+	 * Method setWhitelistJarsAndModules sets the allowJarsAndModules of this GuiceConfig object.
 	 * <p>
 	 * Provides a list of whitelist jars/modules to scan
 	 *
-	 * @param whitelistJarsAndModules
-	 * 		the whitelistJarsAndModules of this GuiceConfig object.
+	 * @param allowJarsAndModules
+	 * 		the allowJarsAndModules of this GuiceConfig object.
 	 *
 	 * @return GuiceConfig J
 	 */
-	public GuiceConfig<J> setWhitelistJarsAndModules(boolean whitelistJarsAndModules)
+	public GuiceConfig<J> setAllowJarsAndModules(boolean allowJarsAndModules)
 	{
-		this.whitelistJarsAndModules = whitelistJarsAndModules;
+		this.allowJarsAndModules = allowJarsAndModules;
 		return this;
 	}
 
@@ -568,13 +567,13 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	}
 
 	/**
-	 * Method isBlackListPackages returns the excludePackages of this GuiceConfig object.
+	 * Method isRejectPackages returns the excludePackages of this GuiceConfig object.
 	 * <p>
 	 * Excludes packages from scanning - excellent for minimizing path scanning on web application
 	 *
 	 * @return the excludePackages (type boolean) of this GuiceConfig object.
 	 */
-	public boolean isBlackListPackages()
+	public boolean isRejectPackages()
 	{
 		return excludePackages;
 	}

@@ -506,7 +506,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 */
 	private void configureScanner(ClassGraph graph)
 	{
-		if (config.isWhitelistPaths())
+		if (config.isAllowPaths())
 		{
 			String[] paths = getPathsList();
 			if (paths.length != 0)
@@ -551,7 +551,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 				graph.whitelistPackages(packages);
 			}
 		}
-		if (GuiceContext.config.isBlackListPackages())
+		if (GuiceContext.config.isRejectPackages())
 		{
 			String[] packages = getBlacklistPackages();
 			if (packages.length != 0)
@@ -828,7 +828,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 		Set<IGuicePostStartup> startupSet = loadPostStartupServices();
 
 		Map<Integer, Set<IGuicePostStartup>> postStartupGroups = new TreeMap<>();
-		for (IGuicePostStartup postStartup : startupSet)
+		for (IGuicePostStartup<?> postStartup : startupSet)
 		{
 			Integer sortOrder = postStartup.sortOrder();
 			postStartupGroups.computeIfAbsent(sortOrder, k -> new TreeSet<>())
@@ -840,7 +840,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 			                          get(JobService.class)
 					                          .registerJobPool("GuicePostStartupGroup", Executors.newWorkStealingPool(Runtime.getRuntime()
 					                                                                                                         .availableProcessors()));
-			                          for (IGuicePostStartup postStartup : value)
+			                          for (IGuicePostStartup<?> postStartup : value)
 			                          {
 				                          get(JobService.class)
 						                          .addJob("GuicePostStartupGroup", postStartup);
@@ -957,7 +957,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 	}
 
 	/**
-	 * A set
+	 * Returns the loader for anything that is located locally in guice context
+	 * replacing with set load methods instead for each type
 	 *
 	 * @param loaderType
 	 * 		The service type

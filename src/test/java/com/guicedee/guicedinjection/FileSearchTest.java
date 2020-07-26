@@ -1,9 +1,12 @@
 package com.guicedee.guicedinjection;
 
+import com.guicedee.guicedinjection.interfaces.IPathContentsRejectListScanner;
 import com.guicedee.logger.LogFactory;
 import io.github.classgraph.ResourceList;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
@@ -13,7 +16,18 @@ public class FileSearchTest {
     {
         LogFactory.configureConsoleColourOutput(Level.FINE);
         GuiceContext.instance().getConfig()
-                .setPathScanning(true);
+                .setPathScanning(true)
+                .setExcludeModulesAndJars(true)
+                .setExcludePackages(true)
+                .setExcludeParentModules(true);
+
+        GuiceContext.instance().loadPathRejectScanners().add(
+                () -> {
+                    Set<String> output = new HashSet<>();
+                    output.add("/META-INF/services/maven");
+                    return output;
+                }
+        );
 
         GuiceContext.inject();
         ResourceList resourceswithPattern = GuiceContext.instance().getScanResult()

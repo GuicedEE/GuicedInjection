@@ -38,7 +38,7 @@ public class IGuiceConfigTest
 		      .setExcludeModulesAndJars(true)
 		      .setServiceLoadWithClassPath(true)
 		      .setExcludePaths(true)
-		      .setWhitelistPaths(true)
+		      .setAllowPaths(true)
 		      .setWhiteListPackages(true)
 		      .setAnnotationScanning(true)
 		      .setPathScanning(true)
