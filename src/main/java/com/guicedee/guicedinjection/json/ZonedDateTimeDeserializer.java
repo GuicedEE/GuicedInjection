@@ -64,7 +64,7 @@ public class ZonedDateTimeDeserializer
 		}
 		if (time == null)
 		{
-			throw new IOException("Unable to determine local date time from string - [" + value + "]");
+			throw new IOException("Unable to determine Zoned date time from string - [" + value + "]");
 
 		}
 		return time;

@@ -19,11 +19,16 @@ import static com.guicedee.guicedinjection.json.StaticStrings.*;
 public class LocalDateTimeDeserializer
 		extends JsonDeserializer<LocalDateTime>
 {
-	private static final DateTimeFormatter[] formats = new DateTimeFormatter[]
+	public static final DateTimeFormatter[] formats = new DateTimeFormatter[]
 			                                                   {
+																	   DateTimeFormatter.ISO_DATE_TIME,
+																	   DateTimeFormatter.ISO_ZONED_DATE_TIME,
+																	   DateTimeFormatter.RFC_1123_DATE_TIME,
+																	   DateTimeFormatter.ISO_OFFSET_DATE_TIME,
 					                                                   new DateTimeFormatterBuilder().appendOptional(DateTimeFormatter.ISO_LOCAL_DATE)
 					                                                                                 .appendOptional(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 					                                                                                 .appendOptional(DateTimeFormatter.ISO_ZONED_DATE_TIME)
+					                                                                                 .appendOptional(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 					                                                                                 .appendOptional(
 							                                                                                 new DateTimeFormatterBuilder().appendOptional(
 									                                                                                 DateTimeFormatter.ISO_LOCAL_DATE)
@@ -105,6 +110,10 @@ public class LocalDateTimeDeserializer
 									                                                                                 .optionalStart()
 									                                                                                 .appendLiteral('Z')
 									                                                                                 .optionalEnd()
+
+																													 .optionalStart()
+																														 .appendZoneOrOffsetId()
+																													 .optionalEnd()
 									                                                                                 .toFormatter()
 					                                                                                                )
 					                                                                                 .parseDefaulting(ChronoField.MONTH_OF_YEAR, 1L)
@@ -134,11 +143,6 @@ public class LocalDateTimeDeserializer
 			value = value.replaceAll(STRING_DOT_ESCAPED, STRING_EMPTY)
 			             .substring(0, value.indexOf(E) - 1);
 		}
-		if (value.endsWith("Z"))
-		{
-			value = value.substring(0, value.length() - 1);
-		}
-		value = value.replaceAll("-", "/");
 		LocalDateTime time = null;
 		for (DateTimeFormatter format : formats)
 		{
@@ -150,6 +154,10 @@ public class LocalDateTimeDeserializer
 			catch (DateTimeParseException dtpe)
 			{
 				//try the next one
+			}
+			catch (Exception dtpe)
+			{
+				dtpe.printStackTrace();
 			}
 		}
 		if (time == null)
