@@ -15,9 +15,14 @@ public class StringToBool
 		extends JsonDeserializer
 {
 	@Override
-	public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
+	public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
 	{
 		String value = p.getValueAsString();
+		return convert(value);
+	}
+
+	public boolean convert(String value)
+	{
 		Boolean bValue = new StringToBoolean().convert(value);
 		if (bValue == null)
 		{

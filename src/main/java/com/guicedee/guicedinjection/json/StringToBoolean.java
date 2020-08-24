@@ -15,7 +15,7 @@ public class StringToBoolean
 		extends JsonDeserializer<Boolean>
 {
 	@Override
-	public Boolean deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
+	public Boolean deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
 	{
 		return convert(p.getValueAsString());
 	}

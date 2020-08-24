@@ -26,10 +26,14 @@ public class DurationToInteger
 	{
 		if(value == null)
 			return ;
+		gen.writeNumber(convert(value));
+	}
 
+	public Integer convert(Duration value)
+	{
 		String intNumber = numberFormat.format(value.get(HOURS)) + STRING_EMPTY +
-		                   numberFormat.format(value.get(MINUTES)) + STRING_EMPTY +
-		                   numberFormat.format(value.get(SECONDS));
-		gen.writeNumber(Integer.parseInt(intNumber));
+				numberFormat.format(value.get(MINUTES)) + STRING_EMPTY +
+				numberFormat.format(value.get(SECONDS));
+		return Integer.parseInt(intNumber);
 	}
 }

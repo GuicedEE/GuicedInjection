@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.time.Duration;
 
@@ -18,6 +19,11 @@ public class DurationToString
 	{
 		if(value == null)
 			return ;
-		gen.writeString(value.toString());
+		gen.writeString(convert(value));
+	}
+
+	public String convert(@NotNull Duration value)
+	{
+		return value.toString();
 	}
 }
