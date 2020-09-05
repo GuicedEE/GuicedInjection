@@ -153,7 +153,7 @@ public class JobService
 	 * @param thread
 	 */
 	public ExecutorService addJob(String jobPoolName, Runnable thread) {
-		if (!serviceMap.containsKey(jobPoolName)) {
+		if (!serviceMap.containsKey(jobPoolName) || serviceMap.get(jobPoolName).isTerminated() || serviceMap.get(jobPoolName).isShutdown()) {
 			registerJobPool(jobPoolName, Executors.newWorkStealingPool());
 		}
 
@@ -174,7 +174,7 @@ public class JobService
 	 * @param thread
 	 */
 	public ExecutorService addJob(String jobPoolName, Callable<?> thread) {
-		if (!serviceMap.containsKey(jobPoolName)) {
+		if (!serviceMap.containsKey(jobPoolName) || serviceMap.get(jobPoolName).isTerminated() || serviceMap.get(jobPoolName).isShutdown()) {
 			registerJobPool(jobPoolName, newWorkStealingPool());
 		}
 
@@ -212,7 +212,7 @@ public class JobService
 	 * @param thread
 	 */
 	public ScheduledExecutorService addPollingJob(String jobPoolName, Runnable thread, long delay, TimeUnit unit) {
-		if (!pollingMap.containsKey(jobPoolName)) {
+		if (!pollingMap.containsKey(jobPoolName) || pollingMap.get(jobPoolName).isTerminated() || pollingMap.get(jobPoolName).isShutdown()) {
 			registerJobPollingPool(jobPoolName, Executors.newScheduledThreadPool(Runtime.getRuntime()
 																						.availableProcessors()));
 		}
@@ -228,7 +228,7 @@ public class JobService
 	 * @param thread
 	 */
 	public ScheduledExecutorService addPollingJob(String jobPoolName, Runnable thread, long initialDelay, long delay, TimeUnit unit) {
-		if (!pollingMap.containsKey(jobPoolName)) {
+		if (!pollingMap.containsKey(jobPoolName) || pollingMap.get(jobPoolName).isTerminated() || pollingMap.get(jobPoolName).isShutdown()) {
 			registerJobPollingPool(jobPoolName, Executors.newScheduledThreadPool(Runtime.getRuntime()
 																						.availableProcessors()));
 		}
