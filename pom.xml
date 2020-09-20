@@ -21,25 +21,21 @@
         <dependency>
             <groupId>com.guicedee</groupId>
             <artifactId>guiced-log-master</artifactId>
-            <type>jar</type>
         </dependency>
 
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <type>jar</type>
         </dependency>
 
         <dependency>
             <groupId>com.guicedee.services</groupId>
             <artifactId>guice</artifactId>
-            <type>jar</type>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
-            <type>jar</type>
         </dependency>
 
         <dependency>
