@@ -105,8 +105,9 @@ public class LocalDateTimeDeserializer
 
 									                                                                                 .optionalEnd()
 
+																													 .optionalStart()
 									                                                                                 .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
-
+																													 .optionalEnd()
 									                                                                                 .optionalStart()
 									                                                                                 .appendLiteral('Z')
 									                                                                                 .optionalEnd()
