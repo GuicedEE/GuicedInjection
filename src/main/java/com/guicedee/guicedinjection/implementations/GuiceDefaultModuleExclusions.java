@@ -37,7 +37,7 @@ public class GuiceDefaultModuleExclusions
 		strings.add("com.guicedee.logmaster");
 		strings.add("com.guicedee.undertow");
 		strings.add("com.guicedee.websockets");
-		strings.add("com.jwebmp.guicedpersistence.wildfly");
+		strings.add("com.guicedee.guicedpersistence.wildfly");
 		strings.add("dom4j");
 		strings.add("hazelcast.all");
 		strings.add("io.github.classgraph");
@@ -105,6 +105,7 @@ public class GuiceDefaultModuleExclusions
 		Set<String> strings = new HashSet<>();
 		strings.add("activation-*");
 		strings.add("adal4j-*");
+		strings.add("org.apache.cxf-*");
 		strings.add("amqp-client-*");
 		strings.add("animal-sniffer-annotations-*");
 		strings.add("antlr-*");
