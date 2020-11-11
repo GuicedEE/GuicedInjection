@@ -2,7 +2,7 @@ package com.guicedee.guicedinjection;
 
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * The configuration class for Guice Context and the Classpath Scanner

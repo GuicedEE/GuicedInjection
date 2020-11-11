@@ -29,7 +29,7 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -238,7 +238,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 		{
 			if (annotation.annotationType()
 			              .getCanonicalName()
-			              .equalsIgnoreCase("javax.persistence.Entity"))
+			              .equalsIgnoreCase("jakarta.persistence.Entity"))
 			{
 				return true;
 			}

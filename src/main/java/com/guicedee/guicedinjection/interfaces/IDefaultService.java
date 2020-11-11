@@ -5,7 +5,7 @@ import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.logger.LogFactory;
 import io.github.classgraph.ClassInfo;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.*;
 import java.util.logging.Level;
 

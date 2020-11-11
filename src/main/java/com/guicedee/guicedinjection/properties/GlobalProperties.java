@@ -41,7 +41,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  * @since 08 Jul 2017
  */
 @SuppressWarnings("MissingClassJavaDoc")
-@javax.inject.Singleton
+@jakarta.inject.Singleton
 @JsonAutoDetect(fieldVisibility = ANY,
 				getterVisibility = NONE,
 				setterVisibility = NONE)
