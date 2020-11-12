@@ -42,7 +42,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	/**
 	 * White list the scanning. Highly Recommended
 	 */
-	private boolean whiteListPackages;
+	private boolean includePackages;
 	/**
 	 * Whether or not to log very verbose
 	 */
@@ -60,6 +60,10 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 */
 	private boolean excludeModulesAndJars;
 	/**
+	 * Include module/jars from being loaded - uses ModuleInclusions for jdk9 and JarInclusions for jdk8
+	 */
+	private boolean includeModuleAndJars;
+	/**
 	 * Excludes packages from scanning - excellent for minimizing path scanning on web application
 	 */
 	private boolean excludePackages;
@@ -71,10 +75,7 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Excludes paths from scanning - excellent for minizing path scanning on web application
 	 */
 	private boolean allowedPaths;
-	/**
-	 * Provides a list of whitelist jars/modules to scan
-	 */
-	private boolean allowJarsAndModules;
+
 	/**
 	 * Configures the Guice Context and Reflection Identifier
 	 */
@@ -264,9 +265,9 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 *
 	 * @return if whitelisting is enabled
 	 */
-	public boolean isWhiteListPackages()
+	public boolean isIncludePackages()
 	{
-		return whiteListPackages;
+		return includePackages;
 	}
 
 	/**
@@ -274,16 +275,16 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * * <p>
 	 * * Use META-INF/services/com.guicedee.guiceinjection.scanners.IPackageContentsScanner to register your packages
 	 *
-	 * @param whiteListPackages
+	 * @param includePackages
 	 * 		if packages should be white listed
 	 *
 	 * @return Always this
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public J setWhiteListPackages(boolean whiteListPackages)
+	public J setIncludePackages(boolean includePackages)
 	{
-		this.whiteListPackages = whiteListPackages;
+		this.includePackages = includePackages;
 		return (J) this;
 	}
 
@@ -441,14 +442,14 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		       ", methodInfo=" + methodInfo +
 		       ", ignoreFieldVisibility=" + ignoreFieldVisibility +
 		       ", ignoreMethodVisibility=" + ignoreMethodVisibility +
-		       ", whiteListPackages=" + whiteListPackages +
+		       ", includePackages=" + includePackages +
 		       ", verbose=" + verbose +
 		       ", pathScanning=" + pathScanning +
 		       ", classpathScanning=" + classpathScanning +
 		       ", excludeModulesAndJars=" + excludeModulesAndJars +
 		       ", excludePaths=" + excludePaths +
 		       ", allowedPaths=" + allowedPaths +
-		       ", whitelistJarsAndModules=" + allowJarsAndModules +
+		       ", includeJarsAndModules=" + includeModuleAndJars +
 		       '}';
 	}
 
@@ -481,30 +482,22 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	}
 
 	/**
-	 * Method isWhitelistJarsAndModules returns the whitelistJarsAndModules of this GuiceConfig object.
-	 * <p>
-	 * Provides a list of whitelist jars/modules to scan
+	 * Include module/jars from being loaded - uses ModuleInclusions for jdk9 and JarInclusions for jdk8
 	 *
-	 * @return the whitelistJarsAndModules (type boolean) of this GuiceConfig object.
+	 * @return
 	 */
-	public boolean isAllowJarsAndModules()
-	{
-		return allowJarsAndModules;
+	public boolean isIncludeModuleAndJars() {
+		return includeModuleAndJars;
 	}
 
 	/**
-	 * Method setWhitelistJarsAndModules sets the allowJarsAndModules of this GuiceConfig object.
-	 * <p>
-	 * Provides a list of whitelist jars/modules to scan
+	 * Include module/jars from being loaded - uses ModuleInclusions for jdk9 and JarInclusions for jdk8
 	 *
-	 * @param allowJarsAndModules
-	 * 		the allowJarsAndModules of this GuiceConfig object.
-	 *
-	 * @return GuiceConfig J
+	 * @param includeModuleAndJars
+	 * @return
 	 */
-	public GuiceConfig<J> setAllowJarsAndModules(boolean allowJarsAndModules)
-	{
-		this.allowJarsAndModules = allowJarsAndModules;
+	public GuiceConfig<J> setIncludeModuleAndJars(boolean includeModuleAndJars) {
+		this.includeModuleAndJars = includeModuleAndJars;
 		return this;
 	}
 

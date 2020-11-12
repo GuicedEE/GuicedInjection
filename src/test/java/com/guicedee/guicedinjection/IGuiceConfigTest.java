@@ -27,7 +27,7 @@ public class IGuiceConfigTest
 		assertTrue(config.isIgnoreFieldVisibility());
 		assertTrue(config.isIgnoreMethodVisibility());
 		assertTrue(config.isMethodInfo());
-		assertTrue(config.isWhiteListPackages());
+		assertTrue(config.isIncludePackages());
 		assertTrue(config.isFieldScanning());
 	}
 
@@ -39,7 +39,7 @@ public class IGuiceConfigTest
 		      .setServiceLoadWithClassPath(true)
 		      .setExcludePaths(true)
 		      .setAllowPaths(true)
-		      .setWhiteListPackages(true)
+		      .setIncludePackages(true)
 		      .setAnnotationScanning(true)
 		      .setPathScanning(true)
 		      .setClasspathScanning(true)

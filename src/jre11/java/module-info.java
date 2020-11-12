@@ -28,8 +28,10 @@ module com.guicedee.guicedinjection {
 	uses com.guicedee.guicedinjection.interfaces.IPathContentsScanner;
 	uses com.guicedee.guicedinjection.interfaces.IPathContentsRejectListScanner;
 	uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions;
+	uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions;
 	uses com.guicedee.guicedinjection.interfaces.IPackageRejectListScanner;
 	uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
+	uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarInclusions;
 
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;

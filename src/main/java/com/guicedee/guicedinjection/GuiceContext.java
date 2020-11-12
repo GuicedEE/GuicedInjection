@@ -456,6 +456,29 @@ public class GuiceContext<J extends GuiceContext<J>>
 		return strings.toArray(new String[0]);
 	}
 
+	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	@SuppressWarnings("unchecked")
+	private String[] getJarsInclusionList()
+	{
+		Set<String> strings = new TreeSet<>();
+		Set<IGuiceScanJarInclusions> exclusions = loadJarInclusionScanners();
+		if (exclusions.iterator()
+				.hasNext())
+		{
+			for (IGuiceScanJarInclusions exclusion : exclusions)
+			{
+				Set<String> searches = exclusion.includeJars();
+				strings.addAll(searches);
+			}
+			GuiceContext.log.log(Level.FINE, "IGuiceScanJarExclusions - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
+	}
+
 
 	/**
 	 * Starts up Guice and the scanner
@@ -543,12 +566,34 @@ public class GuiceContext<J extends GuiceContext<J>>
 			}
 		}
 
-		if (GuiceContext.config.isWhiteListPackages())
+		if (GuiceContext.config.isIncludeModuleAndJars())
+		{
+			if (getJavaVersion() < 9)
+			{
+				String[] jarRejections = getJarsInclusionList();
+				log.config("Accepted Jars for Scanning : " + Arrays.toString(jarRejections));
+				if (jarRejections.length != 0)
+				{
+					graph.acceptJars(jarRejections);
+				}
+			}
+			else {
+				String[] modulesRejection = getModulesInclusionsList();
+				log.config("Accepted Modules for Scanning : " + Arrays.toString(modulesRejection));
+				if (modulesRejection.length != 0) {
+					graph.acceptModules(modulesRejection);
+				} else {
+					graph.ignoreParentModuleLayers();
+				}
+			}
+		}
+
+		if (GuiceContext.config.isIncludePackages())
 		{
 			String[] packages = getPackagesList();
 			if (packages.length != 0)
 			{
-				graph.whitelistPackages(packages);
+				graph.acceptPackages(packages);
 			}
 		}
 		if (GuiceContext.config.isRejectPackages())
@@ -556,7 +601,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 			String[] packages = getBlacklistPackages();
 			if (packages.length != 0)
 			{
-				graph.blacklistPackages(packages);
+				graph.rejectPackages(packages);
 			}
 		}
 
@@ -712,6 +757,30 @@ public class GuiceContext<J extends GuiceContext<J>>
 				strings.addAll(searches);
 			}
 			GuiceContext.log.log(Level.FINE, "IGuiceScanModuleExclusions - " + strings.toString());
+		}
+		return strings.toArray(new String[0]);
+	}
+
+
+	/**
+	 * Returns a complete list of generic exclusions
+	 *
+	 * @return A string list of packages to be scanned
+	 */
+	@SuppressWarnings("unchecked")
+	private String[] getModulesInclusionsList()
+	{
+		Set<String> strings = new TreeSet<>();
+		Set<IGuiceScanModuleInclusions> exclusions = getLoader(IGuiceScanModuleInclusions.class, true, ServiceLoader.load(IGuiceScanModuleInclusions.class));
+		if (exclusions.iterator()
+				.hasNext())
+		{
+			for (IGuiceScanModuleInclusions<?> exclusion : exclusions)
+			{
+				Set<String> searches = exclusion.includeModules();
+				strings.addAll(searches);
+			}
+			GuiceContext.log.log(Level.FINE, "IGuiceScanModuleInclusions - " + strings.toString());
 		}
 		return strings.toArray(new String[0]);
 	}
@@ -903,6 +972,18 @@ public class GuiceContext<J extends GuiceContext<J>>
 	Set<IGuiceScanJarExclusions> loadJarRejectScanners()
 	{
 		return getLoader(IGuiceScanJarExclusions.class, true, ServiceLoader.load(IGuiceScanJarExclusions.class));
+	}
+
+
+	/**
+	 * Loads the service lists of post startup's for manual additions
+	 *
+	 * @return The list of guice post startups
+	 */
+	public @NotNull
+	Set<IGuiceScanJarInclusions> loadJarInclusionScanners()
+	{
+		return getLoader(IGuiceScanJarInclusions.class, true, ServiceLoader.load(IGuiceScanJarInclusions.class));
 	}
 
 
