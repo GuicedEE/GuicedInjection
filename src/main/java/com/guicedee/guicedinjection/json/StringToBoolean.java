@@ -14,6 +14,8 @@ import java.io.IOException;
 public class StringToBoolean
 		extends JsonDeserializer<Boolean>
 {
+	public static boolean nullable = true;
+
 	@Override
 	public Boolean deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
 	{
@@ -26,20 +28,24 @@ public class StringToBoolean
 		{
 			return null;
 		}
-		value = value.trim();
+		value = value.trim().toLowerCase();
 		switch (value)
 		{
 			case "1":
 			case "1.0":
-			case "Y":
-			case "Yes":
+			case "y":
+			case "yes":
 			case "true":
 				return true;
 			case "0":
-			case "No":
-			case "N":
+			case "0.0":
+			case "no":
+			case "n":
+			case "false":
 				return false;
 		}
-		return null;
+		if(nullable)
+			return null;
+		else return false;
 	}
 }
