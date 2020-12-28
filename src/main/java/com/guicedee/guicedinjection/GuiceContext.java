@@ -416,11 +416,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 		{
 			GuiceContext.config = new GuiceConfig<>();
 		}
-		else if (GuiceContext.config.isServiceLoadWithClassPath())
-		{
-			//Load Scanner Here, before everything
-			loadScanner();
-		}
 		Set<IGuiceConfigurator> guiceConfigurators = loadIGuiceConfigs();
 		for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
 		{
@@ -485,17 +480,13 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 */
 	private void loadScanner()
 	{
-		if (buildingInjector && scanner == null)
+		if (scanner == null)
 		{
 			scanner = new ClassGraph();
 			Stopwatch stopwatch = Stopwatch.createStarted();
 			GuiceContext.log.info("Loading Classpath Scanner");
-			if (GuiceContext.config == null)
-			{
-				loadConfiguration();
-			}
-
-			configureScanner(scanner);
+			loadConfiguration();
+			scanner = configureScanner(scanner);
 			try
 			{
 				if(async)
@@ -527,14 +518,14 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * @param graph
 	 * 		The ClassGraph to apply the configuration to
 	 */
-	private void configureScanner(ClassGraph graph)
+	private ClassGraph configureScanner(ClassGraph graph)
 	{
 		if (config.isAllowPaths())
 		{
 			String[] paths = getPathsList();
 			if (paths.length != 0)
 			{
-				graph.acceptPaths(paths);
+				graph = graph.acceptPaths(paths);
 			}
 		}
 		if (GuiceContext.config.isExcludePaths())
@@ -542,7 +533,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 			String[] blacklistList = getPathsBlacklistList();
 			if (blacklistList.length != 0)
 			{
-				graph.rejectPaths(blacklistList);
+				graph = graph.rejectPaths(blacklistList);
 			}
 		}
 
@@ -553,15 +544,15 @@ public class GuiceContext<J extends GuiceContext<J>>
 				String[] jarRejections = getJarsExclusionList();
 				if (jarRejections.length != 0)
 				{
-					graph.rejectJars(jarRejections);
+					graph = graph.rejectJars(jarRejections);
 				}
 			}
 			else {
 				String[] modulesRejection = getModulesExclusionList();
 				if (modulesRejection.length != 0) {
-					graph.rejectModules(modulesRejection);
+					graph = graph.rejectModules(modulesRejection);
 				} else {
-					graph.ignoreParentModuleLayers();
+					graph = graph.ignoreParentModuleLayers();
 				}
 			}
 		}
@@ -574,16 +565,16 @@ public class GuiceContext<J extends GuiceContext<J>>
 				log.config("Accepted Jars for Scanning : " + Arrays.toString(jarRejections));
 				if (jarRejections.length != 0)
 				{
-					graph.acceptJars(jarRejections);
+					graph = graph.acceptJars(jarRejections);
 				}
 			}
 			else {
 				String[] modulesRejection = getModulesInclusionsList();
 				log.config("Accepted Modules for Scanning : " + Arrays.toString(modulesRejection));
 				if (modulesRejection.length != 0) {
-					graph.acceptModules(modulesRejection);
+					graph = graph.acceptModules(modulesRejection);
 				} else {
-					graph.ignoreParentModuleLayers();
+					graph = graph.ignoreParentModuleLayers();
 				}
 			}
 		}
@@ -593,7 +584,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 			String[] packages = getPackagesList();
 			if (packages.length != 0)
 			{
-				graph.acceptPackages(packages);
+				graph = graph.acceptPackages(packages);
 			}
 		}
 		if (GuiceContext.config.isRejectPackages())
@@ -601,41 +592,51 @@ public class GuiceContext<J extends GuiceContext<J>>
 			String[] packages = getBlacklistPackages();
 			if (packages.length != 0)
 			{
-				graph.rejectPackages(packages);
+				graph = graph.rejectPackages(packages);
 			}
 		}
-
 		if (GuiceContext.config.isExcludeParentModules())
 		{
-			graph.ignoreParentModuleLayers();
+			graph = graph.ignoreParentModuleLayers();
 		}
-
 		if (GuiceContext.config.isFieldInfo())
 		{
-			graph.enableFieldInfo();
+			graph = graph.enableClassInfo();
+			graph = graph.enableFieldInfo();
 		}
-
 		if (GuiceContext.config.isAnnotationScanning())
 		{
-			graph.enableAnnotationInfo();
+			graph = graph.enableClassInfo();
+			graph = graph.enableAnnotationInfo();
 		}
 		if (GuiceContext.config.isMethodInfo())
 		{
-			graph.enableMethodInfo();
+			graph = graph.enableClassInfo();
+			graph = graph.enableMethodInfo();
 		}
 		if (GuiceContext.config.isIgnoreFieldVisibility())
 		{
-			graph.ignoreFieldVisibility();
+			graph = graph.enableClassInfo();
+			graph = graph.ignoreFieldVisibility();
 		}
 		if (GuiceContext.config.isIgnoreMethodVisibility())
 		{
-			graph.ignoreMethodVisibility();
+			graph = graph.enableClassInfo();
+			graph = graph.ignoreMethodVisibility();
 		}
-
+		if (GuiceContext.config.isClasspathScanning())
+		{
+			graph = graph.enableClassInfo();
+		}
 		if (GuiceContext.config.isVerbose())
 		{
-			graph.verbose();
+			graph = graph.verbose();
 		}
+		if (GuiceContext.config.isIgnoreClassVisibility())
+		{
+			graph = graph.ignoreClassVisibility();
+		}
+		return graph;
 	}
 
 	/**

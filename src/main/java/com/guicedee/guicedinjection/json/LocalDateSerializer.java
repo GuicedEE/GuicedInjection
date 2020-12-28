@@ -16,6 +16,15 @@ public class LocalDateSerializer
 
     @Override
     public void serialize(LocalDate value, JsonGenerator generator, SerializerProvider provider) throws IOException {
-        generator.writeString(value.format(DateTimeFormatter.ofPattern(LocalDateFormat)));
+        generator.writeString(convert(value));
+    }
+    
+    public String convert(LocalDate value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+        return value.format(DateTimeFormatter.ofPattern(LocalDateFormat));
     }
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.google.common.base.Strings;
+import com.guicedee.logger.LogFactory;
 
 import java.io.IOException;
 import java.time.OffsetTime;
@@ -12,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
+import java.util.logging.Level;
 
 import static com.guicedee.guicedinjection.json.StaticStrings.*;
 
@@ -35,9 +37,9 @@ public class OffsetTimeDeserializer
 		return convert(name);
 	}
 
-	public OffsetTime convert(String value) throws IOException
+	public OffsetTime convert(String value)
 	{
-		if (Strings.isNullOrEmpty(value) || STRING_NULL.equals(value) || STRING_0.equals(value))
+		if (Strings.isNullOrEmpty(value) || STRING_NULL.equalsIgnoreCase(value) || STRING_0.equals(value))
 		{
 			return null;
 		}
@@ -61,7 +63,7 @@ public class OffsetTimeDeserializer
 		}
 		if (time == null)
 		{
-			throw new IOException("Unable to determine local date time from string - [" + value + "]");
+			LogFactory.getLog(OffsetTimeSerializer.class).log(Level.WARNING,"Unable to determine offset time from string - [" + value + "]");
 
 		}
 		return time;

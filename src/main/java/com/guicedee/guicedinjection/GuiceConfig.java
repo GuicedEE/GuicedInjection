@@ -40,6 +40,10 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 */
 	private boolean ignoreMethodVisibility;
 	/**
+	 * If the class visibility should be ignored
+	 */
+	private boolean ignoreClassVisibility;
+	/**
 	 * White list the scanning. Highly Recommended
 	 */
 	private boolean includePackages;
@@ -480,7 +484,19 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		this.allowedPaths = allowedPaths;
 		return this;
 	}
-
+	
+	public boolean isIgnoreClassVisibility()
+	{
+		return ignoreClassVisibility;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public J setIgnoreClassVisibility(boolean ignoreClassVisibility)
+	{
+		this.ignoreClassVisibility = ignoreClassVisibility;
+		return (J) this;
+	}
+	
 	/**
 	 * Include module/jars from being loaded - uses ModuleInclusions for jdk9 and JarInclusions for jdk8
 	 *
