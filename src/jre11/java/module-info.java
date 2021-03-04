@@ -8,6 +8,8 @@ module com.guicedee.guicedinjection {
 
 	requires transitive com.guicedee.logmaster;
 
+	requires org.apache.commons.lang3;
+
 	exports com.guicedee.guicedinjection;
 	exports com.guicedee.guicedinjection.interfaces;
 	exports com.guicedee.guicedinjection.interfaces.annotations;
