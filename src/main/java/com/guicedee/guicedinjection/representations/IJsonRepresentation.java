@@ -3,8 +3,10 @@ package com.guicedee.guicedinjection.representations;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.exceptions.JsonRenderException;
+import com.guicedee.guicedinjection.interfaces.ObjectBinderKeys;
 
 import java.io.File;
 import java.io.IOException;
@@ -102,6 +104,98 @@ public interface IJsonRepresentation<T>
 			throw new JsonRenderException( "Unable to serialize as JSON", e);
 		}
 	}
+
+	/**
+	 * Read direct from the stream
+	 *
+	 * @param <T>
+	 * @param file
+	 * 		the stream
+	 * @param clazz
+	 *
+	 * @return
+	 *
+	 * @throws IOException
+	 */
+	static  <T> T From(InputStream file, Class<T> clazz) throws IOException
+	{
+		return getJsonObjectReader().forType(clazz)
+				.readValue(file);
+	}
+
+
+	/**
+	 * Read from a file
+	 *
+	 * @param <T>
+	 * @param file
+	 * @param clazz
+	 *
+	 * @return
+	 *
+	 * @throws IOException
+	 */
+	static <T> T From(File file, Class<T> clazz) throws IOException
+	{
+		return getJsonObjectReader().forType(clazz)
+				.readValue(file);
+	}
+
+	/**
+	 * Read from a reader
+	 *
+	 * @param <T>
+	 * @param file
+	 * @param clazz
+	 *
+	 * @return
+	 *
+	 * @throws IOException
+	 */
+	static <T> T From(Reader file, Class<T> clazz) throws IOException
+	{
+		return getJsonObjectReader().forType(clazz)
+				.readValue(file);
+	}
+
+	static ObjectReader getJsonObjectReader() {
+		return GuiceContext.get(ObjectBinderKeys.JSONObjectReader);
+	}
+
+	/**
+	 * Read from a content string
+	 *
+	 * @param <T>
+	 * @param content
+	 * @param clazz
+	 *
+	 * @return
+	 *
+	 * @throws IOException
+	 */
+	static <T> T From(String content, Class<T> clazz) throws IOException
+	{
+		return getJsonObjectReader().forType(clazz)
+				.readValue(content);
+	}
+
+	/**
+	 * Read from a URL
+	 *
+	 * @param <T>
+	 * @param content
+	 * @param clazz
+	 *
+	 * @return
+	 *
+	 * @throws IOException
+	 */
+	static <T> T From(URL content, Class<T> clazz) throws IOException
+	{
+		return getJsonObjectReader().forType(clazz)
+				.readValue(content);
+	}
+
 
 	/**
 	 * Read direct from the stream
