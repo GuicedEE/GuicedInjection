@@ -9,14 +9,18 @@ module com.guicedee.guicedinjection {
 	requires transitive com.guicedee.logmaster;
 
 	requires transitive org.apache.commons.lang3;
+    requires jakarta.xml.bind;
+    requires java.xml;
 
-	exports com.guicedee.guicedinjection;
+    exports com.guicedee.guicedinjection;
 	exports com.guicedee.guicedinjection.interfaces;
+	exports com.guicedee.guicedinjection.exceptions;
 	exports com.guicedee.guicedinjection.interfaces.annotations;
 	exports com.guicedee.guicedinjection.abstractions;
 	exports com.guicedee.guicedinjection.pairing;
 	exports com.guicedee.guicedinjection.json;
 	exports com.guicedee.guicedinjection.properties;
+	exports com.guicedee.guicedinjection.representations;
 
 	uses com.guicedee.guicedinjection.interfaces.IPackageContentsScanner;
 	uses com.guicedee.guicedinjection.interfaces.IFileContentsScanner;
@@ -39,7 +43,7 @@ module com.guicedee.guicedinjection {
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 
 	provides com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder with com.guicedee.guicedinjection.injections.ContextBinderGuice, com.guicedee.guicedinjection.implementations.ObjectMapperBinder;
-	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
+	//provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
 	provides com.guicedee.guicedinjection.interfaces.IGuicePreDestroy with com.guicedee.guicedinjection.interfaces.JobService;
 
 	provides java.net.spi.URLStreamHandlerProvider with com.guicedee.guicedinjection.urls.JrtUrlHandler;

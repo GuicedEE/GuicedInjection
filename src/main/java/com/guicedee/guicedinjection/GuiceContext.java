@@ -21,6 +21,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
+import com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
 import com.guicedee.guicedinjection.interfaces.*;
 import com.guicedee.guicedinjection.interfaces.annotations.INotEnhanceable;
 import com.guicedee.guicedinjection.interfaces.annotations.INotInjectable;
@@ -138,8 +139,9 @@ public class GuiceContext<J extends GuiceContext<J>>
 				}
 				GuiceContext.instance()
 				            .loadPreStartups();
-				List<? extends Module> cModules = GuiceContext.instance()
-				                                              .loadDefaultBinders();
+
+				List<com.google.inject.Module> cModules = new ArrayList<>();
+				cModules.add(new GuiceInjectorModule());
 				GuiceContext.instance().injector = Guice.createInjector(cModules);
 				GuiceContext.buildingInjector = false;
 				GuiceContext.instance()

@@ -84,6 +84,13 @@ public class GuiceInjectorModule
 			log.log(Level.CONFIG, "Loading IGuiceDefaultBinder - " + binder.getClass());
 			binder.onBind(this);
 		}
+
+		Set<IGuiceModule> iGuiceModules = GuiceContext.instance().loadIGuiceModules();
+		for (IGuiceModule iGuiceModule : iGuiceModules) {
+			log.log(Level.CONFIG, "Loading IGuice Module - " + iGuiceModule.getClass().getSimpleName());
+			Module mod = (Module) iGuiceModule;
+			install(mod);
+		}
 	}
 
 	/**
