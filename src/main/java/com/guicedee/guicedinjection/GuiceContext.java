@@ -851,27 +851,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	}
 	
 	/**
-	 * Method loadDefaultBinders ...
-	 *
-	 * @return List
-	 */
-	@SuppressWarnings("unchecked")
-	private List loadDefaultBinders()
-	{
-		Set<IGuiceModule> preStartups = loadIGuiceModules();
-		Set<IGuiceModule> modules = new TreeSet<>(preStartups);
-		List output = new ArrayList<>();
-		for (IGuiceModule module : modules)
-		{
-			GuiceContext.log.config("Loading IGuiceModule  - " +
-					module.getClass()
-					      .getCanonicalName());
-			output.add(module);
-		}
-		return output;
-	}
-	
-	/**
 	 * Returns the current classpath scanner
 	 *
 	 * @return Default processors count
@@ -952,7 +931,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	public @NotNull
 	Set<IGuicePostStartup> loadPostStartupServices()
 	{
-		return getLoader(IGuicePostStartup.class, true, ServiceLoader.load(IGuicePostStartup.class));
+		return getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class));
 	}
 	
 	/**
