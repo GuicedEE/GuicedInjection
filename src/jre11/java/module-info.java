@@ -9,7 +9,7 @@ module com.guicedee.guicedinjection {
 	requires transitive com.guicedee.logmaster;
 
 	requires transitive org.apache.commons.lang3;
-    requires jakarta.xml.bind;
+    requires transitive jakarta.xml.bind;
     requires java.xml;
 
     exports com.guicedee.guicedinjection;
