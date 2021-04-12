@@ -2,25 +2,26 @@ package com.guicedee.guicedinjection.representations;
 
 import com.guicedee.guicedinjection.exceptions.XmlRenderException;
 import com.guicedee.guicedinjection.pairing.Pair;
-import com.guicedee.logger.LogFactory;
 import jakarta.xml.bind.*;
 
 import javax.xml.namespace.QName;
-import javax.xml.stream.*;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 /**
  * Makes any object representable as XML
  *
- * @param <T>
+ * @param <J>
  */
-public interface IXmlRepresentation<T> {
+public interface IXmlRepresentation<J> {
 
     @SuppressWarnings("unchecked")
-    default T fromXml(String xml, Class<T> type) {
+    default J fromXml(String xml, Class<J> type) {
         try {
-            T instance = type.getDeclaredConstructor()
+            J instance = type.getDeclaredConstructor()
                     .newInstance();
             JAXBContext context = null;
             if (XmlContexts.JAXB.containsKey(type)) {
@@ -38,10 +39,10 @@ public interface IXmlRepresentation<T> {
 
                 XMLStreamReader streamReader = factory.createXMLStreamReader(
                         new StringReader(xml));
-                JAXBElement<T> customer = unmarshaller.unmarshal(streamReader, type);
+                JAXBElement<J> customer = unmarshaller.unmarshal(streamReader, type);
                 instance = customer.getValue();
             } else {
-                instance = (T) unmarshaller.unmarshal(new StringReader(xml));
+                instance = (J) unmarshaller.unmarshal(new StringReader(xml));
             }
             return instance;
         } catch (IllegalAccessException T) {

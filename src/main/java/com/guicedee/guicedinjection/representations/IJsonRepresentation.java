@@ -16,7 +16,7 @@ import java.net.URL;
 import java.util.*;
 
 @SuppressWarnings("unused")
-public interface IJsonRepresentation<T>
+public interface IJsonRepresentation<J> extends ICopyable<J>
 {
 	/**
 	 * Serializes this object as JSON
@@ -44,7 +44,7 @@ public interface IJsonRepresentation<T>
 	 *
 	 * @return This object updated
 	 */
-	default T fromJson(String json)
+	default J fromJson(String json)
 	{
 		ObjectMapper objectMapper = GuiceContext.get(ObjectMapper.class);
 		try
@@ -67,12 +67,12 @@ public interface IJsonRepresentation<T>
 	 * @return This object updated
 	 */
 	@SuppressWarnings({"UnusedReturnValue"})
-	default List<T> fromJsonArray(String json)
+	default List<J> fromJsonArray(String json)
 	{
 		ObjectMapper objectMapper = GuiceContext.get(ObjectMapper.class);
 		try
 		{
-			return objectMapper.readerFor(new TypeReference<List<T>>() {})
+			return objectMapper.readerFor(new TypeReference<List<J>>() {})
 			                   .readValue(json);
 		}
 		catch (IOException e)
@@ -90,13 +90,13 @@ public interface IJsonRepresentation<T>
 	 * @return This object updated
 	 */
 	@SuppressWarnings({"UnusedReturnValue"})
-	default Set<T> fromJsonArrayUnique(String json, @SuppressWarnings("unused")
-			                                                Class<T> type)
+	default Set<J> fromJsonArrayUnique(String json, @SuppressWarnings("unused")
+			                                                Class<J> type)
 	{
 		ObjectMapper objectMapper = GuiceContext.get(ObjectMapper.class);
 		try
 		{
-			return objectMapper.readerFor(new TypeReference<TreeSet<T>>() {})
+			return objectMapper.readerFor(new TypeReference<TreeSet<J>>() {})
 			                   .readValue(json);
 		}
 		catch (IOException e)
