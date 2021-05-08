@@ -38,8 +38,7 @@ import com.guicedee.logger.LogFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ServiceLoader;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,8 +85,13 @@ public class GuiceInjectorModule
 		}
 
 		Set<IGuiceModule> iGuiceModules = GuiceContext.instance().loadIGuiceModules();
-		for (IGuiceModule iGuiceModule : iGuiceModules) {
-			log.log(Level.CONFIG, "Loading IGuice Module - " + iGuiceModule.getClass().getSimpleName());
+		Set<IGuiceModule> guicy = new TreeSet<>();
+		guicy.addAll(iGuiceModules);
+		
+		for (IGuiceModule<?> iGuiceModule : guicy)
+		{
+			log.log(Level.CONFIG, "Loading IGuice Module - " + iGuiceModule.getClass()
+			                                                               .getSimpleName());
 			Module mod = (Module) iGuiceModule;
 			install(mod);
 		}
