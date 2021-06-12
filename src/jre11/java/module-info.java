@@ -10,6 +10,7 @@ module com.guicedee.guicedinjection {
 
 	requires transitive org.apache.commons.lang3;
     requires transitive jakarta.xml.bind;
+
     requires java.xml;
 
     exports com.guicedee.guicedinjection;
