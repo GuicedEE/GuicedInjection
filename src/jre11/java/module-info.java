@@ -4,13 +4,17 @@ module com.guicedee.guicedinjection {
 
 	requires transitive com.fasterxml.jackson.databind;
 	requires transitive com.fasterxml.jackson.annotation;
-	requires transitive com.fasterxml.jackson.datatype.jdk8;
 
 	requires transitive com.guicedee.logmaster;
 
 	requires transitive org.apache.commons.lang3;
     requires transitive jakarta.xml.bind;
 
+    requires static java.sql;
+    requires static org.json;
+    requires static org.apache.poi.ooxml;
+    requires static org.apache.poi.poi;
+    
     requires java.xml;
 
     exports com.guicedee.guicedinjection;

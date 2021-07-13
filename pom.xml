@@ -13,7 +13,9 @@
     <packaging>jar</packaging>
 
     <name>Guiced Injector</name>
-    <description>Guice Injection allows you to access multiple Guice Binders and Modules across separate archives. Allowing you to configure your applications with injection from multiple dependancies. Servlets, EJB's, and Stand-Alone is supported. Requires JDK 8 or 10.
+    <description>Guice Injection allows you to access multiple Guice Binders and Modules across separate archives.
+        Allowing you to configure your applications with injection from multiple dependancies. Servlets, EJB's, and
+        Stand-Alone is supported. Requires JDK 8 or 10.
     </description>
     <url>https://github.com/GedMarc/GuiceInjection</url>
 
@@ -58,13 +60,30 @@
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jdk8</artifactId>
+            <groupId>com.guicedee.services</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.guicedee.services</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
+            <artifactId>json</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.guicedee.services</groupId>
+            <artifactId>apache-poi-ooxml</artifactId>
+            <optional>true</optional>
         </dependency>
 
     </dependencies>

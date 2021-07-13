@@ -111,13 +111,12 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * @return The global Guice Injector Object, Never Null, Instantiates the Injector if not configured
 	 */
 	@NotNull
-	@SuppressWarnings("unchecked")
 	public static synchronized Injector inject()
 	{
 		if (GuiceContext.buildingInjector)
 		{
-			throw new RuntimeException(
-					"The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.");
+			log.log(Level.SEVERE,"The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.");
+			System.exit(1);
 		}
 		if (GuiceContext.instance().injector == null)
 		{

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
 import com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder;
@@ -42,7 +41,6 @@ public class ObjectMapperBinder
 	{
 		module.bind(ObjectBinderKeys.DefaultObjectMapper)
 		      .toInstance(ObjectMapperInstance = new ObjectMapper()
-				      .registerModule(new Jdk8Module())
 				      .registerModule(new LaxJsonModule())
 				      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 				      .configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false)
