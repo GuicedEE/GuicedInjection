@@ -171,10 +171,6 @@ public class ExcelReader
 				for (int cn = 0; cn < tCs; cn++)
 				{
 					Cell cell = row.getCell(cn, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
-
-
-					//   }
-					//  for (Cell cell : row) {
 					CellType cellType = cell.getCellType();
 					switch (cellType)
 					{
@@ -281,12 +277,12 @@ public class ExcelReader
 		if (isH)
 		{
 			return hwb.getSheetAt(sheetNo)
-			          .getLastRowNum();
+			          .getLastRowNum() + 1;
 		}
 		else
 		{
 			return xwb.getSheetAt(sheetNo)
-			          .getLastRowNum();
+			          .getLastRowNum() + 1;
 		}
 	}
 
@@ -401,7 +397,7 @@ public class ExcelReader
 		Object[] headerRow = rows[0];
 		List<T> output = new ArrayList<>();
 		Map<Integer, Map<String, String>> cells = new TreeMap<>();
-		for (int i = 1; i <= rows.length; i++)
+		for (int i = 1; i < rows.length; i++)
 		{
 			//Cell <Header,Value>
 			cells.put(i, new LinkedHashMap<>());
