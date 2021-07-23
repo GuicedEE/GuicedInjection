@@ -401,7 +401,7 @@ public class ExcelReader
 		Object[] headerRow = rows[0];
 		List<T> output = new ArrayList<>();
 		Map<Integer, Map<String, String>> cells = new TreeMap<>();
-		for (int i = 1; i < rows.length; i++)
+		for (int i = 1; i <= rows.length; i++)
 		{
 			//Cell <Header,Value>
 			cells.put(i, new LinkedHashMap<>());
