@@ -10,7 +10,7 @@ module com.guicedee.guicedinjection {
 	requires transitive org.apache.commons.lang3;
     requires transitive jakarta.xml.bind;
 
-    requires static java.sql;
+    requires static java.sql; 
     requires static org.json;
     requires static org.apache.poi.ooxml;
     requires static org.apache.poi.poi;
