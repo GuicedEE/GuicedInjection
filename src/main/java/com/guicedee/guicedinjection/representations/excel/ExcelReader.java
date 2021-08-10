@@ -35,7 +35,7 @@ public class ExcelReader
 
 	private InputStream inputStream;
 
-	private HSSFWorkbook hwb;
+	private HSSFWorkbook oldStyle;
 	private XSSFWorkbook xwb;
 	private boolean isH;
 	private Sheet currentSheet;
@@ -62,14 +62,14 @@ public class ExcelReader
 		{
 			try
 			{
-				hwb = new HSSFWorkbook(inputStream);
+				oldStyle = new HSSFWorkbook(inputStream);
 			}
 			catch (Throwable e)
 			{
 				log.log(Level.SEVERE,"Unable to excel ",e);
 				throw new ExcelRenderingException("Cannot open xls workbook",e);
 			}
-			this.currentSheet = hwb.getSheetAt(sheet);
+			this.currentSheet = oldStyle.getSheetAt(sheet);
 			isH = true;
 		}
 		else
@@ -92,7 +92,7 @@ public class ExcelReader
 	{
 		if (isH)
 		{
-			return hwb;
+			return oldStyle;
 		}
 		else
 		{
@@ -148,7 +148,7 @@ public class ExcelReader
 		Sheet sheet;
 		if (isH)
 		{
-			sheet = hwb.getSheetAt(sheetNumber);
+			sheet = oldStyle.getSheetAt(sheetNumber);
 		}
 		else
 		{
@@ -202,7 +202,7 @@ public class ExcelReader
 							FormulaEvaluator evaluator;
 							if (isH)
 							{
-								evaluator = hwb.getCreationHelper()
+								evaluator = oldStyle.getCreationHelper()
 								               .createFormulaEvaluator();
 							}
 							else
@@ -261,7 +261,7 @@ public class ExcelReader
 		Sheet sheet;
 		if (isH)
 		{
-			sheet = hwb.getSheetAt(sheetNo);
+			sheet = oldStyle.getSheetAt(sheetNo);
 		}
 		else
 		{
@@ -276,7 +276,7 @@ public class ExcelReader
 	{
 		if (isH)
 		{
-			return hwb.getSheetAt(sheetNo)
+			return oldStyle.getSheetAt(sheetNo)
 			          .getLastRowNum() + 1;
 		}
 		else
@@ -374,7 +374,7 @@ public class ExcelReader
 		{
 			if (isH)
 			{
-				hwb.write(baos);
+				oldStyle.write(baos);
 			}
 			else
 			{
@@ -413,8 +413,15 @@ public class ExcelReader
 					rowData.put(headerRow[j].toString(), rows[i][j])
 					       .toString();
 				}
-				cells.get(i)
-				     .put(headerRow[j].toString(), rows[i][j].toString());
+				if(rows[i][j] != null)
+				{
+					cells.get(i)
+					     .put(headerRow[j].toString(), rows[i][j].toString());
+				}
+				else
+				{
+					//end of row?
+				}
 				//cells.put(i, rows[i][j].toString().trim());
 			}
 			String outcome = rowData.toString();
@@ -439,7 +446,7 @@ public class ExcelReader
 		{
 			if (isH)
 			{
-				hwb.close();
+				oldStyle.close();
 			}
 			else
 			{
