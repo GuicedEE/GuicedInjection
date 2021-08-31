@@ -1,10 +1,7 @@
 package com.guicedee.guicedinjection.exceptions;
 
-import java.io.Serial;
-
 public class XmlRenderException extends RuntimeException
 {
-	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	/**
