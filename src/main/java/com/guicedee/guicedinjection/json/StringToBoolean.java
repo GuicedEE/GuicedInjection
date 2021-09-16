@@ -35,11 +35,13 @@ public class StringToBoolean
 			case "1.0":
 			case "y":
 			case "yes":
+			case "on":
 			case "true":
 				return true;
 			case "0":
 			case "0.0":
 			case "no":
+			case "off":
 			case "n":
 			case "false":
 				return false;

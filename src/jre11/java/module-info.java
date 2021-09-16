@@ -15,7 +15,7 @@ module com.guicedee.guicedinjection {
     requires static org.apache.poi.ooxml;
     requires static org.apache.poi.poi;
     
-    requires java.xml;
+    requires static java.xml;
 
     exports com.guicedee.guicedinjection;
 	exports com.guicedee.guicedinjection.interfaces;
