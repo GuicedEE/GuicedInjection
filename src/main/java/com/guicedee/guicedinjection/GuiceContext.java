@@ -472,7 +472,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	/**
 	 * Starts up Guice and the scanner
 	 */
-	private void loadScanner()
+	private synchronized void loadScanner()
 	{
 		if (scanner == null)
 		{
