@@ -13,8 +13,11 @@ public class JrtUrlConnection
 		extends URLConnection
 {
 	private Path path;
-
-
+	
+	/**
+	 * Cleans up incorrectly found jar:jrt urls and returns a viable URI
+	 * @param url
+	 */
 	protected JrtUrlConnection(URL url)
 	{
 		super(url);
