@@ -1,13 +1,12 @@
 package com.guicedee.guicedinjection.json;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.google.common.base.Strings;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.databind.*;
+import com.google.common.base.*;
 
-import java.io.IOException;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+import java.io.*;
+import java.time.*;
+import java.time.format.*;
 
 import static com.guicedee.guicedinjection.json.LocalTimeSerializer.*;
 import static com.guicedee.guicedinjection.json.StaticStrings.*;
@@ -29,6 +28,23 @@ public class LocalTimeDeserializer
 		{
 			return null;
 		}
-		return LocalTime.parse(value, DateTimeFormatter.ofPattern(LocalTimeFormat));
+		LocalTime time = null;
+		for (DateTimeFormatter format : formats)
+		{
+			try
+			{
+				time = LocalTime.parse(value, format);
+				if (time != null)
+				{
+					break;
+				}
+			}
+			catch (DateTimeParseException p)
+			{
+			
+			}
+		}
+		
+		return time;
 	}
 }

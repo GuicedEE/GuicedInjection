@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.guicedee.guicedinjection.json.mapkeys.*;
 
 import java.io.IOException;
 import java.time.*;
@@ -54,7 +55,11 @@ public class LaxJsonModule extends SimpleModule
 				.addSerializer(OffsetDateTime.class, new OffsetDateTimeSerializer())
 				.addDeserializer(OffsetTime.class, new OffsetTimeDeserializer())
 				.addSerializer(OffsetTime.class, new OffsetTimeSerializer())
-				.addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer());
+				.addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer())
+				
+				.addKeyDeserializer(LocalDateTime.class, new LocalDateTimeDeserializerKey())
+		
+		;
 	}
 	
 }
