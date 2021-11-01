@@ -4,11 +4,13 @@
                       https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>com.guicedee</groupId>
-        <artifactId>guicedee-projects</artifactId>
+        <artifactId>dev-kit</artifactId>
         <version>0.0.0_0-SNAPSHOT</version>
+        <relativePath>../../../</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
+    <groupId>com.guicedee</groupId>
     <artifactId>guiced-injection</artifactId>
     <packaging>jar</packaging>
     <version>0.0.0_0-SNAPSHOT</version>
