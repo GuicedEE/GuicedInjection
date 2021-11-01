@@ -21,6 +21,12 @@
     </description>
     <url>https://github.com/GedMarc/GuiceInjection</url>
 
+    <properties>
+        <ignore.moditect>true</ignore.moditect>
+        <flatten.pom>false</flatten.pom>
+    </properties>
+
+
     <dependencyManagement>
         <dependencies>
             <dependency>
