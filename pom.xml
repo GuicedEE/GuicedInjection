@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>guiced-injection</artifactId>
     <packaging>jar</packaging>
-
+    <version>0.0.0_0-SNAPSHOT</version>
     <name>Guiced Injector</name>
     <description>Guice Injection allows you to access multiple Guice Binders and Modules across separate archives.
         Allowing you to configure your applications with injection from multiple dependancies. Servlets, EJB's, and
