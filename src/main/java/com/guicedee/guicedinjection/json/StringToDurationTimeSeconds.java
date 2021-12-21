@@ -58,6 +58,10 @@ public class StringToDurationTimeSeconds extends JsonDeserializer<Duration> {
             int seconds = Integer.parseInt(value.substring(4, 6));
             return Duration.parse(STRING_DURATION_TIME + nf.format(hours) + H + nf.format(minutes) + M + nf.format(seconds) + S);
         } else {
+            if(value.indexOf(P) != 0)
+            {
+                value = value.substring(value.indexOf(P));
+            }
             return Duration.parse(value);
         }
     }

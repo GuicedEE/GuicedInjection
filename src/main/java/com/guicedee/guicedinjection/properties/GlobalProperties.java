@@ -16,21 +16,18 @@
  */
 package com.guicedee.guicedinjection.properties;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.guicedee.guicedinjection.GuiceContext;
-import com.guicedee.logger.LogFactory;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.databind.*;
+import com.google.inject.*;
+import com.guicedee.guicedinjection.*;
+import com.guicedee.logger.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.*;
+import java.util.logging.*;
 
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
 
 /**
  * A pretty class for containing EAR or Container level global properties.
@@ -41,33 +38,36 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  * @since 08 Jul 2017
  */
 @SuppressWarnings("MissingClassJavaDoc")
-@jakarta.inject.Singleton
+@Singleton
 @JsonAutoDetect(fieldVisibility = ANY,
-				getterVisibility = NONE,
-				setterVisibility = NONE)
+                getterVisibility = NONE,
+                setterVisibility = NONE)
 @JsonInclude(NON_NULL)
-public class GlobalProperties {
+public class GlobalProperties
+{
 	private static final Logger log = LogFactory.getLog("GlobalPropertyMaps");
-
+	
 	private final Map<String, Map<Object, Object>> globalProperties;
-
+	
 	/**
 	 * Constructs a new GlobalProperties
 	 */
-	public GlobalProperties() {
+	public GlobalProperties()
+	{
 		globalProperties = new HashMap<>();
 	}
-
+	
 	/**
 	 * Adds a key to the global application library
 	 *
 	 * @param key        Adds a key into the global library
 	 * @param properties Puts the property map into the global settings
 	 */
-	public void addKey(String key, Map<Object, Object> properties) {
+	public void addKey(String key, Map<Object, Object> properties)
+	{
 		globalProperties.put(key, properties);
 	}
-
+	
 	/**
 	 * Adds a normal string string property to the library
 	 *
@@ -75,14 +75,16 @@ public class GlobalProperties {
 	 * @param property The property to apply
 	 * @param value    The value to apply
 	 */
-	public void addProperty(String key, String property, String value) {
-		if (!globalProperties.containsKey(key)) {
+	public void addProperty(String key, String property, String value)
+	{
+		if (!globalProperties.containsKey(key))
+		{
 			globalProperties.put(key, new HashMap<>());
 		}
 		globalProperties.get(key)
-						.put(property, value);
+		                .put(property, value);
 	}
-
+	
 	/**
 	 * Adds a normal string string property to the library
 	 *
@@ -90,14 +92,16 @@ public class GlobalProperties {
 	 * @param property The property to add
 	 * @param value    The value to add
 	 */
-	public void addProperty(String key, String property, Object value) {
-		if (!globalProperties.containsKey(key)) {
+	public void addProperty(String key, String property, Object value)
+	{
+		if (!globalProperties.containsKey(key))
+		{
 			globalProperties.put(key, new HashMap<>());
 		}
 		globalProperties.get(key)
-						.put(property, value);
+		                .put(property, value);
 	}
-
+	
 	/**
 	 * Gets the key with the given map return type
 	 *
@@ -106,11 +110,12 @@ public class GlobalProperties {
 	 * @param key The key
 	 * @return A map to return
 	 */
-	@SuppressWarnings({ "unchecked", "UnusedReturnValue" })
-	public <K, V> Map<K, V> getKey(String key) {
+	@SuppressWarnings({"unchecked", "UnusedReturnValue"})
+	public <K, V> Map<K, V> getKey(String key)
+	{
 		return (Map<K, V>) globalProperties.get(key);
 	}
-
+	
 	/**
 	 * Gets a default string key and property mapping
 	 *
@@ -120,52 +125,61 @@ public class GlobalProperties {
 	 * @return The value of the mapped key and map ID
 	 */
 	@SuppressWarnings("unchecked")
-	public <V> V getProperty(String key, String property) {
+	public <V> V getProperty(String key, String property)
+	{
 		return (V) globalProperties.get(key)
-								   .get(property);
+		                           .get(property);
 	}
-
+	
 	/**
 	 * Removes a property from any list
 	 *
 	 * @param key      The key to remove
 	 * @param property The property to remove from the assigned map
 	 */
-	public void removeProperty(String key, String property) {
-		if (globalProperties.containsKey(key)) {
+	public void removeProperty(String key, String property)
+	{
+		if (globalProperties.containsKey(key))
+		{
 			globalProperties.get(key)
-							.remove(property);
+			                .remove(property);
 		}
 	}
-
+	
 	/**
 	 * Sets the property
 	 *
 	 * @param key      The key to remove
 	 * @param property The property to return
 	 */
-	public void emptyProperty(String key, String property) {
-		if (globalProperties.containsKey(key)) {
+	public void emptyProperty(String key, String property)
+	{
+		if (globalProperties.containsKey(key))
+		{
 			globalProperties.get(key)
-							.put(property, "");
+			                .put(property, "");
 		}
 	}
-
+	
 	/**
 	 * Returns a JSON implementation of the toString()
 	 *
 	 * @return A JSON Representation
 	 */
 	@Override
-	public String toString() {
-		try {
+	public String toString()
+	{
+		try
+		{
 			return GuiceContext.get(ObjectMapper.class)
-							   .writeValueAsString(this);
-		} catch (JsonProcessingException e) {
+			                   .writeValueAsString(this);
+		}
+		catch (JsonProcessingException e)
+		{
 			log.log(Level.SEVERE, "Non-Mappable character in GlobalProperties Map, Can't toString()", e);
 			return super.toString();
 		}
 	}
-
-
+	
+	
 }
