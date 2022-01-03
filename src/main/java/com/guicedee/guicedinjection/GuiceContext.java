@@ -16,28 +16,19 @@
  */
 package com.guicedee.guicedinjection;
 
-import com.google.common.base.Stopwatch;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Module;
-import com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
+import com.google.common.base.*;
+import com.google.inject.*;
+import com.guicedee.guicedinjection.abstractions.*;
 import com.guicedee.guicedinjection.interfaces.*;
-import com.guicedee.guicedinjection.interfaces.annotations.INotEnhanceable;
-import com.guicedee.guicedinjection.interfaces.annotations.INotInjectable;
-import com.guicedee.logger.LogFactory;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ResourceList;
-import io.github.classgraph.ScanResult;
+import com.guicedee.guicedinjection.interfaces.annotations.*;
+import com.guicedee.logger.*;
+import io.github.classgraph.*;
+import jakarta.validation.constraints.*;
 
-import jakarta.validation.constraints.NotNull;
-
-import java.lang.annotation.Annotation;
+import java.lang.annotation.*;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.*;
+import java.util.logging.*;
 import java.util.regex.Pattern;
 
 /**
@@ -71,11 +62,11 @@ public class GuiceContext<J extends GuiceContext<J>>
 	/**
 	 * A standard default waiting time for threads
 	 */
-	public static long defaultWaitTime = 50;
+	public static long defaultWaitTime = 2;
 	/**
 	 * The default wait unit for the thread time
 	 */
-	public static TimeUnit defaultWaitUnit = TimeUnit.MILLISECONDS;
+	public static TimeUnit defaultWaitUnit = TimeUnit.SECONDS;
 	/**
 	 * The configuration object
 	 */
@@ -115,7 +106,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		if (GuiceContext.buildingInjector)
 		{
-			log.log(Level.SEVERE,"The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.");
+			log.log(Level.SEVERE, "The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.");
 			System.exit(1);
 		}
 		if (GuiceContext.instance().injector == null)
@@ -129,16 +120,16 @@ public class GuiceContext<J extends GuiceContext<J>>
 				if (GuiceContext.instance()
 				                .getConfig()
 				                .isPathScanning() ||
-						GuiceContext.instance()
-						            .getConfig()
-						            .isClasspathScanning())
+				    GuiceContext.instance()
+				                .getConfig()
+				                .isClasspathScanning())
 				{
 					GuiceContext.instance()
 					            .loadScanner();
 				}
 				GuiceContext.instance()
 				            .loadPreStartups();
-
+				
 				List<com.google.inject.Module> cModules = new ArrayList<>();
 				cModules.add(new GuiceInjectorModule());
 				GuiceContext.instance().injector = Guice.createInjector(cModules);
@@ -166,7 +157,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @param <T>  The type to retrieve
 	 * @param type The physical class object
-	 *
 	 * @return The scoped object
 	 */
 	@NotNull
@@ -180,9 +170,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @param <T>  The type to retrieve
 	 * @param type The physical class object
-	 *
 	 * @return The scoped object
-	 *
 	 * @deprecated For get()
 	 */
 	@NotNull
@@ -197,9 +185,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @param <T>  The type to retrieve
 	 * @param type The physical class object
-	 *
 	 * @return The scoped object
-	 *
 	 * @deprecated For get()
 	 */
 	@NotNull
@@ -214,9 +200,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @param <T>  The type to retrieve
 	 * @param type The physical class object
-	 *
 	 * @return The scoped object
-	 *
 	 * @deprecated For get()
 	 */
 	@NotNull
@@ -256,7 +240,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * @param <T>        The type to retrieve
 	 * @param type       The physical class object
 	 * @param annotation The annotation to fetch
-	 *
 	 * @return The scoped object
 	 */
 	public static <T> T get(@NotNull Class<T> type, Class<? extends Annotation> annotation)
@@ -273,7 +256,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @param <T>  The type to retrieve
 	 * @param type The physical class object
-	 *
 	 * @return The scoped object
 	 */
 	@SuppressWarnings("unchecked")
@@ -338,7 +320,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * Returns the Java version as an int value.
 	 *
 	 * @return the Java version as an int value (8, 9, etc.)
-	 *
 	 * @since 12130
 	 */
 	private static int getJavaVersion()
@@ -412,8 +393,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 			for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
 			{
 				GuiceContext.log.config("Loading IGuiceConfigurator - " +
-						guiceConfigurator.getClass()
-						                 .getCanonicalName());
+				                        guiceConfigurator.getClass()
+				                                         .getCanonicalName());
 				GuiceContext.config = guiceConfigurator.configure(GuiceContext.config);
 			}
 			GuiceContext.log.config("IGuiceConfigurator  : " + GuiceContext.config.toString());
@@ -660,8 +641,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 			for (IPackageContentsScanner exclusion : exclusions)
 			{
 				GuiceContext.log.log(Level.CONFIG, "Loading IPackageContentsScanner - " +
-						exclusion.getClass()
-						         .getCanonicalName());
+				                                   exclusion.getClass()
+				                                            .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
@@ -685,8 +666,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 			for (IPackageRejectListScanner exclusion : exclusions)
 			{
 				GuiceContext.log.log(Level.CONFIG, "Loading IPackageContentsScanner - " +
-						exclusion.getClass()
-						         .getCanonicalName());
+				                                   exclusion.getClass()
+				                                            .getCanonicalName());
 				Set<String> searches = exclusion.exclude();
 				strings.addAll(searches);
 			}
@@ -710,8 +691,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 			for (IPathContentsScanner exclusion : exclusions)
 			{
 				GuiceContext.log.log(Level.CONFIG, "Loading IPathScanningContentsScanner - " +
-						exclusion.getClass()
-						         .getCanonicalName());
+				                                   exclusion.getClass()
+				                                            .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
@@ -735,8 +716,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 			for (IPathContentsRejectListScanner exclusion : exclusions)
 			{
 				GuiceContext.log.log(Level.CONFIG, "Loading IPathContentsRejectListScanner - " +
-						exclusion.getClass()
-						         .getCanonicalName());
+				                                   exclusion.getClass()
+				                                            .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
@@ -802,8 +783,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 		for (IFileContentsScanner fileScanner : fileScanners)
 		{
 			GuiceContext.log.log(Level.CONFIG, "Loading IFileContentsScanner - " +
-					fileScanner.getClass()
-					           .getCanonicalName());
+			                                   fileScanner.getClass()
+			                                              .getCanonicalName());
 			fileScans.putAll(fileScanner.onMatch());
 		}
 		return fileScans;
@@ -819,8 +800,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 		for (IFileContentsPatternScanner fileScanner : fileScanners)
 		{
 			GuiceContext.log.log(Level.CONFIG, "Loading IFileContentsPatternScanner - " +
-					fileScanner.getClass()
-					           .getCanonicalName());
+			                                   fileScanner.getClass()
+			                                              .getCanonicalName());
 			fileScans.putAll(fileScanner.onMatch());
 		}
 		return fileScans;
@@ -832,7 +813,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * @param loaderType The service type
 	 * @param <T>        The type
 	 * @param dontInject Don't inject
-	 *
 	 * @return A set of them
 	 */
 	@SuppressWarnings("unchecked")
@@ -886,26 +866,25 @@ public class GuiceContext<J extends GuiceContext<J>>
 			                 .add(postStartup);
 		}
 		
-		postStartupGroups.forEach((key, value) ->
+		for (Map.Entry<Integer, Set<IGuicePostStartup>> entry : postStartupGroups.entrySet())
 		{
-			get(JobService.class)
-					.registerJobPool("GuicePostStartupGroup", Executors.newWorkStealingPool(Runtime.getRuntime()
-					                                                                               .availableProcessors()));
-			for (IGuicePostStartup<?> postStartup : value)
+			Integer key = entry.getKey();
+			Set<IGuicePostStartup> value = entry.getValue();
+			if (value.size() == 1)
 			{
-				get(JobService.class)
-						.addJob("GuicePostStartupGroup", postStartup);
-				GuiceContext.log.config("Registering IGuicePostStartup - " +
-						postStartup
-								.getClass()
-								.getCanonicalName());
+				//run in order
+				for (IGuicePostStartup<?> iGuicePostStartup : value)
+				{
+					iGuicePostStartup.postLoad();
+				}
 			}
-			get(JobService.class)
-					.waitForJob("GuicePostStartupGroup", defaultWaitTime, defaultWaitUnit);
+			else
+			{
+				value.parallelStream()
+				     .forEach(IGuicePostStartup::postLoad);
+			}
 			GuiceContext.log.fine("Completed with Post Startups Key [" + key + "]");
-		});
-		JobService.getInstance()
-		          .removeJob("GuicePostStartupGroup");
+		}
 	}
 	
 	/**
@@ -1013,8 +992,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 		for (IGuicePreStartup startup : startups)
 		{
 			GuiceContext.log.config("Loading IGuicePreStartup - " +
-					startup.getClass()
-					       .getCanonicalName());
+			                        startup.getClass()
+			                               .getCanonicalName());
 			startup.onStartup();
 		}
 	}
@@ -1025,7 +1004,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @param loaderType The service type
 	 * @param <T>        The type
-	 *
 	 * @return A set of them
 	 */
 	@SuppressWarnings("unchecked")

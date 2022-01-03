@@ -58,6 +58,7 @@ public class LaxJsonModule extends SimpleModule
 				.addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer())
 				
 				.addKeyDeserializer(LocalDateTime.class, new LocalDateTimeDeserializerKey())
+				.addKeyDeserializer(LocalDate.class, new LocalDateDeserializerKey())
 		
 		;
 	}
