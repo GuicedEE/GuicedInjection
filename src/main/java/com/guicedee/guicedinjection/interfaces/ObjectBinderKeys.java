@@ -1,10 +1,8 @@
 package com.guicedee.guicedinjection.interfaces;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.inject.Key;
-import com.google.inject.name.Names;
+import com.fasterxml.jackson.databind.*;
+import com.google.inject.*;
+import com.google.inject.name.*;
 
 public class ObjectBinderKeys
 {
@@ -24,8 +22,27 @@ public class ObjectBinderKeys
 	 * The object reader for tiny
 	 */
 	public static final Key<ObjectReader> JSONObjectReader = Key.get(ObjectReader.class, Names.named("JSON"));
-
+	
+	
+	/**
+	 * The default object mapping
+	 */
+	public static final Key<ObjectMapper> JavascriptObjectMapper = Key.get(ObjectMapper.class, Names.named("Javascript"));
+	/**
+	 * /**
+	 * The default object writer
+	 */
+	public static final Key<ObjectWriter> JavaScriptObjectWriter = Key.get(ObjectWriter.class, Names.named("Javascript"));
+	/**
+	 * The default object writer for tiny
+	 */
+	public static final Key<ObjectWriter> JavaScriptObjectWriterTiny = Key.get(ObjectWriter.class, Names.named("JavascriptTiny"));
+	/**
+	 * The object reader for tiny
+	 */
+	public static final Key<ObjectReader> JavaScriptObjectReader = Key.get(ObjectReader.class, Names.named("Javascript"));
+	
 	public static ObjectMapper ObjectMapperInstance;
-
-
+	
+	
 }
