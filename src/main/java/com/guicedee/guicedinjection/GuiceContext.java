@@ -819,7 +819,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	@NotNull
 	public <T> Set<T> getLoader(Class<T> loaderType,
 	                            @SuppressWarnings("unused")
-			                            boolean dontInject, ServiceLoader<T> serviceLoader)
+	                            boolean dontInject, ServiceLoader<T> serviceLoader)
 	{
 		if (!getAllLoadedServices().containsKey(loaderType))
 		{
@@ -875,13 +875,28 @@ public class GuiceContext<J extends GuiceContext<J>>
 				//run in order
 				for (IGuicePostStartup<?> iGuicePostStartup : value)
 				{
-					iGuicePostStartup.postLoad();
+					try
+					{
+						iGuicePostStartup.postLoad();
+					}
+					catch (Throwable T)
+					{
+						log.log(Level.SEVERE, "Cannot execute post startup - " + iGuicePostStartup.getClass()
+						                                                                          .getCanonicalName(), T);
+					}
 				}
 			}
 			else
 			{
-				value.parallelStream()
-				     .forEach(IGuicePostStartup::postLoad);
+				try
+				{
+					value.parallelStream()
+					     .forEach(IGuicePostStartup::postLoad);
+				}
+				catch (Throwable T)
+				{
+					log.log(Level.SEVERE, "Cannot execute post startup - ", T);
+				}
 			}
 			GuiceContext.log.fine("Completed with Post Startups Key [" + key + "]");
 		}
