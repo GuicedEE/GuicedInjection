@@ -212,14 +212,20 @@ public class GuiceContext<J extends GuiceContext<J>>
 	
 	private static boolean isEntityType(Class<?> clazz)
 	{
-		for (Annotation annotation : clazz.getAnnotations())
+		try
 		{
-			if (annotation.annotationType()
-			              .getCanonicalName()
-			              .equalsIgnoreCase("jakarta.persistence.Entity"))
+			for (Annotation annotation : clazz.getAnnotations())
 			{
-				return true;
+				if (annotation.annotationType()
+				              .getCanonicalName()
+				              .equalsIgnoreCase("jakarta.persistence.Entity"))
+				{
+					return true;
+				}
 			}
+		}catch (NullPointerException npe )
+		{
+			return false;
 		}
 		return false;
 	}
