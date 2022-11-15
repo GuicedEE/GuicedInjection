@@ -8,31 +8,20 @@ import com.google.common.base.Strings;
 import com.guicedee.logger.LogFactory;
 
 import java.io.IOException;
-import java.time.OffsetDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.util.logging.Level;
 
+import static com.guicedee.guicedinjection.json.LocalDateTimeDeserializer.*;
 import static com.guicedee.guicedinjection.json.StaticStrings.*;
 
 
 public class OffsetDateTimeDeserializer
 		extends JsonDeserializer<OffsetDateTime>
 {
-	private static final DateTimeFormatter[] formats = new DateTimeFormatter[]
-			                                                   {
-					                                                   new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-					                                                                                 .parseDefaulting(ChronoField.MONTH_OF_YEAR, 1L)
-					                                                                                 .parseDefaulting(ChronoField.DAY_OF_MONTH, 1L)
-					                                                                                 .parseDefaulting(ChronoField.HOUR_OF_DAY, 0L)
-					                                                                                 .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0L)
-					                                                                                 .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0L)
-					                                                                                 .parseDefaulting(ChronoField.NANO_OF_SECOND, 0L)
-							                                                   .toFormatter()
-			                                                   };
-
 	@Override
 	public OffsetDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
 	{
@@ -66,9 +55,29 @@ public class OffsetDateTimeDeserializer
 		}
 		if (time == null)
 		{
-			LogFactory.getLog(OffsetDateTimeSerializer.class).log(Level.WARNING,"Unable to determine offset datetime from string - [" + value + "]");
-
+			
+			LocalDateTime convert = new LocalDateTimeDeserializer().convert(value);
+			if (convert != null)
+			{
+				time = convertToUTCDateTime(convert);
+			}else
+			{
+				LogFactory.getLog(getClass())
+				          .log(Level.WARNING, "Unable to determine offset datetime from string - [" + value + "]");
+			}
 		}
 		return time;
 	}
+	private OffsetDateTime convertToUTCDateTime(LocalDateTime ldt)
+	{
+		if (ldt == null)
+		{
+			return null;
+		}
+		ZonedDateTime zonedDateTime = ldt.atZone(ZoneId.systemDefault());
+		ZonedDateTime utcZonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"));
+		OffsetDateTime offsetDateTime = utcZonedDateTime.toOffsetDateTime();
+		return offsetDateTime;
+	}
+	
 }

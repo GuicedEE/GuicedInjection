@@ -19,6 +19,15 @@ public class OffsetDateTimeSerializer
 	@Override
 	public void serialize(OffsetDateTime value, JsonGenerator generator, SerializerProvider provider) throws IOException
 	{
-		generator.writeString(value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+		generator.writeString(convert(value));
+	}
+	
+	public String convert(OffsetDateTime value)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+		return value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 	}
 }

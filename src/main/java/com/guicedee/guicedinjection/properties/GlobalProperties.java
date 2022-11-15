@@ -181,5 +181,26 @@ public class GlobalProperties
 		}
 	}
 	
+	public static String getSystemPropertyOrEnvironment(String name, String defaultValue)
+	{
+		if (System.getProperty(name) != null)
+		{
+			return System.getProperty(name);
+		}
+		if (System.getenv(name) != null)
+		{
+			System.setProperty(name, System.getenv(name));
+			return System.getProperty(name);
+		}
+		else {
+			if (defaultValue == null)
+			{
+				return null;
+			}
+			log.log(Level.WARNING,"Return default value for property [" + name + "] - [" + defaultValue + "]");
+			System.setProperty(name, defaultValue);
+			return System.getProperty(name);
+		}
+	}
 	
 }
