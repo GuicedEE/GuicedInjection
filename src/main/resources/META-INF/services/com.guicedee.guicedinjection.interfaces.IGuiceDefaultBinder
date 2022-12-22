@@ -1,2 +1,2 @@
 com.guicedee.guicedinjection.injections.ContextBinderGuice
-com.guicedee.guicedinjection.implementations.ObjectMapperBinder
+com.guicedee.guicedinjection.json.ObjectMapperBinder

@@ -31,6 +31,8 @@ import java.util.concurrent.*;
 import java.util.logging.*;
 import java.util.regex.Pattern;
 
+import static com.guicedee.guicedinjection.properties.GlobalProperties.*;
+
 /**
  * Provides an interface for reflection and injection in one.
  * <p>
@@ -330,7 +332,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 */
 	private static int getJavaVersion()
 	{
-		String version = System.getProperty("java.version");
+		String version = getSystemPropertyOrEnvironment("java.version","11");
 		if (version.startsWith("1."))
 		{
 			version = version.substring(2);

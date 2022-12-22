@@ -1,3 +1,5 @@
+import com.guicedee.guicedinjection.json.*;
+
 module com.guicedee.guicedinjection {
 	requires transitive com.google.guice;
 	requires transitive io.github.classgraph;
@@ -49,7 +51,7 @@ module com.guicedee.guicedinjection {
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 
-	provides com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder with com.guicedee.guicedinjection.injections.ContextBinderGuice, com.guicedee.guicedinjection.implementations.ObjectMapperBinder;
+	provides com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder with com.guicedee.guicedinjection.injections.ContextBinderGuice, ObjectMapperBinder;
 	//provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
 	provides com.guicedee.guicedinjection.interfaces.IGuicePreDestroy with com.guicedee.guicedinjection.interfaces.JobService;
 

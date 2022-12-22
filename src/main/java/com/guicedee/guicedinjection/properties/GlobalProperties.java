@@ -189,8 +189,15 @@ public class GlobalProperties
 		}
 		if (System.getenv(name) != null)
 		{
-			System.setProperty(name, System.getenv(name));
-			return System.getProperty(name);
+			try
+			{
+				System.setProperty(name, System.getenv(name));
+				return System.getProperty(name);
+			}catch (Throwable T)
+			{
+				log.log(Level.WARNING,"Couldn't set system property value [" + name + "] - [" + defaultValue + "]");
+				return System.getenv(name);
+			}
 		}
 		else {
 			if (defaultValue == null)
@@ -198,9 +205,15 @@ public class GlobalProperties
 				return null;
 			}
 			log.log(Level.WARNING,"Return default value for property [" + name + "] - [" + defaultValue + "]");
-			System.setProperty(name, defaultValue);
-			return System.getProperty(name);
+			try
+			{
+				System.setProperty(name, defaultValue);
+				return System.getProperty(name);
+			}catch (Throwable T)
+			{
+				log.log(Level.WARNING,"Couldn't set system property value [" + name + "] - [" + defaultValue + "]");
+				return defaultValue;
+			}
 		}
 	}
-	
 }

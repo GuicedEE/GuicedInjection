@@ -5,6 +5,8 @@ import java.io.PrintStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.guicedee.guicedinjection.properties.GlobalProperties.*;
+
 public class SysStreamsLogger {
 	private static Logger sysOutLogger = LoggerFactory.getLogger("SYSOUT");
 	private static Logger sysErrLogger = LoggerFactory.getLogger("SYSERR");
@@ -12,7 +14,7 @@ public class SysStreamsLogger {
 	public static final PrintStream sysout = System.out;
 	public static final PrintStream syserr = System.err;
 	
-	protected static final String LINE_SEPERATOR = System.getProperty("line.separator");
+	protected static final String LINE_SEPERATOR = getSystemPropertyOrEnvironment("line.separator","\n");
 	
 	public static void bindSystemStreams() {
 		// Enable autoflush
