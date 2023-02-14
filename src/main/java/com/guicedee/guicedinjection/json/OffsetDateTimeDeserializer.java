@@ -75,7 +75,7 @@ public class OffsetDateTimeDeserializer
 			return null;
 		}
 		ZonedDateTime zonedDateTime = ldt.atZone(ZoneId.systemDefault());
-		ZonedDateTime utcZonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"));
+		ZonedDateTime utcZonedDateTime = zonedDateTime.withZoneSameLocal(ZoneId.of("UTC"));
 		OffsetDateTime offsetDateTime = utcZonedDateTime.toOffsetDateTime();
 		return offsetDateTime;
 	}
