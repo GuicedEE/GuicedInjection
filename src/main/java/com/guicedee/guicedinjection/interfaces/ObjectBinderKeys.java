@@ -41,8 +41,4 @@ public class ObjectBinderKeys
 	 * The object reader for tiny
 	 */
 	public static final Key<ObjectReader> JavaScriptObjectReader = Key.get(ObjectReader.class, Names.named("Javascript"));
-	
-	public static ObjectMapper ObjectMapperInstance;
-	
-	
 }

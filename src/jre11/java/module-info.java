@@ -20,6 +20,7 @@ module com.guicedee.guicedinjection {
     requires static java.xml;
     
     requires static org.slf4j;
+    requires transitive com.fasterxml.jackson.datatype.jsr310;
 
     exports com.guicedee.guicedinjection;
 	exports com.guicedee.guicedinjection.interfaces;

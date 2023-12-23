@@ -8,6 +8,7 @@ import com.guicedee.guicedinjection.abstractions.*;
 import com.guicedee.guicedinjection.interfaces.*;
 import com.guicedee.logger.*;
 import jakarta.inject.*;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import static com.fasterxml.jackson.core.JsonParser.Feature.*;
 import static com.guicedee.guicedinjection.interfaces.ObjectBinderKeys.*;
@@ -34,16 +35,18 @@ public class ObjectMapperBinder
 	@Override
 	public void onBind(GuiceInjectorModule module)
 	{
-		log.fine("Bound ObjectMapper (DefaultObjectMapper) as singleton [" + singleton+ "]");
+		log.config("Bound ObjectMapper (DefaultObjectMapper) as singleton [" + singleton+ "]");
 		var p = (Provider<ObjectMapper>) () -> new ObjectMapper()
-				.registerModule(new LaxJsonModule())
+				.registerModule(new JavaTimeModule())
+				//.registerModule(new LaxJsonModule())
 				.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-				.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false)
+				.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true)
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 				.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
 				.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, true)
 				.enable(ALLOW_UNQUOTED_CONTROL_CHARS)
+				.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
 				.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
 				.setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
 				.setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)
@@ -92,7 +95,7 @@ public class ObjectMapperBinder
 		
 		log.fine("Bound ObjectWriter.class @Named(JavaScriptObjectReader)");
 		module.bind(ObjectBinderKeys.JavascriptObjectMapper)
-		      .toInstance(ObjectMapperInstance = new ObjectMapper()
+		      .toInstance(new ObjectMapper()
 				      .registerModule(new LaxJsonModule())
 				      .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 				      .configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false)
@@ -140,7 +143,7 @@ public class ObjectMapperBinder
 	}
 	
 	/**
-	 * Returns the object mapper instance
+	 * Returns the object mapper instance for JAVASCRIPT
 	 * @return
 	 */
 	public static ObjectMapper getObjectMapper()
