@@ -4,12 +4,13 @@ import com.fasterxml.jackson.databind.*;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import com.guicedee.guicedinjection.GuiceContext;
-import com.guicedee.logger.LogFactory;
+import lombok.extern.java.Log;
 
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public interface ICopyable<J>
 {
@@ -31,8 +32,7 @@ public interface ICopyable<J>
 					{
 						fieldTarget.set(this, value);
 					}
-				}
-				catch (IllegalAccessException e)
+				} catch (IllegalAccessException e)
 				{
 					e.printStackTrace();
 				}
@@ -70,11 +70,9 @@ public interface ICopyable<J>
 			String jsonFromSource = om.writeValueAsString(source);
 			ObjectReader objectReader = om.readerForUpdating(this);
 			objectReader.readValue(jsonFromSource);
-		}
-		catch (IOException e)
+		} catch (IOException e)
 		{
-			LogFactory.getLog("ICopyable")
-			          .log(Level.SEVERE, "Cannot write or read source/destination", e);
+			Logger.getLogger("ICopyable").log(Level.SEVERE, "Cannot write or read source/destination", e);
 		}
 		return (J) this;
 	}

@@ -1,7 +1,7 @@
 package com.guicedee.guicedinjection;
 
 import com.guicedee.guicedinjection.properties.GlobalProperties;
-import com.guicedee.logger.LogFactory;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +15,7 @@ public class GlobalPropertiesTest {
 
 	@Test
 	public void testSomeMethod() {
-		LogFactory.configureConsoleColourOutput(Level.FINE);
+		//LogFactory.configureConsoleColourOutput(Level.FINE);
 		GuiceContext.instance()
 		            .getConfig()
 		            .setServiceLoadWithClassPath(true);

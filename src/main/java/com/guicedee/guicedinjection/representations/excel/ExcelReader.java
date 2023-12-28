@@ -3,7 +3,7 @@ package com.guicedee.guicedinjection.representations.excel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.exceptions.ExcelRenderingException;
-import com.guicedee.logger.LogFactory;
+import lombok.extern.java.Log;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -27,12 +27,10 @@ import static java.math.BigDecimal.*;
  * @author Ernst Created:23 Oct 2013
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-
+@Log
 public class ExcelReader
 		implements AutoCloseable
 {
-	private static final Logger log = LogFactory.getLog("Excel Reader");
-
 	private InputStream inputStream;
 
 	private HSSFWorkbook oldStyle;

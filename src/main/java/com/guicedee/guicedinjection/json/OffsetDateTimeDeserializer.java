@@ -5,20 +5,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.google.common.base.Strings;
-import com.guicedee.logger.LogFactory;
+import lombok.extern.java.Log;
 
 import java.io.IOException;
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoField;
 import java.util.logging.Level;
 
-import static com.guicedee.guicedinjection.json.LocalDateTimeDeserializer.*;
+import static com.guicedee.guicedinjection.json.LocalDateTimeDeserializer.formats;
 import static com.guicedee.guicedinjection.json.StaticStrings.*;
 
-
+@Log
 public class OffsetDateTimeDeserializer
 		extends JsonDeserializer<OffsetDateTime>
 {
@@ -62,8 +63,7 @@ public class OffsetDateTimeDeserializer
 				time = convertToUTCDateTime(convert);
 			}else
 			{
-				LogFactory.getLog(getClass())
-				          .log(Level.WARNING, "Unable to determine offset datetime from string - [" + value + "]");
+				log.log(Level.WARNING, "Unable to determine offset datetime from string - [" + value + "]");
 			}
 		}
 		return time;

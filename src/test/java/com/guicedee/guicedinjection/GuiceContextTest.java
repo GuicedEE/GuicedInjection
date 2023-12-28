@@ -7,8 +7,8 @@ package com.guicedee.guicedinjection;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import com.guicedee.logger.LogFactory;
-import com.guicedee.logger.handlers.ConsoleSTDOutputHandler;
+
+
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -21,7 +21,7 @@ public class GuiceContextTest {
 
 	@BeforeAll
 	public static void pre() {
-		LogFactory.configureConsoleColourOutput(Level.FINE);
+		//LogFactory.configureConsoleColourOutput(Level.FINE);
 		GuiceContext.instance()
 		            .getConfig()
 		            .setServiceLoadWithClassPath(true);

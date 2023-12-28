@@ -32,15 +32,13 @@ import com.google.inject.spi.Message;
 import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.TypeListener;
 import com.guicedee.guicedinjection.GuiceContext;
-import com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder;
 import com.guicedee.guicedinjection.interfaces.IGuiceModule;
-import com.guicedee.logger.LogFactory;
+import lombok.extern.java.Log;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Exposes the abstract module methods as public
@@ -48,15 +46,10 @@ import java.util.logging.Logger;
  * @author GedMarc
  * @since 12 Dec 2016
  */
+@Log
 public class GuiceInjectorModule
 		extends AbstractModule
 		implements IGuiceModule<GuiceInjectorModule> {
-
-	/**
-	 * Field log
-	 */
-	private static final Logger log = LogFactory.getLog("GuiceInjectorModule");
-
 	/**
 	 * Constructs a new instance of the module
 	 */
@@ -77,17 +70,9 @@ public class GuiceInjectorModule
 	 */
 	@SuppressWarnings("unchecked")
 	private void runBinders() {
-		Set<IGuiceDefaultBinder> loader = GuiceContext.instance()
-													  .getLoader(IGuiceDefaultBinder.class, true, ServiceLoader.load(IGuiceDefaultBinder.class));
-		for (IGuiceDefaultBinder binder : loader) {
-			log.log(Level.CONFIG, "Loading IGuiceDefaultBinder - " + binder.getClass());
-			binder.onBind(this);
-		}
-
 		Set<IGuiceModule> iGuiceModules = GuiceContext.instance().loadIGuiceModules();
 		Set<IGuiceModule> guicy = new TreeSet<>();
 		guicy.addAll(iGuiceModules);
-		
 		for (IGuiceModule<?> iGuiceModule : guicy)
 		{
 			log.log(Level.CONFIG, "Loading IGuice Module - " + iGuiceModule.getClass()

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.google.common.base.Strings;
-import com.guicedee.logger.LogFactory;
+import lombok.extern.java.Log;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -17,7 +17,7 @@ import java.util.logging.Level;
 
 import static com.guicedee.guicedinjection.json.StaticStrings.*;
 
-
+@Log
 public class LocalDateTimeDeserializer
 		extends JsonDeserializer<LocalDateTime>
 {
@@ -164,8 +164,7 @@ public class LocalDateTimeDeserializer
 		}
 		if (time == null)
 		{
-			LogFactory.getLog(LocalDateTimeDeserializer.class)
-			          .log(Level.WARNING, "Unable to determine local date time from string - [" + value + "]");
+			log.log(Level.WARNING, "Unable to determine local date time from string - [" + value + "]");
 		}
 		return time;
 	}

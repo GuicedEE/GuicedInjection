@@ -1,20 +1,22 @@
 package com.guicedee.guicedinjection;
 
+import com.guicedee.guicedinjection.interfaces.IGuiceConfig;
 import com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
-import com.guicedee.logger.LogFactory;
+import lombok.extern.java.Log;
 import org.junit.jupiter.api.Test;
 
 import java.util.logging.Level;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Log
 public class IGuiceConfigTest
 		implements IGuiceConfigurator
 {
 	@Test
 	public void testConfig()
 	{
-		LogFactory.configureConsoleColourOutput(Level.FINE);
+		//LogFactory.configureConsoleColourOutput(Level.FINE);
 		GuiceContext.instance()
 		            .loadIGuiceConfigs()
 		            .add(new IGuiceConfigTest());
@@ -32,7 +34,7 @@ public class IGuiceConfigTest
 	}
 
 	@Override
-	public GuiceConfig configure(GuiceConfig config)
+	public IGuiceConfig configure(IGuiceConfig config)
 	{
 		config.setIgnoreMethodVisibility(true)
 		      .setExcludeModulesAndJars(true)

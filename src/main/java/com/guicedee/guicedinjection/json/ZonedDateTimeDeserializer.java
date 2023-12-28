@@ -5,7 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.google.common.base.Strings;
-import com.guicedee.logger.LogFactory;
+import lombok.extern.java.Log;
+
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -17,29 +18,29 @@ import java.util.logging.Level;
 
 import static com.guicedee.guicedinjection.json.StaticStrings.*;
 
-
+@Log
 public class ZonedDateTimeDeserializer
-		extends JsonDeserializer<ZonedDateTime>
+				extends JsonDeserializer<ZonedDateTime>
 {
 	private static final DateTimeFormatter[] formats = new DateTimeFormatter[]
-			                                                   {
-					                                                   new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_ZONED_DATE_TIME)
-					                                                                                 .parseDefaulting(ChronoField.MONTH_OF_YEAR, 1L)
-					                                                                                 .parseDefaulting(ChronoField.DAY_OF_MONTH, 1L)
-					                                                                                 .parseDefaulting(ChronoField.HOUR_OF_DAY, 0L)
-					                                                                                 .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0L)
-					                                                                                 .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0L)
-					                                                                                 .parseDefaulting(ChronoField.NANO_OF_SECOND, 0L)
-							                                                   .toFormatter()
-			                                                   };
-
+					{
+									new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_ZONED_DATE_TIME)
+													.parseDefaulting(ChronoField.MONTH_OF_YEAR, 1L)
+													.parseDefaulting(ChronoField.DAY_OF_MONTH, 1L)
+													.parseDefaulting(ChronoField.HOUR_OF_DAY, 0L)
+													.parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0L)
+													.parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0L)
+													.parseDefaulting(ChronoField.NANO_OF_SECOND, 0L)
+													.toFormatter()
+					};
+	
 	@Override
 	public ZonedDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
 	{
 		String name = p.getValueAsString();
 		return convert(name);
 	}
-
+	
 	public ZonedDateTime convert(String value)
 	{
 		if (Strings.isNullOrEmpty(value) || STRING_NULL.equalsIgnoreCase(value) || STRING_0.equals(value))
@@ -49,7 +50,7 @@ public class ZonedDateTimeDeserializer
 		if (value.contains(E))
 		{
 			value = value.replaceAll(STRING_DOT_ESCAPED, STRING_EMPTY)
-			             .substring(0, value.indexOf(E) - 1);
+							.substring(0, value.indexOf(E) - 1);
 		}
 		ZonedDateTime time = null;
 		for (DateTimeFormatter format : formats)
@@ -58,16 +59,15 @@ public class ZonedDateTimeDeserializer
 			{
 				time = ZonedDateTime.parse(value, format);
 				break;
-			}
-			catch (DateTimeParseException dtpe)
+			} catch (DateTimeParseException dtpe)
 			{
 				//try the next one
 			}
 		}
 		if (time == null)
 		{
-			LogFactory.getLog(ZonedDateTimeDeserializer.class).log(Level.WARNING,"Unable to determine local date from string - [" + value + "]");
-
+			log.log(Level.WARNING, "Unable to determine local date from string - [" + value + "]");
+			
 		}
 		return time;
 	}

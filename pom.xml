@@ -4,17 +4,16 @@
                       https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>com.guicedee</groupId>
-        <artifactId>dev-kit</artifactId>
-        <version>0.0.0_0-SNAPSHOT</version>
-        <relativePath>../../../</relativePath>
+        <artifactId>parent</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.guicedee</groupId>
 
-    <artifactId>guiced-injection</artifactId>
+    <artifactId>guice-injection</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.0_0-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <name>Guiced Injector</name>
     <description>Guice Injection allows you to access multiple Guice Binders and Modules across separate archives.
         Allowing you to configure your applications with injection from multiple dependancies. Servlets, EJB's, and
@@ -44,14 +43,55 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+            <dependency>
+                <groupId>com.guicedee</groupId>
+                <artifactId>jakarta-bom</artifactId>
+                <version>${guicedee.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>com.guicedee</groupId>
+                <artifactId>google-bom</artifactId>
+                <version>${guicedee.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>com.guicedee</groupId>
+                <artifactId>apache-bom</artifactId>
+                <version>${guicedee.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>com.guicedee</groupId>
+                <artifactId>tests-bom</artifactId>
+                <version>${guicedee.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
+
         <dependency>
             <groupId>com.guicedee</groupId>
-            <artifactId>guiced-log-master</artifactId>
+            <artifactId>guice-inject-client</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--     <dependency>
+                 <groupId>com.guicedee</groupId>
+                 <artifactId>guiced-log-master</artifactId>
+             </dependency>
+     -->
 
         <dependency>
             <groupId>io.github.classgraph</groupId>
@@ -64,12 +104,12 @@
         </dependency>
 
         <dependency>
-            <groupId>com.guicedee.services</groupId>
+            <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.guicedee.services</groupId>
+            <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
 
@@ -79,8 +119,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.guicedee.services</groupId>
-            <artifactId>slf4j</artifactId>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <dependency>
@@ -92,7 +132,6 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>com.guicedee.services</groupId>
@@ -107,8 +146,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.guicedee.services</groupId>
-            <artifactId>javax.inject</artifactId>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
         </dependency>
 
         <dependency>
@@ -121,73 +160,59 @@
             <artifactId>guava</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
-
-    <scm>
-        <url>https://github.com/GedMarc?tab=repositories</url>
-    </scm>
-
-    <issueManagement>
-        <system>Github</system>
-        <url>https://github.com/GedMarc/GuiceInjection/issues</url>
-    </issueManagement>
-
-    <ciManagement>
-        <system>TeamCity</system>
-        <url>http://jwebmp.com/teamcity</url>
-    </ciManagement>
 
     <build>
         <plugins>
+
+            <plugin>
+                <groupId>org.moditect</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+            </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-
-                <configuration>
-                    <flattenMode>ossrh</flattenMode>
-                    <flattenDependencyMode>direct</flattenDependencyMode>
-                    <detail>true</detail>
-                    <updatePomFile>true</updatePomFile>
-                    <flattenedPomFilename>flatter.pom</flattenedPomFilename>
-                </configuration>
-                <executions>
-                    <!-- enable flattening -->
-                    <execution>
-                        <id>flatten</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>flatten</goal>
-                        </goals>
-                    </execution>
-                    <!-- ensure proper cleanup -->
-                    <execution>
-                        <id>flatten.clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
-                <groupId>com.coderplus.maven.plugins</groupId>
-                <artifactId>copy-rename-maven-plugin</artifactId>
-                <version>1.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-file</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <sourceFile>flatter.pom</sourceFile>
-                            <destinationFile>dependency-reduced-pom.xml</destinationFile>
-                        </configuration>
-                    </execution>
-                </executions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
+                <inherited>true</inherited>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <annotationProcessorPath>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </annotationProcessorPath>
+                    </annotationProcessorPaths>
+                    <annotationProcessors>
+                        <annotationProcessor>lombok.launch.AnnotationProcessorHider$AnnotationProcessor
+                        </annotationProcessor>
+                    </annotationProcessors>
+                    <failOnError>true</failOnError>
+                </configuration>
+            </plugin>
+
         </plugins>
+
     </build>
 </project>

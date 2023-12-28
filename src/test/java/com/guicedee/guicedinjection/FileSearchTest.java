@@ -1,7 +1,6 @@
 package com.guicedee.guicedinjection;
 
 import com.guicedee.guicedinjection.interfaces.IPathContentsRejectListScanner;
-import com.guicedee.logger.LogFactory;
 import io.github.classgraph.ResourceList;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +13,7 @@ public class FileSearchTest {
     @Test
     public void findJSFiles()
     {
-        LogFactory.configureConsoleColourOutput(Level.FINE);
+    //    LogFactory.configureConsoleColourOutput(Level.FINE);
         GuiceContext.instance().getConfig()
                 .setPathScanning(true)
                 .setExcludeModulesAndJars(true)

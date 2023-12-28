@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import com.google.inject.*;
 import com.guicedee.guicedinjection.*;
-import com.guicedee.logger.*;
+import lombok.extern.java.Log;
 
 import java.util.*;
 import java.util.logging.*;
@@ -43,10 +43,9 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
                 getterVisibility = NONE,
                 setterVisibility = NONE)
 @JsonInclude(NON_NULL)
+@Log
 public class GlobalProperties
 {
-	private static final Logger log = LogFactory.getLog("GlobalPropertyMaps");
-	
 	private final Map<String, Map<Object, Object>> globalProperties;
 	
 	/**
