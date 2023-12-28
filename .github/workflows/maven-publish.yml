@@ -6,7 +6,7 @@ jobs:
   GuicedInjection:
     uses: GuicedEE/Workflows/.github/workflows/projects.yml@master
     with:
-      baseDir: 'GuiceInjection/'
+      baseDir: ''
       name: 'Guiced Injection'
     secrets:
       USERNAME: ${{secrets.USERNAME}}
