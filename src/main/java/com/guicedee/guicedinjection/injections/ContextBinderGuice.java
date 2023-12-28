@@ -30,9 +30,7 @@ public class ContextBinderGuice
     public void configure() {
         ContextBinderGuice.log.fine("Bound GuiceConfig.class");
         bind(GuiceConfig.class)
-                .toProvider(() -> GuiceContext.instance()
-                        .getConfig())
-                .in(Singleton.class);
+                .toProvider(() -> GuiceContext.instance().getConfig());
 
         ContextBinderGuice.log.fine("Bound GlobalProperties.class");
         bind(GlobalProperties.class)
@@ -46,6 +44,6 @@ public class ContextBinderGuice
 
         ContextBinderGuice.log.fine("Bound JobService.class");
         bind(JobService.class)
-                .toInstance(JobService.getINSTANCE());
+                .toInstance(JobService.getInstance());
     }
 }

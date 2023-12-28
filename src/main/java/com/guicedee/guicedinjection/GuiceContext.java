@@ -25,6 +25,7 @@ import io.github.classgraph.*;
 import jakarta.validation.constraints.*;
 import lombok.extern.java.Log;
 
+import java.lang.Module;
 import java.lang.annotation.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -50,10 +51,11 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * This particular instance of the class
 	 */
 	private static final GuiceContext<?> instance = new GuiceContext<>();
+	
 	/**
 	 * A list of all the loaded singleton sets
 	 */
-	private static final Map<Class, Set> allLoadedServices = Collections.synchronizedMap(new LinkedHashMap<>());
+	private static final Map<Class, Set> allLoadedServices = new LinkedHashMap<>();
 	/**
 	 * The building injector
 	 */
@@ -69,7 +71,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	/**
 	 * The configuration object
 	 */
-	private static GuiceConfig<?> config;
+	private static final GuiceConfig<?> config = new GuiceConfig<>();
 	/**
 	 * The physical injector for the JVM container
 	 */
@@ -86,6 +88,10 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * If the scan should run async
 	 */
 	private boolean async;
+	/**
+	 * If this context is configured
+	 */
+	private static boolean configured;
 	
 	/**
 	 * Creates a new Guice context. Not necessary
@@ -94,6 +100,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		//No config required
 	}
+	
+	private Set<String> registerModules = new LinkedHashSet<>();
 	
 	/**
 	 * Reference the Injector Directly
@@ -110,6 +118,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 		}
 		if (GuiceContext.instance().injector == null)
 		{
+			SysStreamsLogger.bindSystemStreams();
 			try
 			{
 				GuiceContext.buildingInjector = true;
@@ -299,11 +308,22 @@ public class GuiceContext<J extends GuiceContext<J>>
 	public static void destroy()
 	{
 		Set<IGuicePreDestroy> destroyers = GuiceContext.instance()
-						.getLoader(IGuicePreDestroy.class, true, ServiceLoader.load(IGuicePreDestroy.class));
-		for (IGuicePreDestroy destroyer : destroyers)
+						.getLoader(IGuicePreDestroy.class, false, ServiceLoader.load(IGuicePreDestroy.class));
+		try
 		{
-			IGuicePreDestroy instance = GuiceContext.get(destroyer.getClass());
-			instance.onDestroy();
+			for (IGuicePreDestroy destroyer : destroyers)
+			{
+				try
+				{
+					destroyer.onDestroy();
+				} catch (Throwable T)
+				{
+					log.log(Level.SEVERE, "Could not run destroyer [" + destroyer.getClass().getCanonicalName() + "]");
+				}
+			}
+		} catch (Throwable T)
+		{
+			log.log(Level.SEVERE, "Could not run destroyers", T);
 		}
 		if (GuiceContext.instance().scanResult != null)
 		{
@@ -378,8 +398,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 		return GuiceContext.instance;
 	}
 	
-	private static boolean configured;
-	
 	/**
 	 * Loads the IGuiceConfigurator
 	 */
@@ -387,23 +405,18 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		if (!configured)
 		{
-			if (GuiceContext.config == null)
-			{
-				GuiceContext.config = new GuiceConfig<>();
-			}
 			Set<IGuiceConfigurator> guiceConfigurators = loadIGuiceConfigs();
 			for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
 			{
 				GuiceContext.log.config("Loading IGuiceConfigurator - " +
 								guiceConfigurator.getClass()
 												.getCanonicalName());
-				GuiceContext.config = (GuiceConfig<?>) guiceConfigurator.configure(GuiceContext.config);
+				guiceConfigurator.configure(GuiceContext.config);
 			}
 			GuiceContext.log.config("IGuiceConfigurator  : " + GuiceContext.config.toString());
 			configured = true;
 		}
 	}
-	
 	
 	/**
 	 * Returns a complete list of generic exclusions
@@ -745,6 +758,18 @@ public class GuiceContext<J extends GuiceContext<J>>
 		return strings.toArray(new String[0]);
 	}
 	
+	/**
+	 * Registers a module for scanning when filtering is enabled
+	 *
+	 * @param javaModuleName The name in the module-info.java file
+	 * @return This instance
+	 */
+	@SuppressWarnings("unchecked")
+	public J registerModule(String javaModuleName)
+	{
+		this.registerModules.add(javaModuleName);
+		return (J) this;
+	}
 	
 	/**
 	 * Returns a complete list of generic exclusions
@@ -755,6 +780,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	private String[] getModulesInclusionsList()
 	{
 		Set<String> strings = new TreeSet<>();
+		strings.addAll(registerModules);
 		Set<IGuiceScanModuleInclusions> exclusions = getLoader(IGuiceScanModuleInclusions.class, true, ServiceLoader.load(IGuiceScanModuleInclusions.class));
 		if (exclusions.iterator()
 						.hasNext())
@@ -882,14 +908,39 @@ public class GuiceContext<J extends GuiceContext<J>>
 				}
 			} else
 			{
+				log.info("Starting Post Startup Group [" + key + "] in Parallel");
+				ExecutorService postStartup = null;
+				for (IGuicePostStartup iGuicePostStartup : value)
+				{
+					postStartup = JobService.getInstance().addJob("PostStartup", () -> {
+						try
+						{
+							iGuicePostStartup.postLoad();
+						} catch (Throwable T)
+						{
+							log.log(Level.SEVERE, "Cannot execute post startup - ", T);
+						}
+					});
+				}
 				try
+				{
+					if (postStartup != null)
+					{
+						log.config("Waiting for post startup group to finish....");
+						JobService.getInstance().removeJob("PostStartup");
+					}
+				} catch (Throwable e)
+				{
+					log.log(Level.SEVERE, "Cannot execute post startup - ", e);
+				}
+				/*try
 				{
 					value.parallelStream()
 									.forEach(IGuicePostStartup::postLoad);
 				} catch (Throwable T)
 				{
 					log.log(Level.SEVERE, "Cannot execute post startup - ", T);
-				}
+				}*/
 			}
 			GuiceContext.log.fine("Completed with Post Startups Key [" + key + "]");
 		}
@@ -902,10 +953,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 */
 	public GuiceConfig<?> getConfig()
 	{
-		if (GuiceContext.config == null)
-		{
-			GuiceContext.config = new GuiceConfig<>();
-		}
 		return GuiceContext.config;
 	}
 	
@@ -1173,7 +1220,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 		String type = loader.toString();
 		type = type.replace("java.util.ServiceLoader[", "");
 		type = type.substring(0, type.length() - 1);
-		if (config.isServiceLoadWithClassPath() && !buildingInjector)
+		if (config.isServiceLoadWithClassPath() && !buildingInjector &&  instance()
+						.getScanResult() != null)
 		{
 			for (ClassInfo classInfo : instance()
 							.getScanResult()

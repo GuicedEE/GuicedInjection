@@ -1,36 +1,21 @@
-import com.guicedee.guicedinjection.json.*;
-
 module com.guicedee.guicedinjection {
-	
 	requires transitive com.guicedee.client;
 	
 	requires transitive com.google.guice;
 	requires transitive io.github.classgraph;
 	
-	requires transitive com.fasterxml.jackson.databind;
-	requires transitive com.fasterxml.jackson.annotation;
-	requires transitive com.fasterxml.jackson.datatype.jsr310;
 	//requires transitive com.guicedee.logmaster;
 	
 	requires transitive org.apache.commons.lang3;
-	requires transitive jakarta.xml.bind;
-	
-	requires static java.sql;
-	requires static org.json;
-	requires static org.apache.poi.ooxml;
-	requires static org.apache.poi.poi;
-	
-	requires static java.xml;
 	
 	requires static org.slf4j;
 	requires static lombok;
 	
-	
 	exports com.guicedee.guicedinjection;
-	exports com.guicedee.guicedinjection.exceptions;
+	//exports com.guicedee.guicedinjection.exceptions;
 	exports com.guicedee.guicedinjection.abstractions;
 	exports com.guicedee.guicedinjection.pairing;
-	exports com.guicedee.guicedinjection.json;
+	//exports com.guicedee.services.jsonrepresentation.json;
 	exports com.guicedee.guicedinjection.properties;
 	exports com.guicedee.guicedinjection.representations;
 	
@@ -54,14 +39,13 @@ module com.guicedee.guicedinjection {
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 	
-	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.injections.ContextBinderGuice, ObjectMapperBinder;
+	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.injections.ContextBinderGuice;
 	//provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
 	
 	provides java.net.spi.URLStreamHandlerProvider with com.guicedee.guicedinjection.urls.JrtUrlHandler;
 	
 	opens com.guicedee.guicedinjection to com.fasterxml.jackson.databind;
 	opens com.guicedee.guicedinjection.properties to com.fasterxml.jackson.databind;
-	opens com.guicedee.guicedinjection.json to com.fasterxml.jackson.databind;
-	
+
 	opens com.guicedee.guicedinjection.pairing;
 }

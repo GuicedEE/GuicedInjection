@@ -6,22 +6,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
 
-import java.sql.Time;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import static java.util.concurrent.Executors.newWorkStealingPool;
 
 /**
  * Manages All Concurrent Threaded Jobs that execute asynchronously outside of the EE Context
@@ -36,6 +25,8 @@ public class JobService
 	private final Map<String, ScheduledExecutorService> pollingMap = new ConcurrentHashMap<>();
 	private final Map<String, Integer> maxQueueCount = new ConcurrentHashMap<>();
 	
+	private final ExecutorServiceSupplier executorServiceSupplier = new ExecutorServiceSupplier();
+	
 	@Getter
 	@Setter
 	private static long defaultWaitTime = 120;
@@ -43,10 +34,13 @@ public class JobService
 	@Setter
 	private static TimeUnit defaultWaitUnit = TimeUnit.SECONDS;
 	
-	@Getter
 	private static final JobService INSTANCE = new JobService();
 	
-	JobService()
+	public static JobService getInstance(){
+		return INSTANCE;
+	}
+	
+	public JobService()
 	{
 		//No config required
 	}
@@ -98,6 +92,7 @@ public class JobService
 		{
 			es.shutdownNow();
 		}
+		es.close();
 		serviceMap.remove(pool);
 		return es;
 	}
@@ -190,7 +185,7 @@ public class JobService
 	{
 		if (!serviceMap.containsKey(jobPoolName) || serviceMap.get(jobPoolName).isTerminated() || serviceMap.get(jobPoolName).isShutdown())
 		{
-			registerJobPool(jobPoolName, Executors.newWorkStealingPool());
+			registerJobPool(jobPoolName, executorServiceSupplier.get());
 		}
 		
 		ExecutorService service = serviceMap.get(jobPoolName);
@@ -198,7 +193,7 @@ public class JobService
 		{
 			log.log(Level.FINER, maxQueueCount + " Hit - Finishing before next run");
 			removeJob(jobPoolName);
-			service = registerJobPool(jobPoolName, newWorkStealingPool());
+			service = registerJobPool(jobPoolName,executorServiceSupplier.get());
 		}
 		service.execute(thread);
 		return service;
@@ -214,7 +209,7 @@ public class JobService
 	{
 		if (!serviceMap.containsKey(jobPoolName) || serviceMap.get(jobPoolName).isTerminated() || serviceMap.get(jobPoolName).isShutdown())
 		{
-			registerJobPool(jobPoolName, newWorkStealingPool());
+			registerJobPool(jobPoolName, executorServiceSupplier.get());
 		}
 		
 		ExecutorService service = serviceMap.get(jobPoolName);
@@ -222,7 +217,7 @@ public class JobService
 		{
 			log.log(Level.FINER, maxQueueCount + " Hit - Finishing before next run");
 			removeJob(jobPoolName);
-			service = registerJobPool(jobPoolName, newWorkStealingPool());
+			service = registerJobPool(jobPoolName, executorServiceSupplier.get());
 		}
 		service.submit(thread);
 		return service;

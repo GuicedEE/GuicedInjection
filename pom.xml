@@ -24,8 +24,8 @@
     <properties>
         <ignore.moditect>true</ignore.moditect>
         <flatten.pom>false</flatten.pom>
+        <project.scm.nameUrl>/GuicedEE/GuicedInjection</project.scm.nameUrl>
     </properties>
-
 
     <dependencyManagement>
         <dependencies>
@@ -108,10 +108,6 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -131,18 +127,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.guicedee.services</groupId>
-            <artifactId>json</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>com.guicedee.services</groupId>
-            <artifactId>apache-poi-ooxml</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -175,15 +159,14 @@
 
     <build>
         <plugins>
-
-            <plugin>
-                <groupId>org.moditect</groupId>
-                <artifactId>moditect-maven-plugin</artifactId>
-            </plugin>
-
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
             </plugin>
 
             <plugin>

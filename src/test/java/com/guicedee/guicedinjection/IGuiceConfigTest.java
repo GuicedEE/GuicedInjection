@@ -22,7 +22,8 @@ public class IGuiceConfigTest
 		            .add(new IGuiceConfigTest());
 		GuiceContext.inject();
 		GuiceConfig config = GuiceContext.get(GuiceConfig.class);
-
+		 config = GuiceContext.instance().getConfig();
+		
 		assertTrue(config.isServiceLoadWithClassPath());
 		assertTrue(config.isAnnotationScanning());
 		assertTrue(config.isFieldInfo());
@@ -38,7 +39,6 @@ public class IGuiceConfigTest
 	{
 		config.setIgnoreMethodVisibility(true)
 		      .setExcludeModulesAndJars(true)
-		      .setServiceLoadWithClassPath(true)
 		      .setExcludePaths(true)
 		      .setAllowPaths(true)
 		      .setIncludePackages(true)
