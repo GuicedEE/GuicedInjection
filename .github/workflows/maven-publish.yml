@@ -1,0 +1,15 @@
+name: Maven Package (BOM)
+on:
+  workflow_dispatch:
+  push:
+jobs:
+  GuicedInjection:
+    uses: GuicedEE/Workflows/.github/workflows/bom.yml@master
+    with:
+      baseDir: '/'
+      name: 'Guiced Injection'
+    secrets:
+      USERNAME: ${{secrets.USERNAME}}
+      USER_TOKEN: ${{secrets.USER_TOKEN}}
+      SONA_USERNAME: ${{secrets.SONA_USERNAME}}
+      SONA_PASSWORD: ${{secrets.SONA_PASSWORD}}
