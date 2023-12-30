@@ -1,4 +1,4 @@
-package com.guicedee.guicedinjection;
+package com.guicedee.tests;
 
 import com.guicedee.guicedinjection.interfaces.IFileContentsScanner;
 import io.github.classgraph.ResourceList;

@@ -1,4 +1,4 @@
-package com.guicedee.guicedinjection;
+package com.guicedee.tests;
 
 import com.guicedee.guicedinjection.interfaces.IGuiceConfig;
 import com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;

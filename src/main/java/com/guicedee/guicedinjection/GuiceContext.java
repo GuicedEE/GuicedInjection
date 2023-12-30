@@ -25,7 +25,6 @@ import io.github.classgraph.*;
 import jakarta.validation.constraints.*;
 import lombok.extern.java.Log;
 
-import java.lang.Module;
 import java.lang.annotation.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -61,14 +60,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 */
 	public static boolean buildingInjector = false;
 	/**
-	 * A standard default waiting time for threads
-	 */
-	public static long defaultWaitTime = 2;
-	/**
-	 * The default wait unit for the thread time
-	 */
-	public static TimeUnit defaultWaitUnit = TimeUnit.SECONDS;
-	/**
 	 * The configuration object
 	 */
 	private static final GuiceConfig<?> config = new GuiceConfig<>();
@@ -101,7 +92,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 		//No config required
 	}
 	
-	private Set<String> registerModules = new LinkedHashSet<>();
+	private static Set<String> registerModuleForScanning = new LinkedHashSet<>();
+	private static List<com.google.inject.Module> modules = new ArrayList<>();
 	
 	/**
 	 * Reference the Injector Directly
@@ -118,7 +110,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 		}
 		if (GuiceContext.instance().injector == null)
 		{
-			SysStreamsLogger.bindSystemStreams();
 			try
 			{
 				GuiceContext.buildingInjector = true;
@@ -138,8 +129,11 @@ public class GuiceContext<J extends GuiceContext<J>>
 				GuiceContext.instance()
 								.loadPreStartups();
 				
-				List<com.google.inject.Module> cModules = new ArrayList<>();
-				cModules.add(new GuiceInjectorModule());
+				List<com.google.inject.Module> cModules = new ArrayList<>(modules);
+				Set iGuiceModules = GuiceContext.instance().loadIGuiceModules();
+				cModules.addAll(iGuiceModules);
+				
+				//cModules.add(new GuiceInjectorModule());
 				GuiceContext.instance().injector = Guice.createInjector(cModules);
 				GuiceContext.buildingInjector = false;
 				GuiceContext.instance()
@@ -765,10 +759,15 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * @return This instance
 	 */
 	@SuppressWarnings("unchecked")
-	public J registerModule(String javaModuleName)
+	public static void registerModule(String javaModuleName)
 	{
-		this.registerModules.add(javaModuleName);
-		return (J) this;
+		instance().registerModuleForScanning.add(javaModuleName);
+		instance().getConfig().setIncludeModuleAndJars(true);
+	}
+	
+	public static void registerModule(com.google.inject.Module module)
+	{
+		instance().modules.add(module);
 	}
 	
 	/**
@@ -780,7 +779,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	private String[] getModulesInclusionsList()
 	{
 		Set<String> strings = new TreeSet<>();
-		strings.addAll(registerModules);
+		strings.addAll(registerModuleForScanning);
 		Set<IGuiceScanModuleInclusions> exclusions = getLoader(IGuiceScanModuleInclusions.class, true, ServiceLoader.load(IGuiceScanModuleInclusions.class));
 		if (exclusions.iterator()
 						.hasNext())
@@ -1240,7 +1239,10 @@ public class GuiceContext<J extends GuiceContext<J>>
 				output.add(newInstance);
 				completed.add((Class<T>) newInstance.getClass());
 			}
-		} catch (Throwable T)
+		} catch (java.util.ServiceConfigurationError T)
+		{
+			log.log(Level.WARNING, "Cannot load services - ", T);
+		}catch (Throwable T)
 		{
 			log.log(Level.SEVERE, "Cannot load services - ", T);
 		}
@@ -1255,8 +1257,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 				output.add((T) newInstance.getDeclaredConstructor());
 			} catch (NoSuchMethodException e)
 			{
-				log
-								.log(Level.SEVERE, "Cannot load a service through default constructor", e);
+				log.log(Level.SEVERE, "Cannot load a service through default constructor", e);
 			}
 		}
 		return output;

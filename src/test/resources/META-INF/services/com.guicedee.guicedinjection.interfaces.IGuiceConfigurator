@@ -1,2 +1,2 @@
-com.guicedee.guicedinjection.IGuiceConfigTest
-com.guicedee.guicedinjection.IGuiceContextTestConfigurator
+com.guicedee.tests.IGuiceConfigTest
+com.guicedee.tests.IGuiceContextTestConfigurator

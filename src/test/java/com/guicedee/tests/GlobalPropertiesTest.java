@@ -1,5 +1,6 @@
-package com.guicedee.guicedinjection;
+package com.guicedee.tests;
 
+import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.properties.GlobalProperties;
 
 import org.junit.jupiter.api.Assertions;

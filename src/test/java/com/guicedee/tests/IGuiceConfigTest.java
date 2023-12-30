@@ -1,11 +1,11 @@
-package com.guicedee.guicedinjection;
+package com.guicedee.tests;
 
+import com.guicedee.guicedinjection.GuiceConfig;
+import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.interfaces.IGuiceConfig;
 import com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
 import lombok.extern.java.Log;
 import org.junit.jupiter.api.Test;
-
-import java.util.logging.Level;
 
 import static org.junit.jupiter.api.Assertions.*;
 

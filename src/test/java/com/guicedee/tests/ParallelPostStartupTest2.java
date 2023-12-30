@@ -1,13 +1,13 @@
-package com.guicedee.guicedinjection;
+package com.guicedee.tests;
 
 import com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
 
-public class ParallelPostStartupTest1 implements IGuicePostStartup<ParallelPostStartupTest1>
+public class ParallelPostStartupTest2 implements IGuicePostStartup<ParallelPostStartupTest2>
 {
 	@Override
 	public void postLoad()
 	{
-		System.out.println("Starting 1");
+		System.out.println("Starting 2");
 	}
 	
 	@Override

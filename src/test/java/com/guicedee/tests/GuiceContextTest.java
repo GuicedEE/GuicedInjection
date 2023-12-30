@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.guicedee.guicedinjection;
+package com.guicedee.tests;
 
+import com.guicedee.guicedinjection.GuiceContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
