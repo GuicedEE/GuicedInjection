@@ -407,6 +407,10 @@ public class GuiceContext<J extends GuiceContext<J>>
 												.getCanonicalName());
 				guiceConfigurator.configure(GuiceContext.config);
 			}
+			if(!GuiceContext.config.isIncludeModuleAndJars())
+			{
+				log.warning("Scanning is not restricted to modules and may incur a performance impact. Consider registering your module with GuiceContext.registerModule() to auto enable, or SPI IGuiceConfiguration");
+			}
 			GuiceContext.log.config("IGuiceConfigurator  : " + GuiceContext.config.toString());
 			configured = true;
 		}
