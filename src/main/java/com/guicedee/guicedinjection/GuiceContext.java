@@ -295,14 +295,14 @@ public class GuiceContext<J extends GuiceContext<J>>
 		return instance;
 	}
 	
+	private static Set<IGuicePreDestroy> destroyers = GuiceContext.instance()
+					.getLoader(IGuicePreDestroy.class, false, ServiceLoader.load(IGuicePreDestroy.class));
 	/**
 	 * Execute on Destroy
 	 */
 	@SuppressWarnings("unused")
 	public static void destroy()
 	{
-		Set<IGuicePreDestroy> destroyers = GuiceContext.instance()
-						.getLoader(IGuicePreDestroy.class, false, ServiceLoader.load(IGuicePreDestroy.class));
 		try
 		{
 			for (IGuicePreDestroy destroyer : destroyers)

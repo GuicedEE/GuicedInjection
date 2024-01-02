@@ -1,3 +1,6 @@
+import com.guicedee.guicedinjection.JobService;
+import com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
+
 module com.guicedee.guicedinjection {
 	requires transitive com.guicedee.client;
 	
@@ -26,6 +29,8 @@ module com.guicedee.guicedinjection {
 	//uses com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder;
 	uses com.guicedee.guicedinjection.interfaces.IGuicePreStartup;
 	uses com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
+	
+	
 	uses com.guicedee.guicedinjection.interfaces.IGuiceModule;
 	uses com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
 	uses com.guicedee.guicedinjection.interfaces.IPathContentsScanner;
@@ -41,6 +46,8 @@ module com.guicedee.guicedinjection {
 	
 	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.injections.ContextBinderGuice;
 	//provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
+	
+	provides IGuicePreDestroy with JobService;
 	
 	provides java.net.spi.URLStreamHandlerProvider with com.guicedee.guicedinjection.urls.JrtUrlHandler;
 	
