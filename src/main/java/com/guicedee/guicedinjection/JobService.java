@@ -78,21 +78,7 @@ public class JobService
 			log.warning("Pool " + pool + " was not registered");
 			return null;
 		}
-		
-		es.shutdown();
-		try
-		{
-			log.finer("Waiting for pool " + pool + " to shutdown cleanly.");
-			es.awaitTermination(defaultWaitTime, defaultWaitUnit);
-		} catch (Exception e)
-		{
-			log.log(Level.SEVERE, "Couldn't shut down pool" + pool + " cleanly in 60 seconds. Forcing.");
-		}
-		if (!es.isShutdown())
-		{
-			es.shutdownNow();
-		}
-		es.close();
+		waitForJob(pool);
 		serviceMap.remove(pool);
 		return es;
 	}
@@ -110,20 +96,7 @@ public class JobService
 			log.warning("Repeating Pool " + pool + " was not registered");
 			return null;
 		}
-		es.shutdown();
-		try
-		{
-			log.finer("Waiting for repeating  pool " + pool + " to shutdown cleanly.");
-			es.awaitTermination(defaultWaitTime, defaultWaitUnit);
-		} catch (Exception e)
-		{
-			log.log(Level.SEVERE, "Couldn't shut down pool" + pool + " cleanly in 60 seconds. Forcing.");
-			es.shutdownNow();
-		}
-		if (!es.isTerminated())
-		{
-			es.shutdownNow();
-		}
+		waitForJob(pool);
 		pollingMap.remove(pool);
 		return es;
 	}
@@ -205,7 +178,7 @@ public class JobService
 	 * @param jobPoolName
 	 * @param thread
 	 */
-	public ExecutorService addJob(String jobPoolName, Callable<?> thread)
+	public Future<?> addTask(String jobPoolName, Callable<?> thread)
 	{
 		if (!serviceMap.containsKey(jobPoolName) || serviceMap.get(jobPoolName).isTerminated() || serviceMap.get(jobPoolName).isShutdown())
 		{
@@ -219,8 +192,7 @@ public class JobService
 			removeJob(jobPoolName);
 			service = registerJobPool(jobPoolName, executorServiceSupplier.get());
 		}
-		service.submit(thread);
-		return service;
+		return service.submit(thread);
 	}
 	
 	public void waitForJob(String jobName)
@@ -242,7 +214,13 @@ public class JobService
 		} catch (InterruptedException e)
 		{
 			log.log(Level.WARNING, "Thread didn't close cleanly, make sure running times are acceptable", e);
+			service.shutdownNow();
 		}
+		if (!service.isTerminated())
+		{
+			service.shutdownNow();
+		}
+		service.close();
 	}
 	
 	/**
