@@ -35,8 +35,13 @@ public class JobService
 	private static TimeUnit defaultWaitUnit = TimeUnit.SECONDS;
 	
 	private static final JobService INSTANCE = new JobService();
+	private static ExecutorService jobCleanup = null;
 	
 	public static JobService getInstance(){
+		if (jobCleanup == null)
+		{
+			jobCleanup = INSTANCE.jobCleanup();
+		}
 		return INSTANCE;
 	}
 	
@@ -221,6 +226,29 @@ public class JobService
 			service.shutdownNow();
 		}
 		service.close();
+	}
+	
+	private ExecutorService jobCleanup()
+	{
+		ScheduledExecutorService jobsShutdownNotClosed = addPollingJob("JobsShutdownNotClosed", () -> {
+			for (String jobPool : getInstance().getJobPools())
+			{
+				ExecutorService executorService = serviceMap.get(jobPool);
+				if(executorService.isShutdown() && !executorService.isTerminated())
+				{
+					log.fine("Closing unfinished job - " + jobPool);
+					removeJob(jobPool);
+				}
+				if(executorService.isShutdown() && executorService.isTerminated())
+				{
+					log.fine("Cleaning terminated job - " + jobPool);
+					executorService.close();
+					serviceMap.remove(jobPool);
+				}
+			}
+		}, 2, TimeUnit.MINUTES);
+		
+		return jobsShutdownNotClosed;
 	}
 	
 	/**
