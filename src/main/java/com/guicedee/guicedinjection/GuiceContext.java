@@ -18,6 +18,7 @@ package com.guicedee.guicedinjection;
 
 import com.google.common.base.*;
 import com.google.inject.*;
+import com.guicedee.client.*;
 import com.guicedee.guicedinjection.abstractions.*;
 import com.guicedee.guicedinjection.interfaces.*;
 import com.guicedee.guicedinjection.interfaces.annotations.*;
@@ -44,7 +45,7 @@ import static com.guicedee.guicedinjection.properties.GlobalProperties.*;
  */
 @Log
 @SuppressWarnings("MissingClassJavaDoc")
-public class GuiceContext<J extends GuiceContext<J>>
+public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 {
 	/**
 	 * This particular instance of the class
@@ -54,7 +55,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	/**
 	 * A list of all the loaded singleton sets
 	 */
-	private static final Map<Class, Set> allLoadedServices = new LinkedHashMap<>();
+	//private static final Map<Class, Set> allLoadedServices = new LinkedHashMap<>();
 	/**
 	 * The building injector
 	 */
@@ -92,8 +93,6 @@ public class GuiceContext<J extends GuiceContext<J>>
 		//No config required
 	}
 	
-	private static Set<String> registerModuleForScanning = new LinkedHashSet<>();
-	private static List<com.google.inject.Module> modules = new ArrayList<>();
 	
 	/**
 	 * Reference the Injector Directly
@@ -101,7 +100,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * @return The global Guice Injector Object, Never Null, Instantiates the Injector if not configured
 	 */
 	@NotNull
-	public static synchronized Injector inject()
+	public synchronized Injector inject()
 	{
 		if (GuiceContext.buildingInjector)
 		{
@@ -114,36 +113,53 @@ public class GuiceContext<J extends GuiceContext<J>>
 			{
 				GuiceContext.buildingInjector = true;
 				GuiceContext.log.info("Starting up Guice Context");
-				GuiceContext.instance()
-								.loadConfiguration();
-				if (GuiceContext.instance()
-								.getConfig()
-								.isPathScanning() ||
-								GuiceContext.instance()
-												.getConfig()
-												.isClasspathScanning())
+				GuiceContext
+						.instance()
+						.loadConfiguration();
+				if (GuiceContext
+						    .instance()
+						    .getConfig()
+						    .isPathScanning() || GuiceContext
+								                         .instance()
+								                         .getConfig()
+								                         .isClasspathScanning())
 				{
-					GuiceContext.instance()
-									.loadScanner();
+					GuiceContext
+							.instance()
+							.loadScanner();
 				}
-				GuiceContext.instance()
-								.loadPreStartups();
+				GuiceContext
+						.instance()
+						.loadPreStartups();
 				
 				List<com.google.inject.Module> cModules = new ArrayList<>(modules);
-				Set iGuiceModules = GuiceContext.instance().loadIGuiceModules();
+				Set iGuiceModules = GuiceContext
+						                    .instance()
+						                    .loadIGuiceModules();
 				cModules.addAll(iGuiceModules);
 				
 				//cModules.add(new GuiceInjectorModule());
 				GuiceContext.instance().injector = Guice.createInjector(cModules);
 				GuiceContext.buildingInjector = false;
-				GuiceContext.instance()
-								.loadPostStartups();
+				GuiceContext
+						.instance()
+						.loadPostStartups();
 				
-				Runtime.getRuntime()
-								.addShutdownHook(new Thread(GuiceContext::destroy));
+				Runtime
+						.getRuntime()
+						.addShutdownHook(new Thread()
+						{
+							public void run()
+							{
+								IGuiceContext
+										.getContext()
+										.destroy();
+							}
+						});
 				
 				GuiceContext.log.config("Injection System Ready");
-			} catch (Throwable e)
+			}
+			catch (Throwable e)
 			{
 				GuiceContext.log.log(Level.SEVERE, "Exception creating Injector : " + e.getMessage(), e);
 				throw new RuntimeException("Unable to boot Guice Injector", e);
@@ -153,155 +169,15 @@ public class GuiceContext<J extends GuiceContext<J>>
 		return GuiceContext.instance().injector;
 	}
 	
-	/**
-	 * Gets a new injected instance of a class
-	 *
-	 * @param <T>  The type to retrieve
-	 * @param type The physical class object
-	 * @return The scoped object
-	 */
-	@NotNull
-	public static <T> T get(@NotNull Class<T> type)
-	{
-		return get(type, null);
-	}
+	private static Set<IGuicePreDestroy> destroyers = GuiceContext
+			                                                  .instance()
+			                                                  .getLoader(IGuicePreDestroy.class, false, ServiceLoader.load(IGuicePreDestroy.class));
 	
-	/**
-	 * Gets a new injected instance of a class
-	 *
-	 * @param <T>  The type to retrieve
-	 * @param type The physical class object
-	 * @return The scoped object
-	 * @deprecated For get()
-	 */
-	@NotNull
-	@Deprecated()
-	public static <T> T getInstance(@NotNull Class<T> type)
-	{
-		return get(type, null);
-	}
-	
-	/**
-	 * Gets a new injected instance of a class
-	 *
-	 * @param <T>  The type to retrieve
-	 * @param type The physical class object
-	 * @return The scoped object
-	 * @deprecated For get()
-	 */
-	@NotNull
-	@Deprecated()
-	public static <T> T getInstance(@NotNull Key<T> type)
-	{
-		return get(type);
-	}
-	
-	/**
-	 * Gets a new injected instance of a class
-	 *
-	 * @param <T>  The type to retrieve
-	 * @param type The physical class object
-	 * @return The scoped object
-	 * @deprecated For get()
-	 */
-	@NotNull
-	@Deprecated()
-	public static <T> T getInstance(@NotNull Class<T> type, Class<? extends Annotation> annotation)
-	{
-		return get(type, annotation);
-	}
-	
-	private static boolean isEntityType(Class<?> clazz)
-	{
-		try
-		{
-			for (Annotation annotation : clazz.getAnnotations())
-			{
-				if (annotation.annotationType()
-								.getCanonicalName()
-								.equalsIgnoreCase("jakarta.persistence.Entity"))
-				{
-					return true;
-				}
-			}
-		} catch (NullPointerException npe)
-		{
-			return false;
-		}
-		return false;
-	}
-	
-	private static boolean isNotEnhanceable(Class<?> clazz)
-	{
-		return clazz.isAnnotationPresent(INotEnhanceable.class);
-	}
-	
-	private static boolean isNotInjectable(Class<?> clazz)
-	{
-		return clazz.isAnnotationPresent(INotInjectable.class);
-	}
-	
-	/**
-	 * Gets a new injected instance of a class
-	 *
-	 * @param <T>        The type to retrieve
-	 * @param type       The physical class object
-	 * @param annotation The annotation to fetch
-	 * @return The scoped object
-	 */
-	public static <T> T get(@NotNull Class<T> type, Class<? extends Annotation> annotation)
-	{
-		if (annotation == null)
-		{
-			return get(Key.get(type));
-		}
-		return get(Key.get(type, annotation));
-	}
-	
-	/**
-	 * Gets a new specified instance from a give key
-	 *
-	 * @param <T>  The type to retrieve
-	 * @param type The physical class object
-	 * @return The scoped object
-	 */
-	@SuppressWarnings("unchecked")
-	@NotNull
-	public static <T> T get(@NotNull Key<T> type)
-	{
-		Class<T> clazz = (Class<T>) type.getTypeLiteral()
-						.getRawType();
-		T instance;
-		boolean isEntityType = isEntityType(clazz);
-		if (isNotEnhanceable(clazz) || isEntityType)
-		{
-			try
-			{
-				instance = clazz.getDeclaredConstructor()
-								.newInstance();
-				if (!isNotInjectable(clazz))
-				{
-					inject().injectMembers(instance);
-				}
-			} catch (Exception e)
-			{
-				log.log(Level.SEVERE, "Unable to construct [" + clazz.getCanonicalName() + "]. Not Enhanceable or an Entity.", e);
-				throw new RuntimeException(e);
-			}
-		} else
-		{
-			instance = inject().getInstance(type);
-		}
-		return instance;
-	}
-	
-	private static Set<IGuicePreDestroy> destroyers = GuiceContext.instance()
-					.getLoader(IGuicePreDestroy.class, false, ServiceLoader.load(IGuicePreDestroy.class));
 	/**
 	 * Execute on Destroy
 	 */
 	@SuppressWarnings("unused")
-	public static void destroy()
+	public void destroy()
 	{
 		try
 		{
@@ -310,12 +186,17 @@ public class GuiceContext<J extends GuiceContext<J>>
 				try
 				{
 					destroyer.onDestroy();
-				} catch (Throwable T)
+				}
+				catch (Throwable T)
 				{
-					log.log(Level.SEVERE, "Could not run destroyer [" + destroyer.getClass().getCanonicalName() + "]");
+					log.log(Level.SEVERE,
+					        "Could not run destroyer [" + destroyer
+							                                      .getClass()
+							                                      .getCanonicalName() + "]");
 				}
 			}
-		} catch (Throwable T)
+		}
+		catch (Throwable T)
 		{
 			log.log(Level.SEVERE, "Could not run destroyers", T);
 		}
@@ -336,6 +217,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * Returns the Java version as an int value.
 	 *
 	 * @return the Java version as an int value (8, 9, etc.)
+	 *
 	 * @since 12130
 	 */
 	private static int getJavaVersion()
@@ -402,12 +284,12 @@ public class GuiceContext<J extends GuiceContext<J>>
 			Set<IGuiceConfigurator> guiceConfigurators = loadIGuiceConfigs();
 			for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
 			{
-				GuiceContext.log.config("Loading IGuiceConfigurator - " +
-								guiceConfigurator.getClass()
-												.getCanonicalName());
+				GuiceContext.log.config("Loading IGuiceConfigurator - " + guiceConfigurator
+						                                                          .getClass()
+						                                                          .getCanonicalName());
 				guiceConfigurator.configure(GuiceContext.config);
 			}
-			if(!GuiceContext.config.isIncludeModuleAndJars())
+			if (!GuiceContext.config.isIncludeModuleAndJars())
 			{
 				log.warning("Scanning is not restricted to modules and may incur a performance impact. Consider registering your module with GuiceContext.registerModule() to auto enable, or SPI IGuiceConfiguration");
 			}
@@ -426,8 +308,9 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		Set<String> strings = new TreeSet<>();
 		Set<IGuiceScanJarExclusions> exclusions = loadJarRejectScanners();
-		if (exclusions.iterator()
-						.hasNext())
+		if (exclusions
+				    .iterator()
+				    .hasNext())
 		{
 			for (IGuiceScanJarExclusions exclusion : exclusions)
 			{
@@ -449,8 +332,9 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		Set<String> strings = new TreeSet<>();
 		Set<IGuiceScanJarInclusions> exclusions = loadJarInclusionScanners();
-		if (exclusions.iterator()
-						.hasNext())
+		if (exclusions
+				    .iterator()
+				    .hasNext())
 		{
 			for (IGuiceScanJarInclusions exclusion : exclusions)
 			{
@@ -479,23 +363,25 @@ public class GuiceContext<J extends GuiceContext<J>>
 			{
 				if (async)
 				{
-					scanResult = scanner.scan(Runtime.getRuntime()
-									.availableProcessors());
-				} else
+					scanResult = scanner.scan(Runtime
+							                          .getRuntime()
+							                          .availableProcessors());
+				}
+				else
 				{
 					scanResult = scanner.scan();
 				}
 				stopwatch.stop();
 				Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
-				fileScans.forEach((key, value) ->
-								scanResult.getResourcesWithLeafName(key)
-												.forEachByteArrayIgnoringIOException(value));
-				quickScanFilesPattern().forEach(
-								(key, value) ->
-												scanResult.getResourcesMatchingPattern(key)
-																.forEachByteArrayIgnoringIOException(value));
+				fileScans.forEach((key, value) -> scanResult
+						                                  .getResourcesWithLeafName(key)
+						                                  .forEachByteArrayIgnoringIOException(value));
+				quickScanFilesPattern().forEach((key, value) -> scanResult
+						                                                .getResourcesMatchingPattern(key)
+						                                                .forEachByteArrayIgnoringIOException(value));
 				
-			} catch (Exception mpe)
+			}
+			catch (Exception mpe)
 			{
 				GuiceContext.log.log(Level.SEVERE, "Unable to run scanner", mpe);
 			}
@@ -536,13 +422,15 @@ public class GuiceContext<J extends GuiceContext<J>>
 				{
 					graph = graph.rejectJars(jarRejections);
 				}
-			} else
+			}
+			else
 			{
 				String[] modulesRejection = getModulesExclusionList();
 				if (modulesRejection.length != 0)
 				{
 					graph = graph.rejectModules(modulesRejection);
-				} else
+				}
+				else
 				{
 					graph = graph.ignoreParentModuleLayers();
 				}
@@ -559,14 +447,16 @@ public class GuiceContext<J extends GuiceContext<J>>
 				{
 					graph = graph.acceptJars(jarRejections);
 				}
-			} else
+			}
+			else
 			{
 				String[] modulesRejection = getModulesInclusionsList();
 				log.config("Accepted Modules for Scanning : " + Arrays.toString(modulesRejection));
 				if (modulesRejection.length != 0)
 				{
 					graph = graph.acceptModules(modulesRejection);
-				} else
+				}
+				else
 				{
 					graph = graph.ignoreParentModuleLayers();
 				}
@@ -642,14 +532,16 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		Set<String> strings = new LinkedHashSet<>();
 		Set<IPackageContentsScanner> exclusions = getLoader(IPackageContentsScanner.class, true, ServiceLoader.load(IPackageContentsScanner.class));
-		if (exclusions.iterator()
-						.hasNext())
+		if (exclusions
+				    .iterator()
+				    .hasNext())
 		{
 			for (IPackageContentsScanner exclusion : exclusions)
 			{
-				GuiceContext.log.log(Level.CONFIG, "Loading IPackageContentsScanner - " +
-								exclusion.getClass()
-												.getCanonicalName());
+				GuiceContext.log.log(Level.CONFIG,
+				                     "Loading IPackageContentsScanner - " + exclusion
+						                                                            .getClass()
+						                                                            .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
@@ -667,14 +559,16 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		Set<String> strings = new LinkedHashSet<>();
 		Set<IPackageRejectListScanner> exclusions = getLoader(IPackageRejectListScanner.class, true, ServiceLoader.load(IPackageRejectListScanner.class));
-		if (exclusions.iterator()
-						.hasNext())
+		if (exclusions
+				    .iterator()
+				    .hasNext())
 		{
 			for (IPackageRejectListScanner exclusion : exclusions)
 			{
-				GuiceContext.log.log(Level.CONFIG, "Loading IPackageContentsScanner - " +
-								exclusion.getClass()
-												.getCanonicalName());
+				GuiceContext.log.log(Level.CONFIG,
+				                     "Loading IPackageContentsScanner - " + exclusion
+						                                                            .getClass()
+						                                                            .getCanonicalName());
 				Set<String> searches = exclusion.exclude();
 				strings.addAll(searches);
 			}
@@ -692,14 +586,16 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		Set<String> strings = new TreeSet<>();
 		Set<IPathContentsScanner> exclusions = getLoader(IPathContentsScanner.class, true, ServiceLoader.load(IPathContentsScanner.class));
-		if (exclusions.iterator()
-						.hasNext())
+		if (exclusions
+				    .iterator()
+				    .hasNext())
 		{
 			for (IPathContentsScanner exclusion : exclusions)
 			{
-				GuiceContext.log.log(Level.CONFIG, "Loading IPathScanningContentsScanner - " +
-								exclusion.getClass()
-												.getCanonicalName());
+				GuiceContext.log.log(Level.CONFIG,
+				                     "Loading IPathScanningContentsScanner - " + exclusion
+						                                                                 .getClass()
+						                                                                 .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
@@ -717,14 +613,16 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		Set<String> strings = new TreeSet<>();
 		Set<IPathContentsRejectListScanner> exclusions = loadPathRejectScanners();
-		if (exclusions.iterator()
-						.hasNext())
+		if (exclusions
+				    .iterator()
+				    .hasNext())
 		{
 			for (IPathContentsRejectListScanner exclusion : exclusions)
 			{
-				GuiceContext.log.log(Level.CONFIG, "Loading IPathContentsRejectListScanner - " +
-								exclusion.getClass()
-												.getCanonicalName());
+				GuiceContext.log.log(Level.CONFIG,
+				                     "Loading IPathContentsRejectListScanner - " + exclusion
+						                                                                   .getClass()
+						                                                                   .getCanonicalName());
 				Set<String> searches = exclusion.searchFor();
 				strings.addAll(searches);
 			}
@@ -743,8 +641,9 @@ public class GuiceContext<J extends GuiceContext<J>>
 	{
 		Set<String> strings = new TreeSet<>();
 		Set<IGuiceScanModuleExclusions> exclusions = getLoader(IGuiceScanModuleExclusions.class, true, ServiceLoader.load(IGuiceScanModuleExclusions.class));
-		if (exclusions.iterator()
-						.hasNext())
+		if (exclusions
+				    .iterator()
+				    .hasNext())
 		{
 			for (IGuiceScanModuleExclusions<?> exclusion : exclusions)
 			{
@@ -755,24 +654,27 @@ public class GuiceContext<J extends GuiceContext<J>>
 		}
 		return strings.toArray(new String[0]);
 	}
-	
-	/**
+	/*
+	*//**
 	 * Registers a module for scanning when filtering is enabled
 	 *
 	 * @param javaModuleName The name in the module-info.java file
+	 *
 	 * @return This instance
-	 */
+	 *//*
 	@SuppressWarnings("unchecked")
 	public static void registerModule(String javaModuleName)
 	{
 		instance().registerModuleForScanning.add(javaModuleName);
-		instance().getConfig().setIncludeModuleAndJars(true);
+		instance()
+				.getConfig()
+				.setIncludeModuleAndJars(true);
 	}
 	
 	public static void registerModule(com.google.inject.Module module)
 	{
 		instance().modules.add(module);
-	}
+	}*/
 	
 	/**
 	 * Returns a complete list of generic exclusions
@@ -785,8 +687,9 @@ public class GuiceContext<J extends GuiceContext<J>>
 		Set<String> strings = new TreeSet<>();
 		strings.addAll(registerModuleForScanning);
 		Set<IGuiceScanModuleInclusions> exclusions = getLoader(IGuiceScanModuleInclusions.class, true, ServiceLoader.load(IGuiceScanModuleInclusions.class));
-		if (exclusions.iterator()
-						.hasNext())
+		if (exclusions
+				    .iterator()
+				    .hasNext())
 		{
 			for (IGuiceScanModuleInclusions<?> exclusion : exclusions)
 			{
@@ -807,9 +710,10 @@ public class GuiceContext<J extends GuiceContext<J>>
 		Set<IFileContentsScanner> fileScanners = getLoader(IFileContentsScanner.class, true, ServiceLoader.load(IFileContentsScanner.class));
 		for (IFileContentsScanner fileScanner : fileScanners)
 		{
-			GuiceContext.log.log(Level.CONFIG, "Loading IFileContentsScanner - " +
-							fileScanner.getClass()
-											.getCanonicalName());
+			GuiceContext.log.log(Level.CONFIG,
+			                     "Loading IFileContentsScanner - " + fileScanner
+					                                                         .getClass()
+					                                                         .getCanonicalName());
 			fileScans.putAll(fileScanner.onMatch());
 		}
 		return fileScans;
@@ -824,9 +728,10 @@ public class GuiceContext<J extends GuiceContext<J>>
 		Set<IFileContentsPatternScanner> fileScanners = getLoader(IFileContentsPatternScanner.class, true, ServiceLoader.load(IFileContentsPatternScanner.class));
 		for (IFileContentsPatternScanner fileScanner : fileScanners)
 		{
-			GuiceContext.log.log(Level.CONFIG, "Loading IFileContentsPatternScanner - " +
-							fileScanner.getClass()
-											.getCanonicalName());
+			GuiceContext.log.log(Level.CONFIG,
+			                     "Loading IFileContentsPatternScanner - " + fileScanner
+					                                                                .getClass()
+					                                                                .getCanonicalName());
 			fileScans.putAll(fileScanner.onMatch());
 		}
 		return fileScans;
@@ -838,20 +743,25 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * @param loaderType The service type
 	 * @param <T>        The type
 	 * @param dontInject Don't inject
+	 *
 	 * @return A set of them
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
-	public <T> Set<T> getLoader(Class<T> loaderType,
-	                            @SuppressWarnings("unused")
-	                            boolean dontInject, ServiceLoader<T> serviceLoader)
+	public <T> Set<T> getLoader(Class<T> loaderType, @SuppressWarnings("unused") boolean dontInject, ServiceLoader<T> serviceLoader)
 	{
-		if (!getAllLoadedServices().containsKey(loaderType))
+		if (!IGuiceContext
+				     .getAllLoadedServices()
+				     .containsKey(loaderType))
 		{
-			Set<T> loader = loaderToSetNoInjection(serviceLoader);
-			getAllLoadedServices().put(loaderType, loader);
+			Set<T> loader = IGuiceContext.loaderToSetNoInjection(serviceLoader);
+			IGuiceContext
+					.getAllLoadedServices()
+					.put(loaderType, loader);
 		}
-		return getAllLoadedServices().get(loaderType);
+		return IGuiceContext
+				       .getAllLoadedServices()
+				       .get(loaderType);
 	}
 	
 	/**
@@ -887,8 +797,9 @@ public class GuiceContext<J extends GuiceContext<J>>
 		for (IGuicePostStartup<?> postStartup : startupSet)
 		{
 			Integer sortOrder = postStartup.sortOrder();
-			postStartupGroups.computeIfAbsent(sortOrder, k -> new TreeSet<>())
-							.add(postStartup);
+			postStartupGroups
+					.computeIfAbsent(sortOrder, k -> new TreeSet<>())
+					.add(postStartup);
 		}
 		
 		for (Map.Entry<Integer, Set<IGuicePostStartup>> entry : postStartupGroups.entrySet())
@@ -903,23 +814,29 @@ public class GuiceContext<J extends GuiceContext<J>>
 					try
 					{
 						iGuicePostStartup.postLoad();
-					} catch (Throwable T)
+					}
+					catch (Throwable T)
 					{
-						log.log(Level.SEVERE, "Cannot execute post startup - " + iGuicePostStartup.getClass()
-										.getCanonicalName(), T);
+						log.log(Level.SEVERE,
+						        "Cannot execute post startup - " + iGuicePostStartup
+								                                           .getClass()
+								                                           .getCanonicalName(),
+						        T);
 					}
 				}
-			} else
+			}
+			else
 			{
 				log.info("Starting Post Startup Group [" + key + "] in Parallel");
 				ExecutorService postStartup = null;
 				for (IGuicePostStartup iGuicePostStartup : value)
 				{
-					postStartup = JobService.getInstance().addJob("PostStartup", () -> {
+					postStartup = JobService.INSTANCE.addJob("PostStartup", () -> {
 						try
 						{
 							iGuicePostStartup.postLoad();
-						} catch (Throwable T)
+						}
+						catch (Throwable T)
 						{
 							log.log(Level.SEVERE, "Cannot execute post startup - ", T);
 						}
@@ -930,9 +847,10 @@ public class GuiceContext<J extends GuiceContext<J>>
 					if (postStartup != null)
 					{
 						log.config("Waiting for post startup group to finish....");
-						JobService.getInstance().removeJob("PostStartup");
+						JobService.INSTANCE.removeJob("PostStartup");
 					}
-				} catch (Throwable e)
+				}
+				catch (Throwable e)
 				{
 					log.log(Level.SEVERE, "Cannot execute post startup - ", e);
 				}
@@ -964,8 +882,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @return The list of guice post startups
 	 */
-	public @NotNull
-	Set<IGuicePostStartup> loadPostStartupServices()
+	public @NotNull Set<IGuicePostStartup> loadPostStartupServices()
 	{
 		return getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class));
 	}
@@ -975,8 +892,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @return The list of guice post startups
 	 */
-	public @NotNull
-	Set<IPathContentsRejectListScanner> loadPathRejectScanners()
+	public @NotNull Set<IPathContentsRejectListScanner> loadPathRejectScanners()
 	{
 		return getLoader(IPathContentsRejectListScanner.class, true, ServiceLoader.load(IPathContentsRejectListScanner.class));
 	}
@@ -987,8 +903,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @return The list of guice post startups
 	 */
-	public @NotNull
-	Set<IGuiceScanJarExclusions> loadJarRejectScanners()
+	public @NotNull Set<IGuiceScanJarExclusions> loadJarRejectScanners()
 	{
 		return getLoader(IGuiceScanJarExclusions.class, true, ServiceLoader.load(IGuiceScanJarExclusions.class));
 	}
@@ -999,8 +914,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @return The list of guice post startups
 	 */
-	public @NotNull
-	Set<IGuiceScanJarInclusions> loadJarInclusionScanners()
+	public @NotNull Set<IGuiceScanJarInclusions> loadJarInclusionScanners()
 	{
 		return getLoader(IGuiceScanJarInclusions.class, true, ServiceLoader.load(IGuiceScanJarInclusions.class));
 	}
@@ -1011,8 +925,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @return The list of guice post startups
 	 */
-	public @NotNull
-	Set<IGuicePreStartup> loadPreStartupServices()
+	public @NotNull Set<IGuicePreStartup> loadPreStartupServices()
 	{
 		return getLoader(IGuicePreStartup.class, true, ServiceLoader.load(IGuicePreStartup.class));
 	}
@@ -1022,8 +935,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @return The list of guice post startups
 	 */
-	public @NotNull
-	Set<IGuiceModule> loadIGuiceModules()
+	public @NotNull Set<IGuiceModule> loadIGuiceModules()
 	{
 		return getLoader(IGuiceModule.class, true, ServiceLoader.load(IGuiceModule.class));
 	}
@@ -1033,8 +945,7 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @return The list of guice configs
 	 */
-	public @NotNull
-	Set<IGuiceConfigurator> loadIGuiceConfigs()
+	public @NotNull Set<IGuiceConfigurator> loadIGuiceConfigs()
 	{
 		return getLoader(IGuiceConfigurator.class, true, ServiceLoader.load(IGuiceConfigurator.class));
 	}
@@ -1049,9 +960,9 @@ public class GuiceContext<J extends GuiceContext<J>>
 		startups.sort(Comparator.comparing(IGuicePreStartup::sortOrder));
 		for (IGuicePreStartup startup : startups)
 		{
-			GuiceContext.log.config("Loading IGuicePreStartup - " +
-							startup.getClass()
-											.getCanonicalName());
+			GuiceContext.log.config("Loading IGuicePreStartup - " + startup
+					                                                        .getClass()
+					                                                        .getCanonicalName());
 			startup.onStartup();
 		}
 	}
@@ -1062,25 +973,33 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 *
 	 * @param loaderType The service type
 	 * @param <T>        The type
+	 *
 	 * @return A set of them
 	 */
 	@SuppressWarnings("unchecked")
 	@NotNull
 	public <T extends Comparable<T>> Set<T> getLoader(Class<T> loaderType, ServiceLoader<T> serviceLoader)
 	{
-		if (!getAllLoadedServices().containsKey(loaderType))
+		if (!IGuiceContext
+				     .getAllLoadedServices()
+				     .containsKey(loaderType))
 		{
 			Set<T> loader;
 			if (GuiceContext.buildingInjector || injector == null)
 			{
-				loader = loaderToSetNoInjection(serviceLoader);
-			} else
-			{
-				loader = loaderToSet(serviceLoader);
+				loader = IGuiceContext.loaderToSetNoInjection(serviceLoader);
 			}
-			getAllLoadedServices().put(loaderType, loader);
+			else
+			{
+				loader = IGuiceContext.loaderToSet(serviceLoader);
+			}
+			IGuiceContext
+					.getAllLoadedServices()
+					.put(loaderType, loader);
 		}
-		return getAllLoadedServices().get(loaderType);
+		return IGuiceContext
+				       .getAllLoadedServices()
+				       .get(loaderType);
 	}
 	
 	/**
@@ -1091,18 +1010,17 @@ public class GuiceContext<J extends GuiceContext<J>>
 	 * @return the allLoadedServices (type Map Class, Set ) of this GuiceContext object.
 	 */
 	@SuppressWarnings("WeakerAccess")
-	@NotNull
+	/*@NotNull
 	public static Map<Class, Set> getAllLoadedServices()
 	{
 		return allLoadedServices;
-	}
+	}*/
 	
 	/**
 	 * If this scanner is registered to run asynchronously
 	 *
 	 * @return
-	 */
-	public boolean isAsync()
+	 */ public boolean isAsync()
 	{
 		return async;
 	}
@@ -1117,16 +1035,17 @@ public class GuiceContext<J extends GuiceContext<J>>
 		this.async = async;
 	}
 	
-	Map<String, Set<Class>> loaderClasses = new ConcurrentHashMap<>();
+	//Map<String, Set<Class>> loaderClasses = new ConcurrentHashMap<>();
 	
 	/**
 	 * Method loaderToSet, converts a ServiceLoader into a TreeSet
 	 *
 	 * @param loader of type ServiceLoader
+	 *
 	 * @return Set
 	 */
-	@SuppressWarnings("unchecked")
-	@NotNull
+	//@SuppressWarnings("unchecked")
+	/*@NotNull
 	public <T extends Comparable<T>> Set<T> loaderToSet(ServiceLoader<T> loader)
 	{
 		@SuppressWarnings("rawtypes")
@@ -1138,12 +1057,14 @@ public class GuiceContext<J extends GuiceContext<J>>
 		
 		if (!loaderClasses.containsKey(type))
 		{
-			GuiceConfig<?> config = GuiceContext.instance().getConfig();
+			GuiceConfig<?> config = GuiceContext
+					                        .instance()
+					                        .getConfig();
 			if (config.isServiceLoadWithClassPath())
 			{
 				for (ClassInfo classInfo : instance()
-								.getScanResult()
-								.getClassesImplementing(type))
+						                           .getScanResult()
+						                           .getClassesImplementing(type))
 				{
 					Class<T> load = (Class<T>) classInfo.loadClass();
 					loadeds.add(load);
@@ -1155,7 +1076,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 				{
 					loadeds.add(newInstance.getClass());
 				}
-			} catch (Throwable T)
+			}
+			catch (Throwable T)
 			{
 				log.log(Level.SEVERE, "Unable to provide instance of " + type + " to TreeSet", T);
 			}
@@ -1165,12 +1087,12 @@ public class GuiceContext<J extends GuiceContext<J>>
 		Set<T> outcomes = new TreeSet<>();
 		for (Class<?> aClass : loaderClasses.get(type))
 		{
-			outcomes.add((T) GuiceContext.get(aClass));
+			outcomes.add((T) IGuiceContext.get(aClass));
 		}
 		return outcomes;
-	}
+	}*/
 	
-	public <T extends Comparable<T>> Set<Class<T>> loadClassSet(ServiceLoader<T> loader)
+	/*public <T extends Comparable<T>> Set<Class<T>> loadClassSet(ServiceLoader<T> loader)
 	{
 		String type = loader.toString();
 		type = type.replace("java.util.ServiceLoader[", "");
@@ -1179,12 +1101,14 @@ public class GuiceContext<J extends GuiceContext<J>>
 		if (!loaderClasses.containsKey(type))
 		{
 			Set<Class> loadeds = new HashSet<>();
-			GuiceConfig<?> config = GuiceContext.instance().getConfig();
+			GuiceConfig<?> config = GuiceContext
+					                        .instance()
+					                        .getConfig();
 			if (config.isServiceLoadWithClassPath())
 			{
 				for (ClassInfo classInfo : instance()
-								.getScanResult()
-								.getClassesImplementing(type))
+						                           .getScanResult()
+						                           .getClassesImplementing(type))
 				{
 					@SuppressWarnings("unchecked")
 					Class<T> load = (Class<T>) classInfo.loadClass();
@@ -1198,7 +1122,8 @@ public class GuiceContext<J extends GuiceContext<J>>
 					//noinspection unchecked
 					loadeds.add((Class<T>) newInstance.getClass());
 				}
-			} catch (Throwable T)
+			}
+			catch (Throwable T)
 			{
 				log.log(Level.SEVERE, "Unable to provide instance of " + type + " to TreeSet", T);
 			}
@@ -1206,29 +1131,31 @@ public class GuiceContext<J extends GuiceContext<J>>
 		}
 		//noinspection unchecked
 		return (Set) loaderClasses.get(type);
-	}
+	}*/
 	
 	/**
 	 * Method loaderToSet, converts a ServiceLoader into a TreeSet
 	 *
 	 * @param loader of type ServiceLoader
+	 *
 	 * @return Set
 	 */
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	@NotNull
 	public <T> Set<T> loaderToSetNoInjection(ServiceLoader<T> loader)
 	{
 		Set<Class<T>> loadeds = new HashSet<>();
-		GuiceConfig config = GuiceContext.instance().getConfig();
+		GuiceConfig config = GuiceContext
+				                     .instance()
+				                     .getConfig();
 		String type = loader.toString();
 		type = type.replace("java.util.ServiceLoader[", "");
 		type = type.substring(0, type.length() - 1);
-		if (config.isServiceLoadWithClassPath() && !buildingInjector &&  instance()
-						.getScanResult() != null)
+		if (config.isServiceLoadWithClassPath() && !buildingInjector && instance().getScanResult() != null)
 		{
 			for (ClassInfo classInfo : instance()
-							.getScanResult()
-							.getClassesImplementing(type))
+					                           .getScanResult()
+					                           .getClassesImplementing(type))
 			{
 				Class<T> load = (Class<T>) classInfo.loadClass();
 				loadeds.add(load);
@@ -1243,10 +1170,12 @@ public class GuiceContext<J extends GuiceContext<J>>
 				output.add(newInstance);
 				completed.add((Class<T>) newInstance.getClass());
 			}
-		} catch (java.util.ServiceConfigurationError T)
+		}
+		catch (java.util.ServiceConfigurationError T)
 		{
 			log.log(Level.WARNING, "Cannot load services - ", T);
-		}catch (Throwable T)
+		}
+		catch (Throwable T)
 		{
 			log.log(Level.SEVERE, "Cannot load services - ", T);
 		}
@@ -1259,11 +1188,12 @@ public class GuiceContext<J extends GuiceContext<J>>
 			try
 			{
 				output.add((T) newInstance.getDeclaredConstructor());
-			} catch (NoSuchMethodException e)
+			}
+			catch (NoSuchMethodException e)
 			{
 				log.log(Level.SEVERE, "Cannot load a service through default constructor", e);
 			}
 		}
 		return output;
-	}
+	}*/
 }

@@ -1,5 +1,6 @@
 package com.guicedee.tests;
 
+import com.guicedee.client.*;
 import com.guicedee.guicedinjection.GuiceConfig;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.interfaces.IGuiceConfig;
@@ -20,8 +21,8 @@ public class IGuiceConfigTest
 		GuiceContext.instance()
 		            .loadIGuiceConfigs()
 		            .add(new IGuiceConfigTest());
-		GuiceContext.inject();
-		GuiceConfig config = GuiceContext.get(GuiceConfig.class);
+		IGuiceContext.getContext().inject();
+		GuiceConfig config = IGuiceContext.get(GuiceConfig.class);
 		 config = GuiceContext.instance().getConfig();
 		
 		assertTrue(config.isServiceLoadWithClassPath());

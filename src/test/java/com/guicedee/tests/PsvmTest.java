@@ -1,5 +1,6 @@
 package com.guicedee.tests;
 
+import com.guicedee.client.*;
 import com.guicedee.guicedinjection.GuiceContext;
 
 public class PsvmTest
@@ -10,6 +11,7 @@ public class PsvmTest
 		GuiceContext.instance()
 		            .getConfig()
 		            .setServiceLoadWithClassPath(true);
-		GuiceContext.inject();
+		IGuiceContext
+				.getContext().inject();
 	}
 }

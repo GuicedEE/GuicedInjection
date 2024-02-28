@@ -1,5 +1,6 @@
 package com.guicedee.tests;
 
+import com.guicedee.client.*;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.pairing.OptionalPair;
 import com.guicedee.guicedinjection.properties.GlobalProperties;
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class OptionalPairTest {
 	@Test
 	public void toStringTest() {
-		GlobalProperties global = GuiceContext.get(GlobalProperties.class);
+		GlobalProperties global = IGuiceContext.get(GlobalProperties.class);
 	}
 
 	@Test

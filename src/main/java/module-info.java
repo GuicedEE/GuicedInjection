@@ -1,5 +1,6 @@
 import com.guicedee.guicedinjection.JobService;
-import com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
+import com.guicedee.guicedinjection.implementations.*;
+import com.guicedee.guicedinjection.interfaces.*;
 
 module com.guicedee.guicedinjection {
 	requires transitive com.guicedee.client;
@@ -17,9 +18,8 @@ module com.guicedee.guicedinjection {
 	exports com.guicedee.guicedinjection;
 	//exports com.guicedee.guicedinjection.exceptions;
 	exports com.guicedee.guicedinjection.abstractions;
-	exports com.guicedee.guicedinjection.pairing;
+	//exports com.guicedee.guicedinjection.pairing;
 	//exports com.guicedee.services.jsonrepresentation.json;
-	exports com.guicedee.guicedinjection.properties;
 	exports com.guicedee.guicedinjection.representations;
 	
 	uses com.guicedee.guicedinjection.interfaces.IPackageContentsScanner;
@@ -46,13 +46,12 @@ module com.guicedee.guicedinjection {
 	
 	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.injections.ContextBinderGuice;
 	//provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
+	provides IGuiceProvider with GuiceContextProvision;
+	provides IJobServiceProvider with JobServiceProvision;
 	
 	provides IGuicePreDestroy with JobService;
 	
 	provides java.net.spi.URLStreamHandlerProvider with com.guicedee.guicedinjection.urls.JrtUrlHandler;
 	
 	opens com.guicedee.guicedinjection to com.fasterxml.jackson.databind;
-	opens com.guicedee.guicedinjection.properties to com.fasterxml.jackson.databind;
-
-	opens com.guicedee.guicedinjection.pairing;
 }

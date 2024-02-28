@@ -1,7 +1,7 @@
 package com.guicedee.guicedinjection;
 
 import com.google.inject.Singleton;
-import com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
+import com.guicedee.guicedinjection.interfaces.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -18,8 +18,7 @@ import java.util.logging.Level;
 
 @Singleton
 @Log
-public class JobService
-				implements IGuicePreDestroy<JobService>
+public class JobService implements IGuicePreDestroy<JobService>, IJobService
 {
 	private final Map<String, ExecutorService> serviceMap = new ConcurrentHashMap<>();
 	private final Map<String, ScheduledExecutorService> pollingMap = new ConcurrentHashMap<>();
@@ -34,16 +33,8 @@ public class JobService
 	@Setter
 	private static TimeUnit defaultWaitUnit = TimeUnit.SECONDS;
 	
-	private static final JobService INSTANCE = new JobService();
+	public static final JobService INSTANCE = new JobService();
 	private static ExecutorService jobCleanup = null;
-	
-	public static JobService getInstance(){
-		if (jobCleanup == null)
-		{
-			jobCleanup = INSTANCE.jobCleanup();
-		}
-		return INSTANCE;
-	}
 	
 	public JobService()
 	{
@@ -55,6 +46,7 @@ public class JobService
 	 *
 	 * @return
 	 */
+	@Override
 	public Set<String> getJobPools()
 	{
 		return serviceMap.keySet();
@@ -65,6 +57,7 @@ public class JobService
 	 *
 	 * @return
 	 */
+	@Override
 	public Set<String> getPollingPools()
 	{
 		return pollingMap.keySet();
@@ -75,6 +68,7 @@ public class JobService
 	 *
 	 * @param pool The pool to remove
 	 */
+	@Override
 	public ExecutorService removeJob(String pool)
 	{
 		ExecutorService es = serviceMap.get(pool);
@@ -93,6 +87,7 @@ public class JobService
 	 *
 	 * @param pool The pool name to remove
 	 */
+	@Override
 	public ScheduledExecutorService removePollingJob(String pool)
 	{
 		ScheduledExecutorService es = pollingMap.get(pool);
@@ -112,6 +107,7 @@ public class JobService
 	 * @param name
 	 * @param executorService
 	 */
+	@Override
 	public ExecutorService registerJobPool(String name, ExecutorService executorService)
 	{
 		if (serviceMap.containsKey(name))
@@ -126,7 +122,8 @@ public class JobService
 		if (executorService instanceof ForkJoinPool)
 		{
 			ForkJoinPool pool = (ForkJoinPool) executorService;
-		} else if (executorService instanceof ThreadPoolExecutor)
+		}
+		else if (executorService instanceof ThreadPoolExecutor)
 		{
 			ThreadPoolExecutor executor = (ThreadPoolExecutor) executorService;
 			executor.setMaximumPoolSize(maxQueueCount.get(name));
@@ -143,6 +140,7 @@ public class JobService
 	 * @param name            The name of the pool
 	 * @param executorService The service executor
 	 */
+	@Override
 	public ScheduledExecutorService registerJobPollingPool(String name, ScheduledExecutorService executorService)
 	{
 		if (pollingMap.containsKey(name))
@@ -159,9 +157,14 @@ public class JobService
 	 * @param jobPoolName
 	 * @param thread
 	 */
+	@Override
 	public ExecutorService addJob(String jobPoolName, Runnable thread)
 	{
-		if (!serviceMap.containsKey(jobPoolName) || serviceMap.get(jobPoolName).isTerminated() || serviceMap.get(jobPoolName).isShutdown())
+		if (!serviceMap.containsKey(jobPoolName) || serviceMap
+				                                            .get(jobPoolName)
+				                                            .isTerminated() || serviceMap
+						                                                               .get(jobPoolName)
+						                                                               .isShutdown())
 		{
 			registerJobPool(jobPoolName, executorServiceSupplier.get());
 		}
@@ -171,7 +174,7 @@ public class JobService
 		{
 			log.log(Level.FINER, maxQueueCount + " Hit - Finishing before next run");
 			removeJob(jobPoolName);
-			service = registerJobPool(jobPoolName,executorServiceSupplier.get());
+			service = registerJobPool(jobPoolName, executorServiceSupplier.get());
 		}
 		service.execute(thread);
 		return service;
@@ -183,9 +186,14 @@ public class JobService
 	 * @param jobPoolName
 	 * @param thread
 	 */
+	@Override
 	public Future<?> addTask(String jobPoolName, Callable<?> thread)
 	{
-		if (!serviceMap.containsKey(jobPoolName) || serviceMap.get(jobPoolName).isTerminated() || serviceMap.get(jobPoolName).isShutdown())
+		if (!serviceMap.containsKey(jobPoolName) || serviceMap
+				                                            .get(jobPoolName)
+				                                            .isTerminated() || serviceMap
+						                                                               .get(jobPoolName)
+						                                                               .isShutdown())
 		{
 			registerJobPool(jobPoolName, executorServiceSupplier.get());
 		}
@@ -200,11 +208,13 @@ public class JobService
 		return service.submit(thread);
 	}
 	
+	@Override
 	public void waitForJob(String jobName)
 	{
 		waitForJob(jobName, defaultWaitTime, defaultWaitUnit);
 	}
 	
+	@Override
 	public void waitForJob(String jobName, long timeout, TimeUnit unit)
 	{
 		if (!serviceMap.containsKey(jobName))
@@ -216,7 +226,8 @@ public class JobService
 		try
 		{
 			service.awaitTermination(timeout, unit);
-		} catch (InterruptedException e)
+		}
+		catch (InterruptedException e)
 		{
 			log.log(Level.WARNING, "Thread didn't close cleanly, make sure running times are acceptable", e);
 			service.shutdownNow();
@@ -231,15 +242,15 @@ public class JobService
 	private ExecutorService jobCleanup()
 	{
 		ScheduledExecutorService jobsShutdownNotClosed = addPollingJob("JobsShutdownNotClosed", () -> {
-			for (String jobPool : getInstance().getJobPools())
+			for (String jobPool : getJobPools())
 			{
 				ExecutorService executorService = serviceMap.get(jobPool);
-				if(executorService.isShutdown() && !executorService.isTerminated())
+				if (executorService.isShutdown() && !executorService.isTerminated())
 				{
 					log.fine("Closing unfinished job - " + jobPool);
 					removeJob(jobPool);
 				}
-				if(executorService.isShutdown() && executorService.isTerminated())
+				if (executorService.isShutdown() && executorService.isTerminated())
 				{
 					log.fine("Cleaning terminated job - " + jobPool);
 					executorService.close();
@@ -257,12 +268,19 @@ public class JobService
 	 * @param jobPoolName
 	 * @param thread
 	 */
+	@Override
 	public ScheduledExecutorService addPollingJob(String jobPoolName, Runnable thread, long delay, TimeUnit unit)
 	{
-		if (!pollingMap.containsKey(jobPoolName) || pollingMap.get(jobPoolName).isTerminated() || pollingMap.get(jobPoolName).isShutdown())
+		if (!pollingMap.containsKey(jobPoolName) || pollingMap
+				                                            .get(jobPoolName)
+				                                            .isTerminated() || pollingMap
+						                                                               .get(jobPoolName)
+						                                                               .isShutdown())
 		{
-			registerJobPollingPool(jobPoolName, Executors.newScheduledThreadPool(Runtime.getRuntime()
-							.availableProcessors()));
+			registerJobPollingPool(jobPoolName,
+			                       Executors.newScheduledThreadPool(Runtime
+					                                                        .getRuntime()
+					                                                        .availableProcessors()));
 		}
 		ScheduledExecutorService service = pollingMap.get(jobPoolName);
 		service.scheduleAtFixedRate(thread, 1L, delay, unit);
@@ -275,12 +293,19 @@ public class JobService
 	 * @param jobPoolName
 	 * @param thread
 	 */
+	@Override
 	public ScheduledExecutorService addPollingJob(String jobPoolName, Runnable thread, long initialDelay, long delay, TimeUnit unit)
 	{
-		if (!pollingMap.containsKey(jobPoolName) || pollingMap.get(jobPoolName).isTerminated() || pollingMap.get(jobPoolName).isShutdown())
+		if (!pollingMap.containsKey(jobPoolName) || pollingMap
+				                                            .get(jobPoolName)
+				                                            .isTerminated() || pollingMap
+						                                                               .get(jobPoolName)
+						                                                               .isShutdown())
 		{
-			registerJobPollingPool(jobPoolName, Executors.newScheduledThreadPool(Runtime.getRuntime()
-							.availableProcessors()));
+			registerJobPollingPool(jobPoolName,
+			                       Executors.newScheduledThreadPool(Runtime
+					                                                        .getRuntime()
+					                                                        .availableProcessors()));
 		}
 		ScheduledExecutorService service = pollingMap.get(jobPoolName);
 		service.scheduleAtFixedRate(thread, initialDelay, delay, unit);
@@ -290,16 +315,15 @@ public class JobService
 	/**
 	 * Shutdowns
 	 */
+	@Override
 	public void destroy()
 	{
 		log.config("Destroying all running jobs...");
-		serviceMap.forEach((key, value) ->
-		{
+		serviceMap.forEach((key, value) -> {
 			log.config("Shutting Down [" + key + "]");
 			removeJob(key);
 		});
-		pollingMap.forEach((key, value) ->
-		{
+		pollingMap.forEach((key, value) -> {
 			log.config("Shutting Down Poll Job [" + key + "]");
 			removePollingJob(key);
 		});
@@ -312,7 +336,8 @@ public class JobService
 		{
 			ForkJoinPool pool = (ForkJoinPool) service;
 			return (int) pool.getQueuedTaskCount();
-		} else if (service instanceof ThreadPoolExecutor)
+		}
+		else if (service instanceof ThreadPoolExecutor)
 		{
 			ThreadPoolExecutor executor = (ThreadPoolExecutor) service;
 			return (int) executor.getTaskCount();

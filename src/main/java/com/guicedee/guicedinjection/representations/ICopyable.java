@@ -3,6 +3,7 @@ package com.guicedee.guicedinjection.representations;
 import com.fasterxml.jackson.databind.*;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
+import com.guicedee.client.*;
 import com.guicedee.guicedinjection.GuiceContext;
 import lombok.extern.java.Log;
 
@@ -64,7 +65,7 @@ public interface ICopyable<J>
 	 */
 	default J updateFrom(Object source)
 	{
-		ObjectMapper om = GuiceContext.get(Key.get(ObjectMapper.class, Names.named("Default")));
+		ObjectMapper om = IGuiceContext.get(Key.get(ObjectMapper.class, Names.named("Default")));
 		try
 		{
 			String jsonFromSource = om.writeValueAsString(source);

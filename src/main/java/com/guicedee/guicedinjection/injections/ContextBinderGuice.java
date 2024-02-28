@@ -6,7 +6,7 @@ import com.guicedee.guicedinjection.GuiceConfig;
 import com.guicedee.guicedinjection.GuiceContext;
 
 import com.guicedee.guicedinjection.JobService;
-import com.guicedee.guicedinjection.interfaces.IGuiceModule;
+import com.guicedee.guicedinjection.interfaces.*;
 import com.guicedee.guicedinjection.properties.GlobalProperties;
 import io.github.classgraph.ScanResult;
 import lombok.extern.java.Log;
@@ -43,7 +43,9 @@ public class ContextBinderGuice
                 .in(Singleton.class);
 
         ContextBinderGuice.log.fine("Bound JobService.class");
+	    bind(IJobService.class)
+			    .toInstance(JobService.INSTANCE);
         bind(JobService.class)
-                .toInstance(JobService.getInstance());
+                .toInstance(JobService.INSTANCE);
     }
 }

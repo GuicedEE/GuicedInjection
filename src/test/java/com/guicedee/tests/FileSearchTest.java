@@ -1,5 +1,6 @@
 package com.guicedee.tests;
 
+import com.guicedee.client.*;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.interfaces.IPathContentsRejectListScanner;
 import io.github.classgraph.ResourceList;
@@ -28,8 +29,9 @@ public class FileSearchTest {
                     return output;
                 }
         );
-
-        GuiceContext.inject();
+	    
+	    IGuiceContext
+			    .getContext().inject();
         ResourceList resourceswithPattern = GuiceContext.instance().getScanResult()
                 .getResourcesMatchingPattern(Pattern.compile("(.*)\\/resources\\/testResourceFind\\.js"));
         System.out.println("Resource List found : " + resourceswithPattern);
