@@ -6,4 +6,7 @@ module guice.injection.tests {
 	requires org.junit.jupiter.api;
 	requires org.slf4j;
 	requires org.slf4j.simple;
+	
+	opens com.guicedee.tests to org.junit.platform.commons;
+	
 }
