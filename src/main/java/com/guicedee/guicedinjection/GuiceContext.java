@@ -652,27 +652,6 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 		}
 		return strings.toArray(new String[0]);
 	}
-	/*
-	*//**
-	 * Registers a module for scanning when filtering is enabled
-	 *
-	 * @param javaModuleName The name in the module-info.java file
-	 *
-	 * @return This instance
-	 *//*
-	@SuppressWarnings("unchecked")
-	public static void registerModule(String javaModuleName)
-	{
-		instance().registerModuleForScanning.add(javaModuleName);
-		instance()
-				.getConfig()
-				.setIncludeModuleAndJars(true);
-	}
-	
-	public static void registerModule(com.google.inject.Module module)
-	{
-		instance().modules.add(module);
-	}*/
 	
 	/**
 	 * Returns a complete list of generic exclusions
@@ -760,6 +739,12 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 		return IGuiceContext
 				       .getAllLoadedServices()
 				       .get(loaderType);
+	}
+	
+	@Override
+	public boolean isBuildingInjector()
+	{
+		return buildingInjector;
 	}
 	
 	/**
@@ -852,14 +837,6 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 				{
 					log.log(Level.SEVERE, "Cannot execute post startup - ", e);
 				}
-				/*try
-				{
-					value.parallelStream()
-									.forEach(IGuicePostStartup::postLoad);
-				} catch (Throwable T)
-				{
-					log.log(Level.SEVERE, "Cannot execute post startup - ", T);
-				}*/
 			}
 			GuiceContext.log.fine("Completed with Post Startups Key [" + key + "]");
 		}
@@ -1001,20 +978,6 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 	}
 	
 	/**
-	 * Method getAllLoadedServices returns the allLoadedServices of this GuiceContext object.
-	 * <p>
-	 * A list of all the loaded singleton sets
-	 *
-	 * @return the allLoadedServices (type Map Class, Set ) of this GuiceContext object.
-	 */
-	@SuppressWarnings("WeakerAccess")
-	/*@NotNull
-	public static Map<Class, Set> getAllLoadedServices()
-	{
-		return allLoadedServices;
-	}*/
-	
-	/**
 	 * If this scanner is registered to run asynchronously
 	 *
 	 * @return
@@ -1032,166 +995,4 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 	{
 		this.async = async;
 	}
-	
-	//Map<String, Set<Class>> loaderClasses = new ConcurrentHashMap<>();
-	
-	/**
-	 * Method loaderToSet, converts a ServiceLoader into a TreeSet
-	 *
-	 * @param loader of type ServiceLoader
-	 *
-	 * @return Set
-	 */
-	//@SuppressWarnings("unchecked")
-	/*@NotNull
-	public <T extends Comparable<T>> Set<T> loaderToSet(ServiceLoader<T> loader)
-	{
-		@SuppressWarnings("rawtypes")
-		Set<Class> loadeds = new HashSet<>();
-		
-		String type = loader.toString();
-		type = type.replace("java.util.ServiceLoader[", "");
-		type = type.substring(0, type.length() - 1);
-		
-		if (!loaderClasses.containsKey(type))
-		{
-			GuiceConfig<?> config = GuiceContext
-					                        .instance()
-					                        .getConfig();
-			if (config.isServiceLoadWithClassPath())
-			{
-				for (ClassInfo classInfo : instance()
-						                           .getScanResult()
-						                           .getClassesImplementing(type))
-				{
-					Class<T> load = (Class<T>) classInfo.loadClass();
-					loadeds.add(load);
-				}
-			}
-			try
-			{
-				for (T newInstance : loader)
-				{
-					loadeds.add(newInstance.getClass());
-				}
-			}
-			catch (Throwable T)
-			{
-				log.log(Level.SEVERE, "Unable to provide instance of " + type + " to TreeSet", T);
-			}
-			loaderClasses.put(type, loadeds);
-		}
-		
-		Set<T> outcomes = new TreeSet<>();
-		for (Class<?> aClass : loaderClasses.get(type))
-		{
-			outcomes.add((T) IGuiceContext.get(aClass));
-		}
-		return outcomes;
-	}*/
-	
-	/*public <T extends Comparable<T>> Set<Class<T>> loadClassSet(ServiceLoader<T> loader)
-	{
-		String type = loader.toString();
-		type = type.replace("java.util.ServiceLoader[", "");
-		type = type.substring(0, type.length() - 1);
-		
-		if (!loaderClasses.containsKey(type))
-		{
-			Set<Class> loadeds = new HashSet<>();
-			GuiceConfig<?> config = GuiceContext
-					                        .instance()
-					                        .getConfig();
-			if (config.isServiceLoadWithClassPath())
-			{
-				for (ClassInfo classInfo : instance()
-						                           .getScanResult()
-						                           .getClassesImplementing(type))
-				{
-					@SuppressWarnings("unchecked")
-					Class<T> load = (Class<T>) classInfo.loadClass();
-					loadeds.add(load);
-				}
-			}
-			try
-			{
-				for (T newInstance : loader)
-				{
-					//noinspection unchecked
-					loadeds.add((Class<T>) newInstance.getClass());
-				}
-			}
-			catch (Throwable T)
-			{
-				log.log(Level.SEVERE, "Unable to provide instance of " + type + " to TreeSet", T);
-			}
-			loaderClasses.put(type, loadeds);
-		}
-		//noinspection unchecked
-		return (Set) loaderClasses.get(type);
-	}*/
-	
-	/**
-	 * Method loaderToSet, converts a ServiceLoader into a TreeSet
-	 *
-	 * @param loader of type ServiceLoader
-	 *
-	 * @return Set
-	 */
-	/*@SuppressWarnings("unchecked")
-	@NotNull
-	public <T> Set<T> loaderToSetNoInjection(ServiceLoader<T> loader)
-	{
-		Set<Class<T>> loadeds = new HashSet<>();
-		GuiceConfig config = GuiceContext
-				                     .instance()
-				                     .getConfig();
-		String type = loader.toString();
-		type = type.replace("java.util.ServiceLoader[", "");
-		type = type.substring(0, type.length() - 1);
-		if (config.isServiceLoadWithClassPath() && !buildingInjector && instance().getScanResult() != null)
-		{
-			for (ClassInfo classInfo : instance()
-					                           .getScanResult()
-					                           .getClassesImplementing(type))
-			{
-				Class<T> load = (Class<T>) classInfo.loadClass();
-				loadeds.add(load);
-			}
-		}
-		Set<Class<T>> completed = new LinkedHashSet<>();
-		Set<T> output = new LinkedHashSet<>();
-		try
-		{
-			for (T newInstance : loader)
-			{
-				output.add(newInstance);
-				completed.add((Class<T>) newInstance.getClass());
-			}
-		}
-		catch (java.util.ServiceConfigurationError T)
-		{
-			log.log(Level.WARNING, "Cannot load services - ", T);
-		}
-		catch (Throwable T)
-		{
-			log.log(Level.SEVERE, "Cannot load services - ", T);
-		}
-		for (Class<T> newInstance : loadeds)
-		{
-			if (completed.contains(newInstance))
-			{
-				continue;
-			}
-			try
-			{
-				output.add((T) newInstance.getDeclaredConstructor());
-			}
-			catch (NoSuchMethodException e)
-			{
-				log.log(Level.SEVERE, "Cannot load a service through default constructor", e);
-			}
-		}
-		return output;
-	}*/
 }
