@@ -19,20 +19,17 @@ package com.guicedee.guicedinjection;
 import com.google.common.base.*;
 import com.google.inject.*;
 import com.guicedee.client.*;
-import com.guicedee.guicedinjection.abstractions.*;
 import com.guicedee.guicedinjection.interfaces.*;
-import com.guicedee.guicedinjection.interfaces.annotations.*;
 import io.github.classgraph.*;
 import jakarta.validation.constraints.*;
-import lombok.extern.java.Log;
+import lombok.extern.java.*;
 
-import java.lang.annotation.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.*;
 import java.util.regex.Pattern;
 
-import static com.guicedee.guicedinjection.properties.GlobalProperties.*;
+import static com.guicedee.guicedinjection.properties.GlobalProperties.getSystemPropertyOrEnvironment;
 
 /**
  * Provides an interface for reflection and injection in one.
@@ -139,6 +136,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 				cModules.addAll(iGuiceModules);
 				
 				//cModules.add(new GuiceInjectorModule());
+				log.config("Modules - " + Arrays.toString(cModules.toArray()));
 				GuiceContext.instance().injector = Guice.createInjector(cModules);
 				GuiceContext.buildingInjector = false;
 				GuiceContext

@@ -17,7 +17,7 @@ module com.guicedee.guicedinjection {
 	
 	exports com.guicedee.guicedinjection;
 	//exports com.guicedee.guicedinjection.exceptions;
-	exports com.guicedee.guicedinjection.abstractions;
+	//exports com.guicedee.guicedinjection.abstractions;
 	//exports com.guicedee.guicedinjection.pairing;
 	//exports com.guicedee.services.jsonrepresentation.json;
 	exports com.guicedee.guicedinjection.representations;
