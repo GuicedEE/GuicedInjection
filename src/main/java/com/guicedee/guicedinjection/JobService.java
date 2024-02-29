@@ -36,6 +36,11 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	public static final JobService INSTANCE = new JobService();
 	private static ExecutorService jobCleanup = null;
 	
+	static
+	{
+		jobCleanup = INSTANCE.jobCleanup();
+	}
+	
 	public JobService()
 	{
 		//No config required
