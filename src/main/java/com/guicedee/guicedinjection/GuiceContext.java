@@ -812,7 +812,17 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 			{
 				log.info("Starting Post Startup Group [" + key + "] in Parallel");
 				ExecutorService postStartup = null;
-				for (IGuicePostStartup iGuicePostStartup : value)
+				value.stream().forEach(a->{
+					try
+					{
+						a.postLoad();
+					}
+					catch (Throwable T)
+					{
+						log.log(Level.SEVERE, "Cannot execute post startup - ", T);
+					}
+				});
+				/*for (IGuicePostStartup iGuicePostStartup : value)
 				{
 					postStartup = JobService.INSTANCE.addJob("PostStartup", () -> {
 						try
@@ -836,7 +846,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 				catch (Throwable e)
 				{
 					log.log(Level.SEVERE, "Cannot execute post startup - ", e);
-				}
+				}*/
 			}
 			GuiceContext.log.fine("Completed with Post Startups Key [" + key + "]");
 		}

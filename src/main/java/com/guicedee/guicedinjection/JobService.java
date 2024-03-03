@@ -86,6 +86,24 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		serviceMap.remove(pool);
 		return es;
 	}
+
+	/**
+	 * Completes and Removes all jobs running from the given pool
+	 *
+	 * @param pool The pool to remove
+	 */
+	public ExecutorService removeJobNoWait(String pool)
+	{
+		ExecutorService es = serviceMap.get(pool);
+		if (es == null)
+		{
+			log.warning("Pool " + pool + " was not registered");
+			return null;
+		}
+		waitForJob(pool,1L,TimeUnit.MILLISECONDS);
+		serviceMap.remove(pool);
+		return es;
+	}
 	
 	/**
 	 * Completes and Removes all jobs running from the given pool
