@@ -10,8 +10,8 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.guicedee</groupId>
-
     <artifactId>guice-injection</artifactId>
+
     <packaging>jar</packaging>
     <version>2.0.0-SNAPSHOT</version>
     <name>Guiced Injector</name>
