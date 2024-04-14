@@ -2,10 +2,6 @@ package com.guicedee.guicedinjection;
 
 import com.google.inject.Singleton;
 
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * The configuration class for Guice Context and the Classpath Scanner
  */
@@ -127,7 +123,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setFieldScanning(boolean fieldScanning)
 	{
 		this.fieldScanning = fieldScanning;
@@ -142,7 +138,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setAnnotationScanning(boolean annotationScanning)
 	{
 		this.annotationScanning = annotationScanning;
@@ -157,7 +153,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setMethodInfo(boolean methodInfo)
 	{
 		this.methodInfo = methodInfo;
@@ -172,7 +168,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setIgnoreFieldVisibility(boolean ignoreFieldVisibility)
 	{
 		this.ignoreFieldVisibility = ignoreFieldVisibility;
@@ -187,7 +183,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setIgnoreMethodVisibility(boolean ignoreMethodVisibility)
 	{
 		this.ignoreMethodVisibility = ignoreMethodVisibility;
@@ -202,7 +198,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setIncludePackages(boolean includePackages)
 	{
 		this.includePackages = includePackages;
@@ -217,7 +213,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setFieldInfo(boolean fieldInfo)
 	{
 		this.fieldInfo = fieldInfo;
@@ -232,7 +228,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setVerbose(boolean verbose)
 	{
 		this.verbose = verbose;
@@ -248,7 +244,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setClasspathScanning(boolean classpathScanning)
 	{
 		this.classpathScanning = classpathScanning;
@@ -263,7 +259,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setExcludeModulesAndJars(boolean excludeModulesAndJars)
 	{
 		this.excludeModulesAndJars = excludeModulesAndJars;
@@ -278,7 +274,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setExcludePaths(boolean excludePaths)
 	{
 		this.excludePaths = excludePaths;

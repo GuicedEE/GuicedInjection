@@ -21,7 +21,6 @@ import com.google.inject.*;
 import com.guicedee.client.*;
 import com.guicedee.guicedinjection.interfaces.*;
 import io.github.classgraph.*;
-import jakarta.validation.constraints.*;
 import lombok.extern.java.*;
 
 import java.util.*;
@@ -96,7 +95,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      *
      * @return The global Guice Injector Object, Never Null, Instantiates the Injector if not configured
      */
-    @NotNull
+    
     public synchronized Injector inject()
     {
         if (GuiceContext.buildingInjector)
@@ -240,7 +239,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      *
      * @return The physical Scan Result from the complete class scanner
      */
-    @NotNull
+    
     public ScanResult getScanResult()
     {
         if (scanResult == null)
@@ -722,7 +721,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      * @return A set of them
      */
     @SuppressWarnings("unchecked")
-    @NotNull
+    
     public <T> Set<T> getLoader(Class<T> loaderType, @SuppressWarnings("unused") boolean dontInject, ServiceLoader<T> serviceLoader)
     {
         if (!IGuiceContext
@@ -842,7 +841,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      *
      * @return The list of guice post startups
      */
-    public @NotNull Set<IGuicePostStartup> loadPostStartupServices()
+    public  Set<IGuicePostStartup> loadPostStartupServices()
     {
         return getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class));
     }
@@ -852,7 +851,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      *
      * @return The list of guice post startups
      */
-    public @NotNull Set<IPathContentsRejectListScanner> loadPathRejectScanners()
+    public  Set<IPathContentsRejectListScanner> loadPathRejectScanners()
     {
         return getLoader(IPathContentsRejectListScanner.class, true, ServiceLoader.load(IPathContentsRejectListScanner.class));
     }
@@ -863,7 +862,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      *
      * @return The list of guice post startups
      */
-    public @NotNull Set<IGuiceScanJarExclusions> loadJarRejectScanners()
+    public  Set<IGuiceScanJarExclusions> loadJarRejectScanners()
     {
         return getLoader(IGuiceScanJarExclusions.class, true, ServiceLoader.load(IGuiceScanJarExclusions.class));
     }
@@ -874,7 +873,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      *
      * @return The list of guice post startups
      */
-    public @NotNull Set<IGuiceScanJarInclusions> loadJarInclusionScanners()
+    public  Set<IGuiceScanJarInclusions> loadJarInclusionScanners()
     {
         return getLoader(IGuiceScanJarInclusions.class, true, ServiceLoader.load(IGuiceScanJarInclusions.class));
     }
@@ -885,7 +884,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      *
      * @return The list of guice post startups
      */
-    public @NotNull Set<IGuicePreStartup> loadPreStartupServices()
+    public  Set<IGuicePreStartup> loadPreStartupServices()
     {
         return getLoader(IGuicePreStartup.class, true, ServiceLoader.load(IGuicePreStartup.class));
     }
@@ -895,7 +894,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      *
      * @return The list of guice post startups
      */
-    public @NotNull Set<IGuiceModule> loadIGuiceModules()
+    public  Set<IGuiceModule> loadIGuiceModules()
     {
         return getLoader(IGuiceModule.class, true, ServiceLoader.load(IGuiceModule.class));
     }
@@ -905,7 +904,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      *
      * @return The list of guice configs
      */
-    public @NotNull Set<IGuiceConfigurator> loadIGuiceConfigs()
+    public  Set<IGuiceConfigurator> loadIGuiceConfigs()
     {
         return getLoader(IGuiceConfigurator.class, true, ServiceLoader.load(IGuiceConfigurator.class));
     }
@@ -936,7 +935,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      * @return A set of them
      */
     @SuppressWarnings("unchecked")
-    @NotNull
+    
     public <T extends Comparable<T>> Set<T> getLoader(Class<T> loaderType, ServiceLoader<T> serviceLoader)
     {
         if (!IGuiceContext
