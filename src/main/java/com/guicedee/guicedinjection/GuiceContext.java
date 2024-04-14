@@ -29,6 +29,8 @@ import java.util.logging.*;
 import java.util.regex.Pattern;
 
 import static com.guicedee.guicedinjection.properties.GlobalProperties.getSystemPropertyOrEnvironment;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Provides an interface for reflection and injection in one.
@@ -772,8 +774,10 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
     private void loadPostStartups()
     {
         Set<IGuicePostStartup> startupSet = loadPostStartupServices();
+        Map<Integer, Set<IGuicePostStartup>> groupedPostStartup = startupSet.stream()
+                                                             .collect(groupingBy(IGuicePostStartup::sortOrder, toSet()));
+      /*  Map<Integer, Set<IGuicePostStartup<?>>> postStartupGroups = new TreeMap<>();
 
-        Map<Integer, Set<IGuicePostStartup<?>>> postStartupGroups = new TreeMap<>();
         for (IGuicePostStartup<?> postStartup : startupSet)
         {
             Integer sortOrder = postStartup.sortOrder();
@@ -781,11 +785,11 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                     .computeIfAbsent(sortOrder, k -> new TreeSet<>())
                     .add(postStartup);
         }
-
-        for (Map.Entry<Integer, Set<IGuicePostStartup<?>>> entry : postStartupGroups.entrySet())
+*/
+        for (Map.Entry<Integer, Set<IGuicePostStartup>> entry : groupedPostStartup.entrySet())
         {
             Integer key = entry.getKey();
-            Set<IGuicePostStartup<?>> value = entry.getValue();
+            Set<IGuicePostStartup> value = entry.getValue();
             if (value.size() == 1)
             {
                 //run in order
@@ -843,7 +847,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      */
     public  Set<IGuicePostStartup> loadPostStartupServices()
     {
-        return getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class));
+        return new TreeSet<>(getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class)));
     }
 
     /**
@@ -886,7 +890,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      */
     public  Set<IGuicePreStartup> loadPreStartupServices()
     {
-        return getLoader(IGuicePreStartup.class, true, ServiceLoader.load(IGuicePreStartup.class));
+        return new TreeSet<>(getLoader(IGuicePreStartup.class, true, ServiceLoader.load(IGuicePreStartup.class)));
     }
 
     /**
@@ -896,7 +900,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      */
     public  Set<IGuiceModule> loadIGuiceModules()
     {
-        return getLoader(IGuiceModule.class, true, ServiceLoader.load(IGuiceModule.class));
+        return new TreeSet<>(getLoader(IGuiceModule.class, true, ServiceLoader.load(IGuiceModule.class)));
     }
 
     /**
@@ -915,9 +919,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
     private void loadPreStartups()
     {
         Set<IGuicePreStartup> preStartups = loadPreStartupServices();
-        List<IGuicePreStartup> startups = new ArrayList<>(preStartups);
-        startups.sort(Comparator.comparing(IGuicePreStartup::sortOrder));
-        for (IGuicePreStartup startup : startups)
+        for (IGuicePreStartup startup : preStartups)
         {
             GuiceContext.log.config("Loading IGuicePreStartup - " + startup
                     .getClass()
