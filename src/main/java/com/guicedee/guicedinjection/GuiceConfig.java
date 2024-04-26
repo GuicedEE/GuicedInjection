@@ -2,15 +2,12 @@ package com.guicedee.guicedinjection;
 
 import com.google.inject.Singleton;
 
-import jakarta.validation.constraints.NotNull;
-
 /**
  * The configuration class for Guice Context and the Classpath Scanner
  */
 @SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue"})
 @Singleton
-public class GuiceConfig<J extends GuiceConfig<J>>
-{
+public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guicedinjection.interfaces.IGuiceConfig<J> {
 	/**
 	 * Property to use when everything is found in the boot module
 	 */
@@ -79,6 +76,14 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 	 * Excludes paths from scanning - excellent for minizing path scanning on web application
 	 */
 	private boolean allowedPaths;
+	
+	/**
+	 * Enable classpath scanning for service sets loaded via GuiceContext.getLoader()
+	 * It's a great way to enable testing in jdk 12 where test classes using service loading and jdk no longer reads service loaders from meta-inf/services
+	 * <p>
+	 * Try to only use in test to load test modules. otherwise it may be a bad design
+	 */
+	private boolean serviceLoadWithClassPath;
 
 	/**
 	 * Configures the Guice Context and Reflection Identifier
@@ -88,28 +93,13 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		//No Config
 	}
 
-	/**
-	 * Enable classpath scanning for service sets loaded via GuiceContext.getLoader()
-	 * It's a great way to enable testing in jdk 12 where test classes using service loading and jdk no longer reads service loaders from meta-inf/services
-	 * <p>
-	 * Try to only use in test to load test modules. otherwise it may be a bad design
-	 *
-	 */
+	@Override
 	public boolean isServiceLoadWithClassPath()
 	{
 		return serviceLoadWithClassPath;
 	}
 
-	/**
-	 * Enable classpath scanning for service sets loaded via GuiceContext.getLoader()
-	 * It's a great way to enable testing in jdk 12 where test classes using service loading and jdk no longer reads service loaders from meta-inf/services
-	 * <p>
-	 * Try to only use in test to load test modules. otherwise it may be a bad design
-	 *
-	 * @param serviceLoadWithClassPath Should scanning with classpath instead of SPI be used?
-	 *
-	 * @return this
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public J setServiceLoadWithClassPath(boolean serviceLoadWithClassPath)
 	{
@@ -124,224 +114,121 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		return (J) this;
 	}
 
-	/**
-	 * Enable classpath scanning for service sets loaded via GuiceContext.getLoader()
-	 * It's a great way to enable testing in jdk 12 where test classes using service loading and jdk no longer reads service loaders from meta-inf/services
-	 * <p>
-	 * Try to only use in test to load test modules. otherwise it may be a bad design
-	 */
-	private boolean serviceLoadWithClassPath;
 
-	/**
-	 * If field scanning should be enabled
-	 *
-	 * @return mandatory result
-	 */
+	@Override
 	public boolean isFieldScanning()
 	{
 		return fieldScanning;
 	}
 
-	/**
-	 * Enables scanning of fields
-	 *
-	 * @param fieldScanning
-	 * 		If field scanning should happen
-	 *
-	 * @return Mandatory field scanning
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setFieldScanning(boolean fieldScanning)
 	{
 		this.fieldScanning = fieldScanning;
 		return (J) this;
 	}
 
-	/**
-	 * Enables scanning of field annotations
-	 *
-	 * @return not null
-	 */
+	@Override
 	public boolean isAnnotationScanning()
 	{
 		return annotationScanning;
 	}
 
-	/**
-	 * Enables scanning of field annotations
-	 *
-	 * @param annotationScanning
-	 * 		if the field annotation scanning
-	 *
-	 * @return the field annotation scanning
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setAnnotationScanning(boolean annotationScanning)
 	{
 		this.annotationScanning = annotationScanning;
 		return (J) this;
 	}
 
-	/**
-	 * If method info should be kept
-	 *
-	 * @return always this
-	 */
+	@Override
 	public boolean isMethodInfo()
 	{
 		return methodInfo;
 	}
 
-	/**
-	 * Sets if method info should be kept
-	 *
-	 * @param methodInfo
-	 * 		if method information should be collected
-	 *
-	 * @return always this
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setMethodInfo(boolean methodInfo)
 	{
 		this.methodInfo = methodInfo;
 		return (J) this;
 	}
 
-	/**
-	 * Sets to ignore field visibility
-	 *
-	 * @return if field visibility is being used
-	 */
+	@Override
 	public boolean isIgnoreFieldVisibility()
 	{
 		return ignoreFieldVisibility;
 	}
 
-	/**
-	 * Sets to ignore field visibility
-	 *
-	 * @param ignoreFieldVisibility
-	 * 		if the field should be visible
-	 *
-	 * @return always this
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setIgnoreFieldVisibility(boolean ignoreFieldVisibility)
 	{
 		this.ignoreFieldVisibility = ignoreFieldVisibility;
 		return (J) this;
 	}
 
-	/**
-	 * Sets to ignore method visibility
-	 *
-	 * @return if method is visibility ignored
-	 */
+	@Override
 	public boolean isIgnoreMethodVisibility()
 	{
 		return ignoreMethodVisibility;
 	}
 
-	/**
-	 * Sets to ignore method visibility
-	 *
-	 * @param ignoreMethodVisibility
-	 * 		the ignore method
-	 *
-	 * @return always This
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setIgnoreMethodVisibility(boolean ignoreMethodVisibility)
 	{
 		this.ignoreMethodVisibility = ignoreMethodVisibility;
 		return (J) this;
 	}
 
-	/**
-	 * Sets if packages must be white listed.
-	 * <p>
-	 * Use META-INF/services/com.guicedee.guiceinjection.scanners.IPackageContentsScanner to register your packages
-	 *
-	 * @return if whitelisting is enabled
-	 */
+	@Override
 	public boolean isIncludePackages()
 	{
 		return includePackages;
 	}
 
-	/**
-	 * Sets if packages must be white listed.
-	 * * <p>
-	 * * Use META-INF/services/com.guicedee.guiceinjection.scanners.IPackageContentsScanner to register your packages
-	 *
-	 * @param includePackages
-	 * 		if packages should be white listed
-	 *
-	 * @return Always this
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setIncludePackages(boolean includePackages)
 	{
 		this.includePackages = includePackages;
 		return (J) this;
 	}
 
-	/**
-	 * Returns the field information included in the scan result
-	 *
-	 * @return if field info is included
-	 */
+	@Override
 	public boolean isFieldInfo()
 	{
 		return fieldInfo;
 	}
 
-	/**
-	 * Sets if the field info should be in the field result
-	 *
-	 * @param fieldInfo
-	 * 		if field info should be scanned
-	 *
-	 * @return always this object
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setFieldInfo(boolean fieldInfo)
 	{
 		this.fieldInfo = fieldInfo;
 		return (J) this;
 	}
 
-	/**
-	 * Method isVerbose returns the verbose of this GuiceConfig object.
-	 * <p>
-	 * Whether or not to log very verbose
-	 *
-	 * @return the verbose (type boolean) of this GuiceConfig object.
-	 */
+	@Override
 	public boolean isVerbose()
 	{
 		return verbose;
 	}
 
-	/**
-	 * Method setVerbose sets the verbose of this GuiceConfig object.
-	 * <p>
-	 * Whether or not to log very verbose
-	 *
-	 * @param verbose
-	 * 		the verbose of this GuiceConfig object.
-	 *
-	 * @return J
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setVerbose(boolean verbose)
 	{
 		this.verbose = verbose;
@@ -349,82 +236,45 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		return (J) this;
 	}
 
-	/**
-	 * Method isClasspathScanning returns the classpathScanning of this GuiceConfig object.
-	 * <p>
-	 * If classpath scanning is enabled.
-	 *
-	 * @return the classpathScanning (type boolean) of this GuiceConfig object.
-	 */
+	@Override
 	public boolean isClasspathScanning()
 	{
 		return classpathScanning;
 	}
 
-	/**
-	 * Method setClasspathScanning sets the classpathScanning of this GuiceConfig object.
-	 * <p>
-	 * If classpath scanning is enabled.
-	 *
-	 * @param classpathScanning
-	 * 		the classpathScanning of this GuiceConfig object.
-	 *
-	 * @return J
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setClasspathScanning(boolean classpathScanning)
 	{
 		this.classpathScanning = classpathScanning;
 		return (J) this;
 	}
 
-	/**
-	 * Excludes modules and jars from scanning - may and may not make it faster depending on your pc
-	 *
-	 * @return is modules/jars are excluded from scans
-	 */
+	@Override
 	public boolean isExcludeModulesAndJars()
 	{
 		return excludeModulesAndJars;
 	}
 
-	/**
-	 * Excludes modules and jars from scanning - may and may not make it faster depending on your pc
-	 *
-	 * @param excludeModulesAndJars
-	 * 		to exclude them
-	 *
-	 * @return J
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setExcludeModulesAndJars(boolean excludeModulesAndJars)
 	{
 		this.excludeModulesAndJars = excludeModulesAndJars;
 		return (J) this;
 	}
 
-	/**
-	 * Excludes paths from scanning - excellent for minizing path scanning on web application
-	 *
-	 * @return boolean
-	 */
+	@Override
 	public boolean isExcludePaths()
 	{
 		return excludePaths;
 	}
 
-	/**
-	 * Excludes paths from scanning - excellent for minizing path scanning on web application
-	 *
-	 * @param excludePaths
-	 * 		If the default paths must be automatically excluded
-	 *
-	 * @return J
-	 */
+	@Override
 	@SuppressWarnings("unchecked")
-	@NotNull
+	
 	public J setExcludePaths(boolean excludePaths)
 	{
 		this.excludePaths = excludePaths;
@@ -457,39 +307,26 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		       '}';
 	}
 
-	/**
-	 * Method isAllowPaths returns the allowed Paths of this GuiceConfig object.
-	 * <p>
-	 * Excludes paths from scanning - excellent for minizing path scanning on web application
-	 *
-	 * @return the whitelistPaths (type boolean) of this GuiceConfig object.
-	 */
+	@Override
 	public boolean isAllowPaths()
 	{
 		return allowedPaths;
 	}
 
-	/**
-	 * Method setAllowPaths sets the allowed Paths of this GuiceConfig object.
-	 * <p>
-	 * Excludes paths from scanning - excellent for minizing path scanning on web application
-	 *
-	 * @param allowedPaths
-	 * 		the allowedPaths of this GuiceConfig object.
-	 *
-	 * @return GuiceConfig J
-	 */
-	public GuiceConfig<J> setAllowPaths(boolean allowedPaths)
+	@Override
+	public J setAllowPaths(boolean allowedPaths)
 	{
 		this.allowedPaths = allowedPaths;
-		return this;
+		return (J)this;
 	}
 	
+	@Override
 	public boolean isIgnoreClassVisibility()
 	{
 		return ignoreClassVisibility;
 	}
 	
+	@Override
 	@SuppressWarnings("unchecked")
 	public J setIgnoreClassVisibility(boolean ignoreClassVisibility)
 	{
@@ -497,110 +334,56 @@ public class GuiceConfig<J extends GuiceConfig<J>>
 		return (J) this;
 	}
 	
-	/**
-	 * Include module/jars from being loaded - uses ModuleInclusions for jdk9 and JarInclusions for jdk8
-	 *
-	 * @return
-	 */
+	@Override
 	public boolean isIncludeModuleAndJars() {
 		return includeModuleAndJars;
 	}
 
-	/**
-	 * Include module/jars from being loaded - uses ModuleInclusions for jdk9 and JarInclusions for jdk8
-	 *
-	 * @param includeModuleAndJars
-	 * @return
-	 */
-	public GuiceConfig<J> setIncludeModuleAndJars(boolean includeModuleAndJars) {
+	@Override
+	public J setIncludeModuleAndJars(boolean includeModuleAndJars) {
 		this.includeModuleAndJars = includeModuleAndJars;
-		return this;
+		return (J)this;
 	}
 
-	/**
-	 * Method isPathScanning returns the pathScanning of this GuiceConfig object.
-	 * <p>
-	 * If the path should be scanned
-	 *
-	 * @return the pathScanning (type boolean) of this GuiceConfig object.
-	 */
+	@Override
 	public boolean isPathScanning()
 	{
 		return pathScanning;
 	}
 
-	/**
-	 * Method setPathScanning sets the pathScanning of this GuiceConfig object.
-	 * <p>
-	 * If the path should be scanned
-	 *
-	 * @param pathScanning
-	 * 		the pathScanning of this GuiceConfig object.
-	 *
-	 * @return GuiceConfig J
-	 */
-	public GuiceConfig<J> setPathScanning(boolean pathScanning)
+	@Override
+	public J setPathScanning(boolean pathScanning)
 	{
 		this.pathScanning = pathScanning;
-		return this;
+		return (J)this;
 	}
 
-	/**
-	 * Method isExcludeParentModules returns the excludeParentModules of this GuiceConfig object.
-	 * <p>
-	 * Property to use when everything is found in the boot module
-	 *
-	 * @return the excludeParentModules (type boolean) of this GuiceConfig object.
-	 */
+	@Override
 	@SuppressWarnings("unused")
 	public boolean isExcludeParentModules()
 	{
 		return excludeParentModules;
 	}
 
-	/**
-	 * Method setExcludeParentModules sets the excludeParentModules of this GuiceConfig object.
-	 * <p>
-	 * Property to use when everything is found in the boot module
-	 *
-	 * @param excludeParentModules
-	 * 		the excludeParentModules of this GuiceConfig object.
-	 *
-	 * @return GuiceConfig J
-	 */
+	@Override
 	@SuppressWarnings("unused")
-	public GuiceConfig<J> setExcludeParentModules(boolean excludeParentModules)
+	public J setExcludeParentModules(boolean excludeParentModules)
 	{
 		this.excludeParentModules = excludeParentModules;
-		return this;
+		return (J)this;
 	}
 
-	/**
-	 * Method isRejectPackages returns the excludePackages of this GuiceConfig object.
-	 * <p>
-	 * Excludes packages from scanning - excellent for minimizing path scanning on web application
-	 *
-	 * @return the excludePackages (type boolean) of this GuiceConfig object.
-	 */
+	@Override
 	public boolean isRejectPackages()
 	{
 		return excludePackages;
 	}
 
-	/**
-	 * Method setExcludePackages sets the excludePackages of this GuiceConfig object.
-	 * <p>
-	 * Excludes packages from scanning - excellent for minimizing path scanning on web application
-	 *
-	 * @param excludePackages
-	 * 		the excludePackages of this GuiceConfig object.
-	 *
-	 * @return GuiceConfig J
-	 */
-	public GuiceConfig<J> setExcludePackages(boolean excludePackages)
+	@Override
+	public J setExcludePackages(boolean excludePackages)
 	{
 		this.excludePackages = excludePackages;
-		return this;
+		return (J)this;
 	}
 
 

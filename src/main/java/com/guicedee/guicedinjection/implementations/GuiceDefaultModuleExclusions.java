@@ -3,7 +3,6 @@ package com.guicedee.guicedinjection.implementations;
 import com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
 import com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,7 +10,7 @@ public class GuiceDefaultModuleExclusions
 		implements IGuiceScanModuleExclusions<GuiceDefaultModuleExclusions>, IGuiceScanJarExclusions<GuiceDefaultModuleExclusions>
 {
 	@Override
-	public @NotNull
+	public 
 	Set<String> excludeModules()
 	{
 		Set<String> strings = new HashSet<>();
@@ -101,7 +100,7 @@ public class GuiceDefaultModuleExclusions
 	}
 
 	@Override
-	public @NotNull Set<String> excludeJars() {
+	public  Set<String> excludeJars() {
 		Set<String> strings = new HashSet<>();
 		strings.add("activation-*");
 		strings.add("adal4j-*");

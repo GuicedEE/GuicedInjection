@@ -1,12 +1,12 @@
-name: Maven Package (BOM)
+name: Maven Package
 on:
   workflow_dispatch:
   push:
 jobs:
   GuicedInjection:
-    uses: GuicedEE/Workflows/.github/workflows/bom.yml@master
+    uses: GuicedEE/Workflows/.github/workflows/projects.yml@master
     with:
-      baseDir: '/'
+      baseDir: ''
       name: 'Guiced Injection'
     secrets:
       USERNAME: ${{secrets.USERNAME}}
