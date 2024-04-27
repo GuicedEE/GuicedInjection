@@ -16,16 +16,20 @@
  */
 package com.guicedee.guicedinjection;
 
-import com.google.common.base.*;
-import com.google.inject.*;
-import com.guicedee.client.*;
+import com.google.common.base.Stopwatch;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.guicedee.client.IGuiceContext;
 import com.guicedee.guicedinjection.interfaces.*;
-import io.github.classgraph.*;
-import lombok.extern.java.*;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ResourceList;
+import io.github.classgraph.ScanResult;
+import lombok.extern.java.Log;
 
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import static com.guicedee.guicedinjection.properties.GlobalProperties.getSystemPropertyOrEnvironment;
@@ -471,7 +475,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         }
         if (GuiceContext.config.isRejectPackages())
         {
-            String[] packages = getBlacklistPackages();
+            String[] packages = getRejectedPackages();
             if (packages.length != 0)
             {
                 graph = graph.rejectPackages(packages);
@@ -553,7 +557,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      *
      * @return A string list of packages to be scanned
      */
-    private String[] getBlacklistPackages()
+    private String[] getRejectedPackages()
     {
         Set<String> strings = new LinkedHashSet<>();
         Set<IPackageRejectListScanner> exclusions = getLoader(IPackageRejectListScanner.class, true, ServiceLoader.load(IPackageRejectListScanner.class));
