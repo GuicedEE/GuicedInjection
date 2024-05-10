@@ -1,7 +1,8 @@
 package com.guicedee.guicedinjection;
 
 import com.google.inject.Singleton;
-import com.guicedee.guicedinjection.interfaces.*;
+import com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
+import com.guicedee.guicedinjection.interfaces.IJobService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
@@ -326,9 +327,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 						                                                               .isShutdown())
 		{
 			registerJobPollingPool(jobPoolName,
-			                       Executors.newScheduledThreadPool(Runtime
-					                                                        .getRuntime()
-					                                                        .availableProcessors()));
+			                       Executors.newSingleThreadScheduledExecutor());
 		}
 		ScheduledExecutorService service = pollingMap.get(jobPoolName);
 		service.scheduleAtFixedRate(thread, initialDelay, delay, unit);
