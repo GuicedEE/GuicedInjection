@@ -35,11 +35,12 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	private static TimeUnit defaultWaitUnit = TimeUnit.SECONDS;
 	
 	public static final JobService INSTANCE = new JobService();
-	private static ExecutorService jobCleanup = null;
-	
+
+	private static final ThreadFactory factory = Thread.ofVirtual().factory();
+
 	static
 	{
-		jobCleanup = INSTANCE.jobCleanup();
+		INSTANCE.jobCleanup();
 	}
 	
 	public JobService()
@@ -302,9 +303,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 						                                                               .isShutdown())
 		{
 			registerJobPollingPool(jobPoolName,
-			                       Executors.newScheduledThreadPool(Runtime
-					                                                        .getRuntime()
-					                                                        .availableProcessors()));
+			                       Executors.newSingleThreadScheduledExecutor(factory));
 		}
 		ScheduledExecutorService service = pollingMap.get(jobPoolName);
 		service.scheduleAtFixedRate(thread, 1L, delay, unit);
@@ -320,18 +319,18 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	@Override
 	public ScheduledExecutorService addPollingJob(String jobPoolName, Runnable thread, long initialDelay, long delay, TimeUnit unit)
 	{
+		ScheduledExecutorService scheduledExecutorService = null;
 		if (!pollingMap.containsKey(jobPoolName) || pollingMap
 				                                            .get(jobPoolName)
 				                                            .isTerminated() || pollingMap
 						                                                               .get(jobPoolName)
 						                                                               .isShutdown())
 		{
-			registerJobPollingPool(jobPoolName,
-			                       Executors.newSingleThreadScheduledExecutor());
+			scheduledExecutorService = registerJobPollingPool(jobPoolName,
+																					   Executors.newSingleThreadScheduledExecutor());
 		}
-		ScheduledExecutorService service = pollingMap.get(jobPoolName);
-		service.scheduleAtFixedRate(thread, initialDelay, delay, unit);
-		return service;
+		scheduledExecutorService.scheduleAtFixedRate(thread, initialDelay, delay, unit);
+		return scheduledExecutorService;
 	}
 	
 	/**

@@ -224,7 +224,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      */
     private static int getJavaVersion()
     {
-        String version = getSystemPropertyOrEnvironment("java.version", "11");
+        String version = getSystemPropertyOrEnvironment("java.version", "21");
         if (version.startsWith("1."))
         {
             version = version.substring(2);
