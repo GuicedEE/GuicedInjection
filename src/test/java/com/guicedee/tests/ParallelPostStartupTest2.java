@@ -2,12 +2,18 @@ package com.guicedee.tests;
 
 import com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
 public class ParallelPostStartupTest2 implements IGuicePostStartup<ParallelPostStartupTest2>
 {
 	@Override
-	public void postLoad()
+	public List<CompletableFuture<Boolean>> postLoad()
 	{
-		System.out.println("Starting 2");
+		return List.of(CompletableFuture.supplyAsync(() -> {
+			System.out.println("Starting 2");
+			return true;
+		}));
 	}
 	
 	@Override
