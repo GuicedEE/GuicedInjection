@@ -91,8 +91,6 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         //No config required
     }
 
-
-
     /**
      * Reference the Injector Directly
      *
@@ -142,19 +140,16 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                 log.config("Modules - " + Arrays.toString(cModules.toArray()));
                 GuiceContext.instance().injector = Guice.createInjector(cModules);
                 GuiceContext.buildingInjector = false;
-                GuiceContext
-                        .instance()
-                        .loadPostStartups();
-
+                startup.complete(true);
+                GuiceContext.instance().loadPostStartups();
+                GuiceContext.instance().loadPreDestroyServices();
                 Runtime
                         .getRuntime()
                         .addShutdownHook(new Thread()
                         {
                             public void run()
                             {
-                                IGuiceContext
-                                        .getContext()
-                                        .destroy();
+                                GuiceContext.instance().destroy();
                             }
                         });
                 LocalDateTime end = LocalDateTime.now();
@@ -170,10 +165,6 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         return GuiceContext.instance().injector;
     }
 
-    private static Set<IGuicePreDestroy> destroyers = GuiceContext
-            .instance()
-            .getLoader(IGuicePreDestroy.class, false, ServiceLoader.load(IGuicePreDestroy.class));
-
     /**
      * Execute on Destroy
      */
@@ -182,7 +173,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
     {
         try
         {
-            for (IGuicePreDestroy destroyer : destroyers)
+            for (IGuicePreDestroy destroyer : loadPreDestroyServices())
             {
                 try
                 {
@@ -880,6 +871,17 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
     public Set<IGuicePreStartup> loadPreStartupServices()
     {
         return new TreeSet<>(getLoader(IGuicePreStartup.class, true, ServiceLoader.load(IGuicePreStartup.class)));
+    }
+
+
+    /**
+     * Returns the set of service lists of pre startup's for manual additions
+     *
+     * @return The list of guice post startups
+     */
+    public Set<IGuicePreDestroy> loadPreDestroyServices()
+    {
+        return new TreeSet<>(getLoader(IGuicePreDestroy.class, true, ServiceLoader.load(IGuicePreDestroy.class)));
     }
 
     /**
