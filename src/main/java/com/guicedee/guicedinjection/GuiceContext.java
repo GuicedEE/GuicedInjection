@@ -83,6 +83,8 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      */
     private static boolean configured;
 
+    private CompletableFuture<Void> loadingFinished = new CompletableFuture<>();
+
     /**
      * Creates a new Guice context. Not necessary
      */
@@ -140,7 +142,6 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                 log.config("Modules - " + Arrays.toString(cModules.toArray()));
                 GuiceContext.instance().injector = Guice.createInjector(cModules);
                 GuiceContext.buildingInjector = false;
-                startup.complete(true);
                 GuiceContext.instance().loadPostStartups();
                 GuiceContext.instance().loadPreDestroyServices();
                 Runtime
@@ -154,6 +155,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                         });
                 LocalDateTime end = LocalDateTime.now();
                 log.info("System started in " + ChronoUnit.MILLIS.between(start, end) + "ms");
+                loadingFinished.complete(null);
             }
             catch (Throwable e)
             {
@@ -337,6 +339,10 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         return strings.toArray(new String[0]);
     }
 
+    public CompletableFuture<Void> getLoadingFinished()
+    {
+        return loadingFinished;
+    }
 
     /**
      * Starts up Guice and the scanner
