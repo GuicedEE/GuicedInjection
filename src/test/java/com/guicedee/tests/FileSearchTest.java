@@ -1,14 +1,12 @@
 package com.guicedee.tests;
 
-import com.guicedee.client.*;
+import com.guicedee.client.IGuiceContext;
 import com.guicedee.guicedinjection.GuiceContext;
-import com.guicedee.guicedinjection.interfaces.IPathContentsRejectListScanner;
 import io.github.classgraph.ResourceList;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 public class FileSearchTest {
@@ -32,6 +30,7 @@ public class FileSearchTest {
 	    
 	    IGuiceContext
 			    .getContext().inject();
+
         ResourceList resourceswithPattern = GuiceContext.instance().getScanResult()
                 .getResourcesMatchingPattern(Pattern.compile("(.*)\\/resources\\/testResourceFind\\.js"));
         System.out.println("Resource List found : " + resourceswithPattern);

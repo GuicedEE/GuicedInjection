@@ -1,6 +1,9 @@
 import com.guicedee.guicedinjection.JobService;
-import com.guicedee.guicedinjection.implementations.*;
-import com.guicedee.guicedinjection.interfaces.*;
+import com.guicedee.guicedinjection.implementations.GuiceContextProvision;
+import com.guicedee.guicedinjection.implementations.JobServiceProvision;
+import com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
+import com.guicedee.guicedinjection.interfaces.IGuiceProvider;
+import com.guicedee.guicedinjection.interfaces.IJobServiceProvider;
 
 module com.guicedee.guicedinjection {
 	requires transitive com.guicedee.client;
@@ -11,11 +14,11 @@ module com.guicedee.guicedinjection {
 	//requires transitive com.guicedee.logmaster;
 	
 	requires transitive org.apache.commons.lang3;
-	
-	requires static org.slf4j;
+
 	requires static lombok;
-	
-	exports com.guicedee.guicedinjection;
+    requires org.apache.logging.log4j.core;
+
+    exports com.guicedee.guicedinjection;
 	//exports com.guicedee.guicedinjection.exceptions;
 	//exports com.guicedee.guicedinjection.abstractions;
 	//exports com.guicedee.guicedinjection.pairing;
@@ -40,8 +43,9 @@ module com.guicedee.guicedinjection {
 	uses com.guicedee.guicedinjection.interfaces.IPackageRejectListScanner;
 	uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
 	uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarInclusions;
-	
-	provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
+    uses com.guicedee.guicedinjection.interfaces.Log4JConfigurator;
+
+    provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 	provides com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 	
 	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.injections.ContextBinderGuice;

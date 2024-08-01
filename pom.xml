@@ -87,12 +87,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!--     <dependency>
-                 <groupId>com.guicedee</groupId>
-                 <artifactId>guiced-log-master</artifactId>
-             </dependency>
-     -->
-
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
@@ -111,11 +105,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <dependency>
@@ -141,18 +130,6 @@
         <dependency>
             <groupId>com.guicedee.services</groupId>
             <artifactId>guava</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <dependency>

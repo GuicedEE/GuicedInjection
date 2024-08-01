@@ -25,6 +25,13 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
 import lombok.extern.java.Log;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
+import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -85,12 +92,54 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 
     private CompletableFuture<Void> loadingFinished = new CompletableFuture<>();
 
+
+    private ConfigurationBuilder<BuiltConfiguration> logBuilder;
+
     /**
      * Creates a new Guice context. Not necessary
      */
     private GuiceContext()
     {
-        //No config required
+        try
+        {
+         //   String cn = "org.apache.logging.log4j.jul.LogManager";
+         //   System.setProperty("java.util.logging.manager", cn);
+
+            ConfigurationBuilder<BuiltConfiguration> builder =
+                    ConfigurationBuilderFactory.newConfigurationBuilder();
+
+            builder.setStatusLevel(org.apache.logging.log4j.Level.DEBUG);
+            builder.setConfigurationName("GuicedEE");
+
+// create the console appender
+            AppenderComponentBuilder appenderBuilder = builder.newAppender("Stdout", "CONSOLE")
+                                                              .addAttribute("target",
+                                                                            ConsoleAppender.Target.SYSTEM_ERR)
+                                                              //.addAttribute("additivity", "true")
+                    ;
+            appenderBuilder.add(builder.newLayout("PatternLayout").
+                                       addAttribute("pattern", "%d{ABSOLUTE} %-5level: %msg%n"));
+            builder.add(appenderBuilder);
+
+
+
+            RootLoggerComponentBuilder rootLogger = builder.newRootLogger(org.apache.logging.log4j.Level.DEBUG);
+            ServiceLoader<Log4JConfigurator> log4JConfigurators = ServiceLoader.load(Log4JConfigurator.class);
+            for (Log4JConfigurator log4jConfigurator : log4JConfigurators)
+            {
+                builder = log4jConfigurator.configure(builder, rootLogger);
+            }
+
+            rootLogger.add(builder.newAppenderRef("Stdout"));
+            builder.add(rootLogger);
+
+            builder.writeXmlConfiguration(System.out);
+            Configurator.initialize(builder.build());
+        }
+        catch (Throwable T)
+        {
+            log.log(Level.SEVERE, "Failed to configure Log4JConfigurator", T);
+        }
     }
 
     /**
@@ -142,15 +191,18 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                 log.config("Modules - " + Arrays.toString(cModules.toArray()));
                 GuiceContext.instance().injector = Guice.createInjector(cModules);
                 GuiceContext.buildingInjector = false;
-                GuiceContext.instance().loadPostStartups();
-                GuiceContext.instance().loadPreDestroyServices();
+                GuiceContext.instance()
+                            .loadPostStartups();
+                GuiceContext.instance()
+                            .loadPreDestroyServices();
                 Runtime
                         .getRuntime()
                         .addShutdownHook(new Thread()
                         {
                             public void run()
                             {
-                                GuiceContext.instance().destroy();
+                                GuiceContext.instance()
+                                            .destroy();
                             }
                         });
                 LocalDateTime end = LocalDateTime.now();
@@ -786,20 +838,21 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             Integer key = entry.getKey();
             Set<IGuicePostStartup<?>> value = entry.getValue();
             List<CompletableFuture<Boolean>> futures = new ArrayList<>();
-           // log.info("Starting Post Startup Group [" + key + "]");
+            // log.info("Starting Post Startup Group [" + key + "]");
             ExecutorService ex = null;
             for (IGuicePostStartup<?> iGuicePostStartup : value)
             {
                 log.info("Starting Post Load [" + iGuicePostStartup.getClass()
-                                                                     .getSimpleName() + "] - Start Order [" + key + "]");
-                ex= iGuicePostStartup.getExecutorService();
+                                                                   .getSimpleName() + "] - Start Order [" + key + "]");
+                ex = iGuicePostStartup.getExecutorService();
                 futures.addAll(iGuicePostStartup.postLoad());
             }
             try
             {
-                if(!futures.isEmpty())
+                if (!futures.isEmpty())
                 {
-                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{})).join();
+                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
+                                     .join();
                     if (ex != null)
                     {
                         ex.shutdown();
