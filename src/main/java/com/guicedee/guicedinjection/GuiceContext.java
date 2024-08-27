@@ -102,8 +102,8 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
     {
         try
         {
-         //   String cn = "org.apache.logging.log4j.jul.LogManager";
-         //   System.setProperty("java.util.logging.manager", cn);
+            //   String cn = "org.apache.logging.log4j.jul.LogManager";
+            //   System.setProperty("java.util.logging.manager", cn);
 
             ConfigurationBuilder<BuiltConfiguration> builder =
                     ConfigurationBuilderFactory.newConfigurationBuilder();
@@ -115,12 +115,11 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             AppenderComponentBuilder appenderBuilder = builder.newAppender("Stdout", "CONSOLE")
                                                               .addAttribute("target",
                                                                             ConsoleAppender.Target.SYSTEM_ERR)
-                                                              //.addAttribute("additivity", "true")
+                    //.addAttribute("additivity", "true")
                     ;
             appenderBuilder.add(builder.newLayout("PatternLayout").
                                        addAttribute("pattern", "%d{ABSOLUTE} %-5level: %msg%n"));
             builder.add(appenderBuilder);
-
 
 
             RootLoggerComponentBuilder rootLogger = builder.newRootLogger(org.apache.logging.log4j.Level.DEBUG);
@@ -852,6 +851,12 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                 if (!futures.isEmpty())
                 {
                     CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
+                                     .whenCompleteAsync((response, errors) -> {
+                                         if (errors != null)
+                                         {
+                                             log.log(Level.SEVERE, "Errors loading in post startup groups - " + value, errors);
+                                         }
+                                     })
                                      .join();
                     if (ex != null)
                     {
