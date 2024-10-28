@@ -40,6 +40,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import static com.guicedee.guicedinjection.properties.GlobalProperties.getSystemPropertyOrEnvironment;
@@ -53,10 +54,10 @@ import static com.guicedee.guicedinjection.properties.GlobalProperties.getSystem
  * @version 1.0
  * @since Nov 14, 2016
  */
-@Log
 @SuppressWarnings("MissingClassJavaDoc")
 public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 {
+    private static Logger log;
     /**
      * This particular instance of the class
      */
@@ -102,8 +103,10 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
     {
         try
         {
-            //   String cn = "org.apache.logging.log4j.jul.LogManager";
-            //   System.setProperty("java.util.logging.manager", cn);
+            System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
+            System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.Log4j2LogDelegateFactory");
+
+            log = Logger.getLogger("GuiceContext");
 
             ConfigurationBuilder<BuiltConfiguration> builder =
                     ConfigurationBuilderFactory.newConfigurationBuilder();
@@ -114,13 +117,27 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 // create the console appender
             AppenderComponentBuilder appenderBuilder = builder.newAppender("Stdout", "CONSOLE")
                                                               .addAttribute("target",
-                                                                            ConsoleAppender.Target.SYSTEM_ERR)
+                                                                            ConsoleAppender.Target.SYSTEM_OUT)
                     //.addAttribute("additivity", "true")
                     ;
             appenderBuilder.add(builder.newLayout("PatternLayout").
                                        addAttribute("pattern", "%d{ABSOLUTE} %-5level: %msg%n"));
             builder.add(appenderBuilder);
 
+            System.setProperty("hazelcast.logging.type", "log4j2");
+            System.setProperty("log4j.level", "DEBUG");
+
+            Configurator.setLevel("org.hibernate", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("com.hazelcast", org.apache.logging.log4j.Level.INFO);
+            Configurator.setLevel("com.hazelcast.cache.impl ", org.apache.logging.log4j.Level.DEBUG);
+            Configurator.setLevel("com.hazelcast.system.logo", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("com.hazelcast.internal.server.tcp.TcpServerConnection", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("io.netty", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("com.mchange", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("com.zandero", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("com.google", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("jdk.event.security", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("org.apache.commons.beanutils", org.apache.logging.log4j.Level.ERROR);
 
             RootLoggerComponentBuilder rootLogger = builder.newRootLogger(org.apache.logging.log4j.Level.DEBUG);
             ServiceLoader<Log4JConfigurator> log4JConfigurators = ServiceLoader.load(Log4JConfigurator.class);
@@ -132,7 +149,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             rootLogger.add(builder.newAppenderRef("Stdout"));
             builder.add(rootLogger);
 
-            builder.writeXmlConfiguration(System.out);
+            //builder.writeXmlConfiguration(System.out);
             Configurator.initialize(builder.build());
         }
         catch (Throwable T)

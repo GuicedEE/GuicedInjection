@@ -2,11 +2,13 @@ package com.guicedee.guicedinjection.injections;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+import com.google.inject.matcher.Matchers;
 import com.guicedee.guicedinjection.GuiceConfig;
 import com.guicedee.guicedinjection.GuiceContext;
 
 import com.guicedee.guicedinjection.JobService;
 import com.guicedee.guicedinjection.interfaces.*;
+import com.guicedee.guicedinjection.logging.Log4JTypeListener;
 import com.guicedee.guicedinjection.properties.GlobalProperties;
 import io.github.classgraph.ScanResult;
 import lombok.extern.java.Log;
@@ -47,5 +49,7 @@ public class ContextBinderGuice
 			    .toInstance(JobService.INSTANCE);
         bind(JobService.class)
                 .toInstance(JobService.INSTANCE);
+
+        bindListener(Matchers.any(), new Log4JTypeListener());
     }
 }
