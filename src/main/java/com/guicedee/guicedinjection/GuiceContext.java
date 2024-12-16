@@ -962,7 +962,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      */
     public Set<IGuicePreDestroy> loadPreDestroyServices()
     {
-        return new TreeSet<>(getLoader(IGuicePreDestroy.class, true, ServiceLoader.load(IGuicePreDestroy.class)));
+        return new LinkedHashSet<>(getLoader(IGuicePreDestroy.class, true, ServiceLoader.load(IGuicePreDestroy.class)));
     }
 
     /**
