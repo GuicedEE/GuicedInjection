@@ -24,7 +24,7 @@ import com.guicedee.guicedinjection.interfaces.*;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
-import lombok.extern.java.Log;
+import io.vertx.core.Future;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
@@ -407,9 +407,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         return strings.toArray(new String[0]);
     }
 
-    public CompletableFuture<Void> getLoadingFinished()
+    public Future<Void> getLoadingFinished()
     {
-        return loadingFinished;
+        return Future.fromCompletionStage(loadingFinished);
     }
 
     /**
