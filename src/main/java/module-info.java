@@ -17,6 +17,7 @@ module com.guicedee.guicedinjection {
 
 	requires static lombok;
     requires org.apache.logging.log4j.core;
+	requires com.guicedee.vertx;
 
     exports com.guicedee.guicedinjection;
 	//exports com.guicedee.guicedinjection.exceptions;
