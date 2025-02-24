@@ -7,17 +7,12 @@ import com.guicedee.guicedinjection.interfaces.IJobServiceProvider;
 
 module com.guicedee.guicedinjection {
 	requires transitive com.guicedee.client;
-	
-	requires transitive com.google.guice;
-	requires transitive io.github.classgraph;
-	
-	//requires transitive com.guicedee.logmaster;
-	
 	requires transitive org.apache.commons.lang3;
 
 	requires static lombok;
     requires org.apache.logging.log4j.core;
-	requires com.guicedee.vertx;
+
+	requires transitive com.guicedee.vertx;
 
     exports com.guicedee.guicedinjection;
 	//exports com.guicedee.guicedinjection.exceptions;
