@@ -25,6 +25,7 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -116,7 +117,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             LoggerContext context = (LoggerContext) LogManager.getContext(false); // Don't reinitialize
             Configuration config = context.getConfiguration();
 
-            config.getRootLogger().setLevel(Level.INFO);
+
 
             config.getRootLogger().removeAppender("Console");
             config.getRootLogger().removeAppender("DefaultConsole");
@@ -138,6 +139,8 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             Configurator.setLevel("com.google", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("jdk.event.security", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("org.apache.commons.beanutils", org.apache.logging.log4j.Level.ERROR);
+
+            config.getRootLogger().setLevel(Level.DEBUG);
 
             // Create a PatternLayout for the appenders
             PatternLayout layout = PatternLayout.newBuilder()
@@ -858,53 +861,17 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
     private void loadPostStartups()
     {
         Set<IGuicePostStartup> startupSet = loadPostStartupServices();
-        Map<Integer, Set<IGuicePostStartup<?>>> postStartupGroups = new TreeMap<>();
-        for (IGuicePostStartup<?> postStartup : startupSet)
-        {
-            Integer sortOrder = postStartup.sortOrder();
-            postStartupGroups
-                    .computeIfAbsent(sortOrder, k -> new TreeSet<>())
-                    .add(postStartup);
-        }
-        for (Map.Entry<Integer, Set<IGuicePostStartup<?>>> entry : postStartupGroups.entrySet())
-        {
-            Integer key = entry.getKey();
-            Set<IGuicePostStartup<?>> value = entry.getValue();
-            List<CompletableFuture<Boolean>> futures = new ArrayList<>();
-            // log.info("Starting Post Startup Group [" + key + "]");
-            ExecutorService ex = null;
+        startupSet.stream().collect(Collectors.groupingBy(IGuicePostStartup::sortOrder)).forEach((key, value) -> {
+            List<Future<Boolean>> groupFutures = new ArrayList<>();
             for (IGuicePostStartup<?> iGuicePostStartup : value)
             {
                 log.info("Starting Post Load [" + iGuicePostStartup.getClass()
                         .getSimpleName() + "] - Start Order [" + key + "]");
-                ex = iGuicePostStartup.getExecutorService();
-                futures.addAll(iGuicePostStartup.postLoad());
+                groupFutures.addAll(iGuicePostStartup.postLoad());
             }
-            try
-            {
-                if (!futures.isEmpty())
-                {
-                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}))
-                            .whenCompleteAsync((response, errors) -> {
-                                if (errors != null)
-                                {
-                                    log.error("Errors loading in post startup groups - " + value, errors);
-                                }
-                            })
-                            .join();
-                    if (ex != null)
-                    {
-                        ex.shutdown();
-                        ex.awaitTermination(30, TimeUnit.SECONDS);
-                    }
-                }
-            } catch (Exception e)
-            {
-                log.error("Exception in completing post startups", e);
-            }
-
-            log.trace("Completed with Post Startups Key [" + key + "]");
-        }
+            Future.all(groupFutures)
+                    .await();
+        });
     }
 
     /**
@@ -1017,7 +984,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                         .getSimpleName());
                 groupFutures.addAll(iGuicePreStartup.onStartup());
             }
-            log.debug("Waiting for Pre Startup Group [" + key + "]");
+            log.info("Waiting for Pre Startup Group [" + key + "] - [" + preStartups + "]");
             Future.all(groupFutures).await();
         });
     }
