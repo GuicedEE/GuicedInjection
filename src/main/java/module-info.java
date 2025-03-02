@@ -11,6 +11,7 @@ module com.guicedee.guicedinjection {
 
 	requires static lombok;
     requires org.apache.logging.log4j.core;
+	requires org.apache.logging.log4j.jul;
 
 	requires transitive com.guicedee.vertx;
 
