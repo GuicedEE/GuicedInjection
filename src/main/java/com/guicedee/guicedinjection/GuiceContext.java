@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.guicedee.guicedinjection.properties.GlobalProperties.getSystemPropertyOrEnvironment;
 
@@ -990,14 +991,20 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      */
     private void loadPreStartups()
     {
-        Set<IGuicePreStartup> preStartups = loadPreStartupServices();
-        for (IGuicePreStartup startup : preStartups)
-        {
-            GuiceContext.log.config("Loading IGuicePreStartup - " + startup
-                    .getClass()
-                    .getCanonicalName());
-            startup.onStartup();
-        }
+        var preStartups = loadPreStartupServices();
+
+        preStartups.stream().collect(Collectors.groupingBy(IGuicePreStartup::sortOrder)).forEach((key, value) -> {
+            List<Future<Boolean>> groupFutures = new ArrayList<>();
+            for (IGuicePreStartup<?> iGuicePreStartup : value)
+            {
+                log.config("Loading IGuicePreStartup - " + iGuicePreStartup
+                        .getClass()
+                        .getSimpleName());
+                groupFutures.addAll(iGuicePreStartup.onStartup());
+            }
+            log.log(Level.INFO, "Waiting for Pre Startup Group [" + key + "]");
+            Future.all(groupFutures).await();
+        });
     }
 
     /**
