@@ -118,7 +118,6 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             Configuration config = context.getConfiguration();
 
 
-
             config.getRootLogger().removeAppender("Console");
             config.getRootLogger().removeAppender("DefaultConsole");
             config.getRootLogger().removeAppender("DefaultConsole-2");
@@ -240,7 +239,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                 cModules.addAll(iGuiceModules);
 
                 //cModules.add(new GuiceInjectorModule());
-                log.debug("Modules - " + Arrays.toString(cModules.toArray()));
+                log.debug("Modules - {}", Arrays.toString(cModules.toArray()));
                 GuiceContext.instance().injector = Guice.createInjector(cModules);
                 GuiceContext.buildingInjector = false;
                 GuiceContext.instance()
@@ -258,11 +257,11 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                             }
                         });
                 LocalDateTime end = LocalDateTime.now();
-                log.info("System started in " + ChronoUnit.MILLIS.between(start, end) + "ms");
+                log.info("System started in {}ms", ChronoUnit.MILLIS.between(start, end));
                 loadingFinished.complete(null);
             } catch (Throwable e)
             {
-                log.error("Exception creating Injector : " + e.getMessage(), e);
+                log.error("Exception creating Injector : {}", e.getMessage(), e);
                 throw new RuntimeException("Unable to boot Guice Injector", e);
             }
         }
@@ -285,9 +284,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                     destroyer.onDestroy();
                 } catch (Throwable T)
                 {
-                    log.error("Could not run destroyer [" + destroyer
-                                    .getClass()
-                                    .getCanonicalName() + "]");
+                    log.error("Could not run destroyer [{}]", destroyer
+                            .getClass()
+                            .getCanonicalName());
                 }
             }
         } catch (Throwable T)
@@ -377,7 +376,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             Set<IGuiceConfigurator> guiceConfigurators = loadIGuiceConfigs();
             for (IGuiceConfigurator guiceConfigurator : guiceConfigurators)
             {
-                log.debug("Loading IGuiceConfigurator - " + guiceConfigurator
+                log.debug("Loading IGuiceConfigurator - {}", guiceConfigurator
                         .getClass()
                         .getCanonicalName());
                 guiceConfigurator.configure(GuiceContext.config);
@@ -386,7 +385,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             {
                 log.warn("Scanning is not restricted to modules and may incur a performance impact. Consider registering your module with GuiceContext.registerModule() to auto enable, or SPI IGuiceConfiguration");
             }
-            log.debug("IGuiceConfigurator  : " + GuiceContext.config.toString());
+            log.debug("IGuiceConfigurator  : {}", GuiceContext.config.toString());
             configured = true;
         }
     }
@@ -410,7 +409,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                 Set<String> searches = exclusion.excludeJars();
                 strings.addAll(searches);
             }
-            log.trace("IGuiceScanJarExclusions - " + strings.toString());
+            log.trace("IGuiceScanJarExclusions - {}", strings.toString());
         }
         return strings.toArray(new String[0]);
     }
@@ -434,7 +433,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                 Set<String> searches = exclusion.includeJars();
                 strings.addAll(searches);
             }
-            log.trace("IGuiceScanJarExclusions - " + strings.toString());
+            log.trace("IGuiceScanJarExclusions - {}", strings.toString());
         }
         return strings.toArray(new String[0]);
     }
@@ -480,7 +479,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             {
                 log.error("Unable to run scanner", mpe);
             }
-            log.trace("Loaded Classpath Scanner - Took [" + stopwatch.elapsed(TimeUnit.MILLISECONDS) + "] millis.");
+            log.trace("Loaded Classpath Scanner - Took [{}] millis.", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
 
@@ -535,7 +534,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             if (getJavaVersion() < 9)
             {
                 String[] jarRejections = getJarsInclusionList();
-                log.debug("Accepted Jars for Scanning : " + Arrays.toString(jarRejections));
+                log.debug("Accepted Jars for Scanning : {}", Arrays.toString(jarRejections));
                 if (jarRejections.length != 0)
                 {
                     graph = graph.acceptJars(jarRejections);
@@ -543,7 +542,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             } else
             {
                 String[] modulesRejection = getModulesInclusionsList();
-                log.debug("Accepted Modules for Scanning : " + Arrays.toString(modulesRejection));
+                log.debug("Accepted Modules for Scanning : {}", Arrays.toString(modulesRejection));
                 if (modulesRejection.length != 0)
                 {
                     graph = graph.acceptModules(modulesRejection);
@@ -629,13 +628,13 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         {
             for (IPackageContentsScanner exclusion : exclusions)
             {
-                log.debug("Loading IPackageContentsScanner - " + exclusion
-                                .getClass()
-                                .getCanonicalName());
+                log.debug("Loading IPackageContentsScanner - {}", exclusion
+                        .getClass()
+                        .getCanonicalName());
                 Set<String> searches = exclusion.searchFor();
                 strings.addAll(searches);
             }
-            log.debug( "IPackageScanningContentsScanner - " + strings.toString());
+            log.debug("IPackageScanningContentsScanner - {}", strings.toString());
         }
         return strings.toArray(new String[0]);
     }
@@ -655,13 +654,13 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         {
             for (IPackageRejectListScanner exclusion : exclusions)
             {
-                log.debug("Loading IPackageContentsScanner - " + exclusion
-                                .getClass()
-                                .getCanonicalName());
+                log.debug("Loading IPackageContentsScanner - {}", exclusion
+                        .getClass()
+                        .getCanonicalName());
                 Set<String> searches = exclusion.exclude();
                 strings.addAll(searches);
             }
-            log.trace("IPackageScanningContentsScanner - " + strings.toString());
+            log.trace("IPackageScanningContentsScanner - {}", strings.toString());
         }
         return strings.toArray(new String[0]);
     }
@@ -681,13 +680,13 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         {
             for (IPathContentsScanner exclusion : exclusions)
             {
-                log.debug("Loading IPathScanningContentsScanner - " + exclusion
-                                .getClass()
-                                .getCanonicalName());
+                log.debug("Loading IPathScanningContentsScanner - {}", exclusion
+                        .getClass()
+                        .getCanonicalName());
                 Set<String> searches = exclusion.searchFor();
                 strings.addAll(searches);
             }
-            log.trace("IPathScanningContentsScanner - " + strings.toString());
+            log.trace("IPathScanningContentsScanner - {}", strings.toString());
         }
         return strings.toArray(new String[0]);
     }
@@ -707,13 +706,13 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         {
             for (IPathContentsRejectListScanner exclusion : exclusions)
             {
-                log.debug("Loading IPathContentsRejectListScanner - " + exclusion
-                                .getClass()
-                                .getCanonicalName());
+                log.debug("Loading IPathContentsRejectListScanner - {}", exclusion
+                        .getClass()
+                        .getCanonicalName());
                 Set<String> searches = exclusion.searchFor();
                 strings.addAll(searches);
             }
-            log.trace("IPathContentsRejectListScanner - " + strings.toString());
+            log.trace("IPathContentsRejectListScanner - {}", strings.toString());
         }
         return strings.toArray(new String[0]);
     }
@@ -737,7 +736,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                 Set<String> searches = exclusion.excludeModules();
                 strings.addAll(searches);
             }
-            log.trace("IGuiceScanModuleExclusions - " + strings.toString());
+            log.trace("IGuiceScanModuleExclusions - {}", strings.toString());
         }
         return strings.toArray(new String[0]);
     }
@@ -762,7 +761,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                 Set<String> searches = exclusion.includeModules();
                 strings.addAll(searches);
             }
-            log.trace("IGuiceScanModuleInclusions - " + strings.toString());
+            log.trace("IGuiceScanModuleInclusions - {}", strings.toString());
         }
         return strings.toArray(new String[0]);
     }
@@ -776,9 +775,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         Set<IFileContentsScanner> fileScanners = getLoader(IFileContentsScanner.class, true, ServiceLoader.load(IFileContentsScanner.class));
         for (IFileContentsScanner fileScanner : fileScanners)
         {
-            log.debug("Loading IFileContentsScanner - " + fileScanner
-                            .getClass()
-                            .getCanonicalName());
+            log.debug("Loading IFileContentsScanner - {}", fileScanner
+                    .getClass()
+                    .getCanonicalName());
             fileScans.putAll(fileScanner.onMatch());
         }
         return fileScans;
@@ -793,9 +792,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         Set<IFileContentsPatternScanner> fileScanners = getLoader(IFileContentsPatternScanner.class, true, ServiceLoader.load(IFileContentsPatternScanner.class));
         for (IFileContentsPatternScanner fileScanner : fileScanners)
         {
-            log.debug("Loading IFileContentsPatternScanner - " + fileScanner
-                            .getClass()
-                            .getCanonicalName());
+            log.debug("Loading IFileContentsPatternScanner - {}", fileScanner
+                    .getClass()
+                    .getCanonicalName());
             fileScans.putAll(fileScanner.onMatch());
         }
         return fileScans;
@@ -861,17 +860,19 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
     private void loadPostStartups()
     {
         Set<IGuicePostStartup> startupSet = loadPostStartupServices();
-        startupSet.stream().collect(Collectors.groupingBy(IGuicePostStartup::sortOrder)).forEach((key, value) -> {
-            List<Future<Boolean>> groupFutures = new ArrayList<>();
-            for (IGuicePostStartup<?> iGuicePostStartup : value)
-            {
-                log.info("Starting Post Load [" + iGuicePostStartup.getClass()
-                        .getSimpleName() + "] - Start Order [" + key + "]");
-                groupFutures.addAll(iGuicePostStartup.postLoad());
-            }
-            Future.all(groupFutures)
-                    .await();
-        });
+        startupSet.stream().collect(Collectors.groupingBy(IGuicePostStartup::sortOrder, TreeMap::new, Collectors.toList()))
+        .forEach((key, value) -> {
+        List<Future<Boolean>> groupFutures = new ArrayList<>();
+        for (IGuicePostStartup<?> iGuicePostStartup : value)
+        {
+            log.info("Starting Post Load [{}] - Start Order [{}]", iGuicePostStartup.getClass()
+                    .getSimpleName(), key);
+            groupFutures.addAll(iGuicePostStartup.postLoad());
+        }
+        Future.all(groupFutures)
+                .await();
+            //loadingFinished.complete(null);
+    });
     }
 
     /**
@@ -975,18 +976,18 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
     {
         var preStartups = loadPreStartupServices();
 
-        preStartups.stream().collect(Collectors.groupingBy(IGuicePreStartup::sortOrder)).forEach((key, value) -> {
-            List<Future<Boolean>> groupFutures = new ArrayList<>();
-            for (IGuicePreStartup<?> iGuicePreStartup : value)
-            {
-                log.debug("Loading IGuicePreStartup - " + iGuicePreStartup
-                        .getClass()
-                        .getSimpleName());
-                groupFutures.addAll(iGuicePreStartup.onStartup());
-            }
-            log.info("Waiting for Pre Startup Group [" + key + "] - [" + preStartups + "]");
-            Future.all(groupFutures).await();
-        });
+        preStartups.stream()
+                .collect(Collectors.groupingBy(IGuicePreStartup::sortOrder, TreeMap::new, Collectors.toList())) // Use TreeMap for natural key ordering
+                .forEach((key, value) -> {
+                    List<Future<Boolean>> groupFutures = new ArrayList<>();
+                    for (IGuicePreStartup<?> iGuicePreStartup : value)
+                    {
+                        log.info("Loading IGuicePreStartup - {} - Start Order [{}]",
+                                iGuicePreStartup.getClass().getSimpleName(), key);
+                        groupFutures.addAll(iGuicePreStartup.onStartup());
+                    }
+                    Future.all(groupFutures).await();
+                });
     }
 
     /**
