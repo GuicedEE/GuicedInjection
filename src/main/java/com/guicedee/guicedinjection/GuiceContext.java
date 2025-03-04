@@ -32,6 +32,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
+import org.apache.logging.log4j.core.appender.rolling.CompositeTriggeringPolicy;
+import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
+import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
+import org.apache.logging.log4j.core.appender.rolling.TimeBasedTriggeringPolicy;
 import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -50,6 +55,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -69,6 +75,93 @@ import static com.guicedee.guicedinjection.properties.GlobalProperties.getSystem
 @SuppressWarnings("MissingClassJavaDoc")
 public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 {
+    static
+    {
+        try
+        {
+            // Retrieve the existing configuration from Log4j2
+            System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
+            System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.Log4j2LogDelegateFactory");
+            LoggerContext context = (LoggerContext) LogManager.getContext(false); // Don't reinitialize
+            Configuration config = context.getConfiguration();
+
+
+            config.getRootLogger().removeAppender("Console");
+            config.getRootLogger().removeAppender("DefaultConsole");
+            config.getRootLogger().removeAppender("DefaultConsole-2");
+            //config.get
+
+            Configurator.setLevel("bitronix.tm", org.apache.logging.log4j.Level.INFO);
+            Configurator.setLevel("org.apache.logging.log4j.jul", Level.ERROR);
+            Configurator.setLevel("org.apache.logging.log4j", Level.ERROR);
+            Configurator.setLevel("io.vertx.ext.web.handler.sockjs.impl", Level.ERROR);
+            Configurator.setLevel("org.hibernate", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("com.hazelcast", org.apache.logging.log4j.Level.INFO);
+            Configurator.setLevel("com.hazelcast.cache.impl ", org.apache.logging.log4j.Level.DEBUG);
+            Configurator.setLevel("com.hazelcast.system.logo", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("com.hazelcast.internal.server.tcp.TcpServerConnection", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("io.netty", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("com.mchange", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("com.zandero", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("com.google", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("jdk.event.security", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("org.apache.commons.beanutils", org.apache.logging.log4j.Level.ERROR);
+
+            config.getRootLogger().setLevel(Level.INFO);
+
+            // Create a PatternLayout for the appenders
+            PatternLayout layout = PatternLayout.newBuilder()
+                    .withDisableAnsi(false)
+                    .withNoConsoleNoAnsi(true)
+                    .withPattern("%highlight{[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level] - [%msg]}%n")
+                    .build();
+
+            // Create the Stdout appender for DEBUG, INFO, TRACE
+            ConsoleAppender stdoutAppender = ConsoleAppender.newBuilder()
+                    .setName("Stdout")
+                    .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
+                    .setLayout(layout)
+                    .setFilter(ThresholdFilter.createFilter(Level.DEBUG, Filter.Result.ACCEPT, Filter.Result.DENY))
+                    .build();
+            stdoutAppender.start(); // Start the appender
+
+            // Create the Stderr appender for WARN, ERROR, FATAL
+            ConsoleAppender stderrAppender = ConsoleAppender.newBuilder()
+                    .setName("Stderr")
+                    .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
+                    .setLayout(layout)
+                    .setFilter(ThresholdFilter.createFilter(org.apache.logging.log4j.Level.WARN, Filter.Result.ACCEPT, Filter.Result.DENY))
+                    .build();
+            stderrAppender.start(); // Start the appender
+
+            // Add appenders to the existing configuration
+            config.addAppender(stdoutAppender);
+            config.addAppender(stderrAppender);
+
+            // Associate the appenders with the root logger
+            AppenderRef stdoutRef = AppenderRef.createAppenderRef("Stdout", org.apache.logging.log4j.Level.DEBUG, null);
+            AppenderRef stderrRef = AppenderRef.createAppenderRef("Stderr", org.apache.logging.log4j.Level.WARN, null);
+
+            LoggerConfig rootLoggerConfig = config.getRootLogger();
+            rootLoggerConfig.addAppender(stdoutAppender, org.apache.logging.log4j.Level.DEBUG, null); // Add Stdout appender
+            rootLoggerConfig.addAppender(stderrAppender, org.apache.logging.log4j.Level.WARN, null);  // Add Stderr appender
+
+            LogUtils.addFileRollingLogger("system");
+
+            ServiceLoader<Log4JConfigurator> log4JConfigurators = ServiceLoader.load(Log4JConfigurator.class);
+            for (Log4JConfigurator log4jConfigurator : log4JConfigurators)
+            {
+                log4jConfigurator.configure(config);
+            }
+
+            // Update the context with the modified configuration
+            context.updateLoggers();
+        } catch (Exception e)
+        {
+            e.printStackTrace(System.err);
+        }
+    }
+
     /**
      * This particular instance of the class
      */
@@ -102,95 +195,14 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      */
     private static boolean configured;
 
-    private CompletableFuture<Void> loadingFinished = new CompletableFuture<>();
+    private final CompletableFuture<Void> loadingFinished = new CompletableFuture<>();
 
     /**
      * Creates a new Guice context. Not necessary
      */
     private GuiceContext()
     {
-        System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
-        System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.Log4j2LogDelegateFactory");
-        try
-        {
-            // Retrieve the existing configuration from Log4j2
-            LoggerContext context = (LoggerContext) LogManager.getContext(false); // Don't reinitialize
-            Configuration config = context.getConfiguration();
 
-
-            config.getRootLogger().removeAppender("Console");
-            config.getRootLogger().removeAppender("DefaultConsole");
-            config.getRootLogger().removeAppender("DefaultConsole-2");
-            //config.get
-
-            Configurator.setLevel("bitronix.tm", org.apache.logging.log4j.Level.INFO);
-            Configurator.setLevel("org.apache.logging.log4j.jul", Level.ERROR);
-            Configurator.setLevel("org.apache.logging.log4j", Level.ERROR);
-            Configurator.setLevel("io.vertx.ext.web.handler.sockjs.impl", Level.ERROR);
-            Configurator.setLevel("org.hibernate", org.apache.logging.log4j.Level.ERROR);
-            Configurator.setLevel("com.hazelcast", org.apache.logging.log4j.Level.INFO);
-            Configurator.setLevel("com.hazelcast.cache.impl ", org.apache.logging.log4j.Level.DEBUG);
-            Configurator.setLevel("com.hazelcast.system.logo", org.apache.logging.log4j.Level.ERROR);
-            Configurator.setLevel("com.hazelcast.internal.server.tcp.TcpServerConnection", org.apache.logging.log4j.Level.ERROR);
-            Configurator.setLevel("io.netty", org.apache.logging.log4j.Level.ERROR);
-            Configurator.setLevel("com.mchange", org.apache.logging.log4j.Level.ERROR);
-            Configurator.setLevel("com.zandero", org.apache.logging.log4j.Level.ERROR);
-            Configurator.setLevel("com.google", org.apache.logging.log4j.Level.ERROR);
-            Configurator.setLevel("jdk.event.security", org.apache.logging.log4j.Level.ERROR);
-            Configurator.setLevel("org.apache.commons.beanutils", org.apache.logging.log4j.Level.ERROR);
-
-            config.getRootLogger().setLevel(Level.DEBUG);
-
-            // Create a PatternLayout for the appenders
-            PatternLayout layout = PatternLayout.newBuilder()
-                    .withDisableAnsi(false)
-                    .withNoConsoleNoAnsi(true)
-                    .withPattern("%highlight{[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level]: %msg}%n")
-                    .build();
-
-            // Create the Stdout appender for DEBUG, INFO, TRACE
-            ConsoleAppender stdoutAppender = ConsoleAppender.newBuilder()
-                    .setName("Stdout")
-                    .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
-                    .setLayout(layout)
-                    .setFilter(ThresholdFilter.createFilter(Level.DEBUG, Filter.Result.ACCEPT, Filter.Result.DENY))
-                    .build();
-            stdoutAppender.start(); // Start the appender
-
-            // Create the Stderr appender for WARN, ERROR, FATAL
-            ConsoleAppender stderrAppender = ConsoleAppender.newBuilder()
-                    .setName("Stderr")
-                    .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
-                    .setLayout(layout)
-                    .setFilter(ThresholdFilter.createFilter(org.apache.logging.log4j.Level.WARN, Filter.Result.ACCEPT, Filter.Result.DENY))
-                    .build();
-            stderrAppender.start(); // Start the appender
-
-            // Add appenders to the existing configuration
-            config.addAppender(stdoutAppender);
-            config.addAppender(stderrAppender);
-
-            // Associate the appenders with the root logger
-            AppenderRef stdoutRef = AppenderRef.createAppenderRef("Stdout", org.apache.logging.log4j.Level.DEBUG, null);
-            AppenderRef stderrRef = AppenderRef.createAppenderRef("Stderr", org.apache.logging.log4j.Level.WARN, null);
-
-            LoggerConfig rootLoggerConfig = config.getRootLogger();
-            rootLoggerConfig.addAppender(stdoutAppender, org.apache.logging.log4j.Level.DEBUG, null); // Add Stdout appender
-            rootLoggerConfig.addAppender(stderrAppender, org.apache.logging.log4j.Level.WARN, null);  // Add Stderr appender
-
-            ServiceLoader<Log4JConfigurator> log4JConfigurators = ServiceLoader.load(Log4JConfigurator.class);
-            for (Log4JConfigurator log4jConfigurator : log4JConfigurators)
-            {
-                log4jConfigurator.configure(config);
-            }
-
-            // Update the context with the modified configuration
-            context.updateLoggers();
-
-        } catch (Exception e)
-        {
-            e.printStackTrace(System.err);
-        }
     }
 
     /**
@@ -861,18 +873,24 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
     {
         Set<IGuicePostStartup> startupSet = loadPostStartupServices();
         startupSet.stream().collect(Collectors.groupingBy(IGuicePostStartup::sortOrder, TreeMap::new, Collectors.toList()))
-        .forEach((key, value) -> {
-        List<Future<Boolean>> groupFutures = new ArrayList<>();
-        for (IGuicePostStartup<?> iGuicePostStartup : value)
-        {
-            log.info("Starting Post Load [{}] - Start Order [{}]", iGuicePostStartup.getClass()
-                    .getSimpleName(), key);
-            groupFutures.addAll(iGuicePostStartup.postLoad());
-        }
-        Future.all(groupFutures)
-                .await();
-            //loadingFinished.complete(null);
-    });
+                .forEach((key, value) -> {
+                    List<Future<Boolean>> groupFutures = new ArrayList<>();
+                    for (IGuicePostStartup<?> iGuicePostStartup : value)
+                    {
+                        log.info("Starting Post Load [{}] - Start Order [{}]", iGuicePostStartup.getClass()
+                                .getSimpleName(), key);
+                        groupFutures.addAll(iGuicePostStartup.postLoad());
+                    }
+                    try
+                    {
+                        Future.all(groupFutures)
+                                .await(10, TimeUnit.SECONDS);
+                    } catch (TimeoutException e)
+                    {
+                        log.error("Timeout while waiting for Post Startup to complete - [" + key + "]", e);
+                    }
+                    //loadingFinished.complete(null);
+                });
     }
 
     /**
@@ -986,7 +1004,13 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                                 iGuicePreStartup.getClass().getSimpleName(), key);
                         groupFutures.addAll(iGuicePreStartup.onStartup());
                     }
-                    Future.all(groupFutures).await();
+                    try
+                    {
+                        Future.all(groupFutures).await(10, TimeUnit.SECONDS);
+                    } catch (TimeoutException e)
+                    {
+                        log.error("Startup Timeout on group - [" + key + "]", e);
+                    }
                 });
     }
 
