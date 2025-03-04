@@ -113,7 +113,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             PatternLayout layout = PatternLayout.newBuilder()
                     .withDisableAnsi(false)
                     .withNoConsoleNoAnsi(true)
-                    .withPattern("%highlight{[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%c] [%25.25C{3}] [%t] [%-5level] - [%msg]}%n")
+                    .withPattern("%highlight{[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%c] [%t] [%-5level] - [%msg]}%n")
                     .build();
 
             // Create the Stdout appender for DEBUG, INFO, TRACE

@@ -97,7 +97,7 @@ public class LogUtils
     }
 
 
-    public static Logger getSpecificRollingLogger(String name, String baseLogFolder, String pattern)
+    public static Logger getSpecificRollingLogger(String name, String baseLogFolder, String pattern,boolean logToRoot)
     {
         LoggerContext context = (LoggerContext) LogManager.getContext(false); // Don't reinitialize
         if (names.contains(name))
@@ -134,7 +134,7 @@ public class LogUtils
 
         // Create a logger config for the specific logger
         LoggerConfig specificLoggerConfig = LoggerConfig.createLogger(
-                false,                            // Additivity (false means it will only use its own appenders, not root logger's)
+                logToRoot,                            // Additivity (false means it will only use its own appenders, not root logger's)
                 Level.DEBUG,                       // Logging level for this specific logger
                 name,   // Logger name
                 "true",                           // Include location for stack traces
