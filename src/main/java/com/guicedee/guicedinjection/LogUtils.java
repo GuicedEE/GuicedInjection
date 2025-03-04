@@ -1,5 +1,6 @@
 package com.guicedee.guicedinjection;
 
+import com.google.common.base.Strings;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
@@ -21,16 +22,16 @@ public class LogUtils
 {
     private static final Set<String> names = new HashSet<>();
 
-    public static void addFileRollingLogger(String name)
+    public static void addFileRollingLogger(String name, String baseLogFolder)
     {
-        if(names.contains(name))
+        if (names.contains(name))
             return;
         names.add(name);
 
         LoggerContext context = (LoggerContext) LogManager.getContext(false); // Don't reinitialize
         Configuration config = context.getConfiguration();
 
-        String logFolderPath = "logs"; // Base folder for logs
+        String logFolderPath = Strings.isNullOrEmpty(baseLogFolder) ? "logs" : baseLogFolder; // Base folder for logs
         String logFileName = name + ".log";
 
         PatternLayout layout = PatternLayout.newBuilder()
@@ -39,9 +40,9 @@ public class LogUtils
 
         RollingFileAppender rollingFileAppender = RollingFileAppender.newBuilder()
                 .withFileName(logFolderPath + "/" + logFileName)
-                .withFilePattern(logFolderPath + "/%d{yyyy-MM-dd}/" + logFileName + ".%d{HH-mm-ss}.%i.gz")
+                .withFilePattern(logFolderPath + "/%d{yyyy-MM-dd}/" + logFileName + ".%i.gz")
                 .withPolicy(CompositeTriggeringPolicy.createPolicy(
-                     //   TimeBasedTriggeringPolicy.newBuilder().withInterval(1).withModulate(true).build(),
+                        TimeBasedTriggeringPolicy.newBuilder().withInterval(1).withModulate(true).build(),
                         SizeBasedTriggeringPolicy.createPolicy("100MB")
                 ))
                 .withStrategy(DefaultRolloverStrategy.newBuilder()
@@ -60,7 +61,7 @@ public class LogUtils
 
     public static void addMinimalFileRollingLogger(String name)
     {
-        if(names.contains(name))
+        if (names.contains(name))
             return;
         names.add(name);
 
@@ -96,25 +97,25 @@ public class LogUtils
     }
 
 
-    public static Logger getSpecificRollingLogger(String name)
+    public static Logger getSpecificRollingLogger(String name, String baseLogFolder, String pattern)
     {
         LoggerContext context = (LoggerContext) LogManager.getContext(false); // Don't reinitialize
-        if(names.contains(name))
+        if (names.contains(name))
             return context.getLogger(name);
 
         names.add(name);
         Configuration config = context.getConfiguration();
 
         PatternLayout layout = PatternLayout.newBuilder()
-                .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level] - [%msg]%n")
+                .withPattern(Strings.isNullOrEmpty(pattern) ? "[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level] - [%msg]%n" : pattern)
                 .build();
 
-        String logFolderPath = "logs"; // Base folder for logs
+        String logFolderPath = Strings.isNullOrEmpty(baseLogFolder) ? "logs" : baseLogFolder; // Base folder for logs
         String logFileName = name + ".log";
 
         RollingFileAppender rollingFileAppender = RollingFileAppender.newBuilder()
                 .withFileName(logFolderPath + "/" + logFileName)
-                .withFilePattern(logFolderPath + "/%d{yyyy-MM-dd}/" + logFileName + ".%d{HH-mm-ss}.%i.gz")
+                .withFilePattern(logFolderPath + "/%d{yyyy-MM-dd}/" + logFileName + "%i.gz")
                 .withPolicy(CompositeTriggeringPolicy.createPolicy(
                         TimeBasedTriggeringPolicy.newBuilder().withInterval(1).withModulate(true).build(),
                         SizeBasedTriggeringPolicy.createPolicy("100MB")

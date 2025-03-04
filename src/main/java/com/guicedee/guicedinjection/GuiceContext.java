@@ -30,6 +30,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
@@ -56,7 +57,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -71,10 +71,10 @@ import static com.guicedee.guicedinjection.properties.GlobalProperties.getSystem
  * @version 1.0
  * @since Nov 14, 2016
  */
-@Log4j2
 @SuppressWarnings("MissingClassJavaDoc")
 public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 {
+    private static Logger log;
     static
     {
         try
@@ -113,7 +113,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             PatternLayout layout = PatternLayout.newBuilder()
                     .withDisableAnsi(false)
                     .withNoConsoleNoAnsi(true)
-                    .withPattern("%highlight{[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level] - [%msg]}%n")
+                    .withPattern("%highlight{[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%c] [%25.25C{3}] [%t] [%-5level] - [%msg]}%n")
                     .build();
 
             // Create the Stdout appender for DEBUG, INFO, TRACE
@@ -146,7 +146,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
             rootLoggerConfig.addAppender(stdoutAppender, org.apache.logging.log4j.Level.DEBUG, null); // Add Stdout appender
             rootLoggerConfig.addAppender(stderrAppender, org.apache.logging.log4j.Level.WARN, null);  // Add Stderr appender
 
-            LogUtils.addFileRollingLogger("system");
+            LogUtils.addFileRollingLogger("system", "");
 
             ServiceLoader<Log4JConfigurator> log4JConfigurators = ServiceLoader.load(Log4JConfigurator.class);
             for (Log4JConfigurator log4jConfigurator : log4JConfigurators)
@@ -156,6 +156,8 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
 
             // Update the context with the modified configuration
             context.updateLoggers();
+
+            log = context.getLogger("GuiceContext");
         } catch (Exception e)
         {
             e.printStackTrace(System.err);
