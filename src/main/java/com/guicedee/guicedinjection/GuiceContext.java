@@ -886,7 +886,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                     try
                     {
                         Future.all(groupFutures)
-                                .await(10, TimeUnit.SECONDS);
+                                .await(60, TimeUnit.SECONDS);
                     } catch (TimeoutException e)
                     {
                         log.error("Timeout while waiting for Post Startup to complete - [" + key + "]", e);
