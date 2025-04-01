@@ -21,9 +21,11 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.guicedee.client.IGuiceContext;
 import com.guicedee.guicedinjection.interfaces.*;
+import com.guicedee.vertx.spi.VertXPreStartup;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import lombok.extern.log4j.Log4j2;
@@ -257,9 +259,13 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                 GuiceContext.instance().injector = Guice.createInjector(cModules);
                 GuiceContext.buildingInjector = false;
                 GuiceContext.instance()
-                        .loadPostStartups();
-                GuiceContext.instance()
                         .loadPreDestroyServices();
+                GuiceContext.instance()
+                        .loadPostStartups().onComplete((handler) -> {
+                            LocalDateTime end = LocalDateTime.now();
+                            log.info("System started in {}ms", ChronoUnit.MILLIS.between(start, end));
+                            loadingFinished.complete(null);
+                        });
                 Runtime
                         .getRuntime()
                         .addShutdownHook(new Thread()
@@ -270,9 +276,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                                         .destroy();
                             }
                         });
-                LocalDateTime end = LocalDateTime.now();
-                log.info("System started in {}ms", ChronoUnit.MILLIS.between(start, end));
-                loadingFinished.complete(null);
+
             } catch (Throwable e)
             {
                 log.error("Exception creating Injector : {}", e.getMessage(), e);
@@ -871,30 +875,51 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
     /**
      * Method loadPostStartups ...
      */
-    private void loadPostStartups()
-    {
-        Set<IGuicePostStartup> startupSet = loadPostStartupServices();
-        startupSet.stream().collect(Collectors.groupingBy(IGuicePostStartup::sortOrder, TreeMap::new, Collectors.toList()))
-                .forEach((key, value) -> {
-                    List<Future<Boolean>> groupFutures = new ArrayList<>();
-                    for (IGuicePostStartup<?> iGuicePostStartup : value)
-                    {
-                        log.info("Starting Post Load [{}] - Start Order [{}]", iGuicePostStartup.getClass()
-                                .getSimpleName(), key);
-                        groupFutures.addAll(iGuicePostStartup.postLoad());
-                    }
-                    try
-                    {
-                        Future.all(groupFutures)
-                                .await(60, TimeUnit.SECONDS);
-                    } catch (TimeoutException e)
-                    {
-                        log.error("Timeout while waiting for Post Startup to complete - [" + key + "]", e);
-                    }
-                    //loadingFinished.complete(null);
-                });
-    }
+    private Future<CompositeFuture> loadPostStartups() {
+        Set<IGuicePostStartup<?>> startupSet = loadPostStartupServices().stream().map(a-> (IGuicePostStartup<?>)a).collect(Collectors.toSet())  ;
+        var vertx = VertXPreStartup.getVertx(); // Ensure Vert.x is set up and available
 
+        // Group startups by sortOrder into a TreeMap to maintain sorted order
+        TreeMap<Integer, List<IGuicePostStartup<?>>> groupedStartups =
+                startupSet.stream()
+                        .collect(Collectors.groupingBy(IGuicePostStartup::sortOrder, TreeMap::new, Collectors.toList()));
+
+        // Create a Future to handle sequential group processing
+        Future<CompositeFuture> sequentialFuture = Future.succeededFuture();
+
+        // Iteratively process each group in order
+        for (var entry : groupedStartups.entrySet()) {
+            int sortOrder = entry.getKey();
+            List<IGuicePostStartup<?>> group = entry.getValue();
+
+            sequentialFuture = sequentialFuture.compose(ignored -> {
+                log.info("Executing group with sortOrder [{}]", sortOrder);
+
+                // For each startup, collect all the futures, flatten, and execute them
+                List<Future<Boolean>> groupFutures = group.stream()
+                        .flatMap(startup -> {
+                            log.info("Starting Post Load [{}] - sortOrder [{}]", startup.getClass().getSimpleName(), sortOrder);
+                            return startup.postLoad().stream(); // Flatten the returned List<Future<Boolean>> into a single stream
+                        })
+                        .toList();
+
+                // Combine all Futures from the group and process them asynchronously
+                return Future.all(groupFutures)
+                        .onSuccess(res -> log.info("Completed group with sortOrder [{}]", sortOrder))
+                        .onFailure(err -> log.error("Error in group with sortOrder [{}]", sortOrder, err));
+            });
+        }
+
+        // Handle the final outcome of the entire process
+        sequentialFuture.onComplete(res -> {
+            if (res.succeeded()) {
+                log.info("All Post Startup groups completed successfully.");
+            } else {
+                log.error("Failed in Post Startup execution", res.cause());
+            }
+        });
+        return sequentialFuture;
+    }
     /**
      * Returns the Guice Config Instance
      *
@@ -910,7 +935,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      *
      * @return The list of guice post startups
      */
-    public Set<IGuicePostStartup> loadPostStartupServices()
+    public Set<IGuicePostStartup<?>> loadPostStartupServices()
     {
         return new TreeSet<>(getLoader(IGuicePostStartup.class, ServiceLoader.load(IGuicePostStartup.class)));
     }
