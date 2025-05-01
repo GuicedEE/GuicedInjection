@@ -217,6 +217,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	public J setFieldInfo(boolean fieldInfo)
 	{
 		this.fieldInfo = fieldInfo;
+		setFieldScanning(fieldInfo);
 		return (J) this;
 	}
 

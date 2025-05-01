@@ -220,6 +220,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
         if (GuiceContext.buildingInjector)
         {
             log.error("The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.");
+            new IllegalStateException("The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.").printStackTrace();
             System.exit(1);
         }
         if (GuiceContext.instance().injector == null)
@@ -485,6 +486,8 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                     scanResult = scanner.scan();
                 }
                 stopwatch.stop();
+                log.info("Scan took [{}] millis.", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                stopwatch.reset();
                 Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
                 fileScans.forEach((key, value) -> scanResult
                         .getResourcesWithLeafName(key)
@@ -492,7 +495,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
                 quickScanFilesPattern().forEach((key, value) -> scanResult
                         .getResourcesMatchingPattern(key)
                         .forEachByteArrayIgnoringIOException(value));
-
+                log.debug("Byte Scanners took [{}] millis.", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             } catch (Exception mpe)
             {
                 log.error("Unable to run scanner", mpe);
