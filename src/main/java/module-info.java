@@ -14,6 +14,7 @@ module com.guicedee.guicedinjection {
 	requires org.apache.logging.log4j.jul;
 
 	requires transitive com.guicedee.vertx;
+	requires io.smallrye.config.core;
 
     exports com.guicedee.guicedinjection;
 	//exports com.guicedee.guicedinjection.exceptions;

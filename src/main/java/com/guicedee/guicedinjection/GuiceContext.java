@@ -27,6 +27,7 @@ import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
@@ -52,6 +53,7 @@ import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 import org.apache.logging.log4j.core.filter.ThresholdFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -879,49 +881,58 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext
      * Method loadPostStartups ...
      */
     private Future<CompositeFuture> loadPostStartups() {
-        Set<IGuicePostStartup<?>> startupSet = loadPostStartupServices().stream().map(a-> (IGuicePostStartup<?>)a).collect(Collectors.toSet())  ;
-        var vertx = VertXPreStartup.getVertx(); // Ensure Vert.x is set up and available
+        var vertx = VertXPreStartup.getVertx();
 
-        // Group startups by sortOrder into a TreeMap to maintain sorted order
-        TreeMap<Integer, List<IGuicePostStartup<?>>> groupedStartups =
-                startupSet.stream()
-                        .collect(Collectors.groupingBy(IGuicePostStartup::sortOrder, TreeMap::new, Collectors.toList()));
+        return vertx.executeBlocking(() -> {
+            Set<IGuicePostStartup<?>> startupSet = loadPostStartupServices().stream()
+                    .map(a -> (IGuicePostStartup<?>) a)
+                    .collect(Collectors.toSet());
 
-        // Create a Future to handle sequential group processing
-        Future<CompositeFuture> sequentialFuture = Future.succeededFuture();
+            TreeMap<Integer, List<IGuicePostStartup<?>>> groupedStartups = startupSet.stream()
+                    .collect(Collectors.groupingBy(
+                            IGuicePostStartup::sortOrder,
+                            TreeMap::new,
+                            Collectors.toList()
+                    ));
 
-        // Iteratively process each group in order
-        for (var entry : groupedStartups.entrySet()) {
-            int sortOrder = entry.getKey();
-            List<IGuicePostStartup<?>> group = entry.getValue();
+            Future<CompositeFuture> sequentialFuture = Future.succeededFuture();
 
-            sequentialFuture = sequentialFuture.compose(ignored -> {
-                log.info("Executing group with sortOrder [{}]", sortOrder);
+            for (var entry : groupedStartups.entrySet()) {
+                int sortOrder = entry.getKey();
+                List<IGuicePostStartup<?>> group = entry.getValue();
 
-                // For each startup, collect all the futures, flatten, and execute them
-                List<Future<Boolean>> groupFutures = group.stream()
-                        .flatMap(startup -> {
-                            log.info("Starting Post Load [{}] - sortOrder [{}]", startup.getClass().getSimpleName(), sortOrder);
-                            return startup.postLoad().stream(); // Flatten the returned List<Future<Boolean>> into a single stream
-                        })
-                        .toList();
+                sequentialFuture = sequentialFuture.compose(ignored -> {
+                    Promise<CompositeFuture> promise = Promise.promise();
 
-                // Combine all Futures from the group and process them asynchronously
-                return Future.all(groupFutures)
-                        .onSuccess(res -> log.info("Completed group with sortOrder [{}]", sortOrder))
-                        .onFailure(err -> log.error("Error in group with sortOrder [{}]", sortOrder, err));
-            });
-        }
+                    vertx.runOnContext(v -> {
+                        log.info("Executing group with sortOrder [{}]", sortOrder);
 
-        // Handle the final outcome of the entire process
-        sequentialFuture.onComplete(res -> {
-            if (res.succeeded()) {
-                log.info("All Post Startup groups completed successfully.");
-            } else {
-                log.error("Failed in Post Startup execution", res.cause());
+                        List<Future<Boolean>> groupFutures = group.stream()
+                                .flatMap(startup -> {
+                                    log.info("Starting Post Load [{}] - sortOrder [{}]",
+                                            startup.getClass().getSimpleName(),
+                                            sortOrder);
+                                    return startup.postLoad().stream();
+                                })
+                                .toList();
+
+                        Future.all(groupFutures)
+                                .onSuccess(res -> {
+                                    log.info("Completed group with sortOrder [{}]", sortOrder);
+                                    promise.complete(res);
+                                })
+                                .onFailure(err -> {
+                                    log.error("Error in group with sortOrder [{}]", sortOrder, err);
+                                    promise.fail(err);
+                                });
+                    });
+
+                    return promise.future();
+                });
             }
-        });
-        return sequentialFuture;
+
+            return sequentialFuture;
+        }).compose(result -> result); // Flatten the nested Future
     }
     /**
      * Returns the Guice Config Instance
