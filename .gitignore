@@ -21,3 +21,4 @@ flatter.pom**/*.classpath
 /.idea/
 /.flattened-pom.xml
 /dependency-reduced-pom.xml
+/logs/
