@@ -10,12 +10,6 @@ import com.guicedee.guicedinjection.GuiceContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-
-
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * @author GedMarc
  */

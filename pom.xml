@@ -134,10 +134,10 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
-   <!--     <dependency>
-            <groupId>jakarta.inject</groupId>
-            <artifactId>jakarta.inject-api</artifactId>
-        </dependency>-->
+        <!--     <dependency>
+                 <groupId>jakarta.inject</groupId>
+                 <artifactId>jakarta.inject-api</artifactId>
+             </dependency>-->
 
         <dependency>
             <groupId>com.guicedee.services</groupId>
@@ -145,7 +145,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.guicedee.services</groupId>
+            <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
 

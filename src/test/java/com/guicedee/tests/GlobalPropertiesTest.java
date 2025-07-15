@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.TreeMap;
-import java.util.logging.Level;
 
 /**
  * @author bpmm097

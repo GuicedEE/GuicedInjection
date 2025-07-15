@@ -5,12 +5,11 @@ import com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
 import com.guicedee.guicedinjection.interfaces.IJobService;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.java.Log;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
-import java.util.logging.Level;
 
 
 /**
@@ -18,22 +17,22 @@ import java.util.logging.Level;
  */
 
 @Singleton
-@Log
+@Log4j2
 public class JobService implements IGuicePreDestroy<JobService>, IJobService
 {
 	private final Map<String, ExecutorService> serviceMap = new ConcurrentHashMap<>();
 	private final Map<String, ScheduledExecutorService> pollingMap = new ConcurrentHashMap<>();
 	private final Map<String, Integer> maxQueueCount = new ConcurrentHashMap<>();
-	
+
 	private final ExecutorServiceSupplier executorServiceSupplier = new ExecutorServiceSupplier();
-	
+
 	@Getter
 	@Setter
 	private static long defaultWaitTime = 120;
 	@Getter
 	@Setter
 	private static TimeUnit defaultWaitUnit = TimeUnit.SECONDS;
-	
+
 	public static final JobService INSTANCE = new JobService();
 
 	private static final ThreadFactory factory = Thread.ofVirtual().factory();
@@ -42,12 +41,12 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	{
 		INSTANCE.jobCleanup();
 	}
-	
+
 	public JobService()
 	{
 		//No config required
 	}
-	
+
 	/**
 	 * Gets a list of all job pools currently registered
 	 *
@@ -58,7 +57,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	{
 		return serviceMap.keySet();
 	}
-	
+
 	/**
 	 * Returns the list of repeating task pools registered
 	 *
@@ -69,7 +68,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	{
 		return pollingMap.keySet();
 	}
-	
+
 	/**
 	 * Completes and Removes all jobs running from the given pool
 	 *
@@ -81,7 +80,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		ExecutorService es = serviceMap.get(pool);
 		if (es == null)
 		{
-			log.warning("Pool " + pool + " was not registered");
+			log.warn("Pool " + pool + " was not registered");
 			return null;
 		}
 		waitForJob(pool);
@@ -99,14 +98,14 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		ExecutorService es = serviceMap.get(pool);
 		if (es == null)
 		{
-			log.warning("Pool " + pool + " was not registered");
+			log.warn("Pool " + pool + " was not registered");
 			return null;
 		}
 		waitForJob(pool,1L,TimeUnit.MILLISECONDS);
 		serviceMap.remove(pool);
 		return es;
 	}
-	
+
 	/**
 	 * Completes and Removes all jobs running from the given pool
 	 *
@@ -118,14 +117,14 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		ScheduledExecutorService es = pollingMap.get(pool);
 		if (es == null)
 		{
-			log.warning("Repeating Pool " + pool + " was not registered");
+			log.warn("Repeating Pool " + pool + " was not registered");
 			return null;
 		}
 		waitForJob(pool);
 		pollingMap.remove(pool);
 		return es;
 	}
-	
+
 	/**
 	 * Registers a new job pool with a specific service
 	 *
@@ -155,10 +154,10 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 			executor.setKeepAliveTime(defaultWaitTime, defaultWaitUnit);
 			executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
 		}
-		
+
 		return executorService;
 	}
-	
+
 	/**
 	 * Registers a repeating task to be registered and monitored
 	 *
@@ -175,7 +174,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		pollingMap.put(name, executorService);
 		return executorService;
 	}
-	
+
 	/**
 	 * Adds a static run once job to the monitored collections
 	 *
@@ -193,18 +192,18 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		{
 			registerJobPool(jobPoolName, executorServiceSupplier.get());
 		}
-		
+
 		ExecutorService service = serviceMap.get(jobPoolName);
 		if (getCurrentTaskCount(service) >= maxQueueCount.get(jobPoolName))
 		{
-			log.log(Level.FINER, maxQueueCount + " Hit - Finishing before next run");
+			log.debug(maxQueueCount + " Hit - Finishing before next run");
 			removeJob(jobPoolName);
 			service = registerJobPool(jobPoolName, executorServiceSupplier.get());
 		}
 		service.execute(thread);
 		return service;
 	}
-	
+
 	/**
 	 * Adds a static run once job to the monitored collections
 	 *
@@ -222,23 +221,23 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		{
 			registerJobPool(jobPoolName, executorServiceSupplier.get());
 		}
-		
+
 		ExecutorService service = serviceMap.get(jobPoolName);
 		if (getCurrentTaskCount(service) >= maxQueueCount.get(jobPoolName))
 		{
-			log.log(Level.FINER, maxQueueCount + " Hit - Finishing before next run");
+			log.debug(maxQueueCount + " Hit - Finishing before next run");
 			removeJob(jobPoolName);
 			service = registerJobPool(jobPoolName, executorServiceSupplier.get());
 		}
 		return service.submit(thread);
 	}
-	
+
 	@Override
 	public void waitForJob(String jobName)
 	{
 		waitForJob(jobName, defaultWaitTime, defaultWaitUnit);
 	}
-	
+
 	@Override
 	public void waitForJob(String jobName, long timeout, TimeUnit unit)
 	{
@@ -254,7 +253,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		}
 		catch (InterruptedException e)
 		{
-			log.log(Level.WARNING, "Thread didn't close cleanly, make sure running times are acceptable", e);
+			log.warn("Thread didn't close cleanly, make sure running times are acceptable", e);
 			service.shutdownNow();
 		}
 		if (!service.isTerminated())
@@ -263,7 +262,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		}
 		service.close();
 	}
-	
+
 	private ExecutorService jobCleanup()
 	{
 		ScheduledExecutorService jobsShutdownNotClosed = addPollingJob("JobsShutdownNotClosed", () -> {
@@ -272,21 +271,21 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 				ExecutorService executorService = serviceMap.get(jobPool);
 				if (executorService.isShutdown() && !executorService.isTerminated())
 				{
-					log.fine("Closing unfinished job - " + jobPool);
+					log.debug("Closing unfinished job - " + jobPool);
 					removeJob(jobPool);
 				}
 				if (executorService.isShutdown() && executorService.isTerminated())
 				{
-					log.fine("Cleaning terminated job - " + jobPool);
+					log.debug("Cleaning terminated job - " + jobPool);
 					executorService.close();
 					serviceMap.remove(jobPool);
 				}
 			}
 		}, 2, TimeUnit.MINUTES);
-		
+
 		return jobsShutdownNotClosed;
 	}
-	
+
 	/**
 	 * Adds a static run once job to the monitored collections
 	 *
@@ -309,7 +308,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		service.scheduleAtFixedRate(thread, 1L, delay, unit);
 		return service;
 	}
-	
+
 	/**
 	 * Adds a static run once job to the monitored collections
 	 *
@@ -332,25 +331,25 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		scheduledExecutorService.scheduleAtFixedRate(thread, initialDelay, delay, unit);
 		return scheduledExecutorService;
 	}
-	
+
 	/**
 	 * Shutdowns
 	 */
 	@Override
 	public void destroy()
 	{
-		log.config("Destroying all running jobs...");
+		log.info("Destroying all running jobs...");
 		serviceMap.forEach((key, value) -> {
-			log.config("Shutting Down [" + key + "]");
+			log.info("Shutting Down [" + key + "]");
 			removeJob(key);
 		});
 		pollingMap.forEach((key, value) -> {
-			log.config("Shutting Down Poll Job [" + key + "]");
+			log.info("Shutting Down Poll Job [" + key + "]");
 			removePollingJob(key);
 		});
-		log.config("All jobs destroyed");
+		log.info("All jobs destroyed");
 	}
-	
+
 	private int getCurrentTaskCount(ExecutorService service)
 	{
 		if (service instanceof ForkJoinPool)
@@ -365,23 +364,23 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		}
 		return 0;
 	}
-	
+
 	public void setMaxQueueCount(String queueName, int queueCount)
 	{
 		maxQueueCount.put(queueName, queueCount);
 	}
-	
+
 	@Override
 	public void onDestroy()
 	{
 		destroy();
 	}
-	
+
 	@Override
 	public Integer sortOrder()
 	{
 		return Integer.MIN_VALUE + 8;
 	}
-	
-	
+
+
 }

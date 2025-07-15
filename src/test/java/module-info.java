@@ -1,5 +1,5 @@
 module guice.injection.tests {
-	requires com.guicedee.guicedinjection;
+	requires transitive com.guicedee.guicedinjection;
 	
 	requires static lombok;
 	

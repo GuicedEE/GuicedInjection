@@ -706,11 +706,16 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     private Map<String, ResourceList.ByteArrayConsumer> quickScanFiles() {
         Map<String, ResourceList.ByteArrayConsumer> fileScans = new HashMap<>();
         Set<IFileContentsScanner> fileScanners = getLoader(IFileContentsScanner.class, true, ServiceLoader.load(IFileContentsScanner.class));
-        for (IFileContentsScanner fileScanner : fileScanners) {
-            log.debug("Loading IFileContentsScanner - {}", fileScanner
-                    .getClass()
-                    .getCanonicalName());
-            fileScans.putAll(fileScanner.onMatch());
+
+        try {
+            for (IFileContentsScanner fileScanner : fileScanners) {
+                log.debug("Loading IFileContentsScanner - {}", fileScanner
+                        .getClass()
+                        .getCanonicalName());
+                fileScans.putAll(fileScanner.onMatch());
+            }
+        } catch (Throwable e) {
+            log.error("Exception scanning for files : {}", e.getMessage(), e);
         }
         return fileScans;
     }

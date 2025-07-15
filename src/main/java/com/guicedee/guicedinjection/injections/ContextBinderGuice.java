@@ -5,22 +5,19 @@ import com.google.inject.Singleton;
 import com.google.inject.matcher.Matchers;
 import com.guicedee.guicedinjection.GuiceConfig;
 import com.guicedee.guicedinjection.GuiceContext;
-
 import com.guicedee.guicedinjection.JobService;
-import com.guicedee.guicedinjection.interfaces.*;
+import com.guicedee.guicedinjection.interfaces.IGuiceModule;
+import com.guicedee.guicedinjection.interfaces.IJobService;
 import com.guicedee.guicedinjection.logging.Log4JTypeListener;
 import com.guicedee.guicedinjection.properties.GlobalProperties;
 import io.github.classgraph.ScanResult;
-import lombok.extern.java.Log;
-
-
-import java.util.logging.Logger;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Binds the basic objects for the Guice Context to be injected everywhere
  */
 @SuppressWarnings("unused")
-@Log
+@Log4j2
 public class ContextBinderGuice
         extends AbstractModule
         implements IGuiceModule<ContextBinderGuice> {
@@ -30,21 +27,21 @@ public class ContextBinderGuice
 
     @Override
     public void configure() {
-        ContextBinderGuice.log.fine("Bound GuiceConfig.class");
+        ContextBinderGuice.log.debug("Bound GuiceConfig.class");
         bind(GuiceConfig.class)
                 .toProvider(() -> GuiceContext.instance().getConfig());
 
-        ContextBinderGuice.log.fine("Bound GlobalProperties.class");
+        ContextBinderGuice.log.debug("Bound GlobalProperties.class");
         bind(GlobalProperties.class)
                 .asEagerSingleton();
 
-        ContextBinderGuice.log.fine("Bound ScanResult.class");
+        ContextBinderGuice.log.debug("Bound ScanResult.class");
         bind(ScanResult.class)
                 .toProvider(() -> GuiceContext.instance()
                         .getScanResult())
                 .in(Singleton.class);
 
-        ContextBinderGuice.log.fine("Bound JobService.class");
+        ContextBinderGuice.log.debug("Bound JobService.class");
 	    bind(IJobService.class)
 			    .toInstance(JobService.INSTANCE);
         bind(JobService.class)

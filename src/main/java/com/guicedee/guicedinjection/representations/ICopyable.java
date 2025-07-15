@@ -5,16 +5,16 @@ import com.google.inject.Key;
 import com.google.inject.name.Names;
 import com.guicedee.client.*;
 import com.guicedee.guicedinjection.GuiceContext;
-import lombok.extern.java.Log;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public interface ICopyable<J>
 {
+	Logger log = LogManager.getLogger("ICopyable");
 	default J updateNonNullField(J source)
 	{
 		Map<String, Field> trg = asMap(getClass().getDeclaredFields());
@@ -41,7 +41,7 @@ public interface ICopyable<J>
 		}
 		return (J) this;
 	}
-	
+
 	default Map<String, Field> asMap(Field[] fields)
 	{
 		Map<String, Field> m = new HashMap<>();
@@ -56,7 +56,7 @@ public interface ICopyable<J>
 		}
 		return m;
 	}
-	
+
 	/**
 	 * Performs a deep copy based on any jackson specifications
 	 *
@@ -73,7 +73,7 @@ public interface ICopyable<J>
 			objectReader.readValue(jsonFromSource);
 		} catch (IOException e)
 		{
-			Logger.getLogger("ICopyable").log(Level.SEVERE, "Cannot write or read source/destination", e);
+			log.error("Cannot write or read source/destination", e);
 		}
 		return (J) this;
 	}

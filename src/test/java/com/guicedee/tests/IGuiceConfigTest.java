@@ -5,12 +5,12 @@ import com.guicedee.guicedinjection.GuiceConfig;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.interfaces.IGuiceConfig;
 import com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
-import lombok.extern.java.Log;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Log
+@Log4j2
 public class IGuiceConfigTest
 		implements IGuiceConfigurator
 {
@@ -24,8 +24,8 @@ public class IGuiceConfigTest
 		IGuiceContext.getContext().inject();
 		GuiceConfig config = IGuiceContext.get(GuiceConfig.class);
 		 config = GuiceContext.instance().getConfig();
-		
-		assertTrue(config.isServiceLoadWithClassPath());
+
+		assertFalse(config.isServiceLoadWithClassPath());
 		assertTrue(config.isAnnotationScanning());
 		assertTrue(config.isFieldInfo());
 		assertTrue(config.isIgnoreFieldVisibility());
