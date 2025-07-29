@@ -816,6 +816,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
                         List<Future<Boolean>> groupFutures = group.stream()
                                 .flatMap(startup -> {
+                                    IGuiceContext.instance().inject().injectMembers(startup);
                                     log.info("Starting Post Load [{}] - sortOrder [{}]",
                                             startup.getClass().getSimpleName(),
                                             sortOrder);
