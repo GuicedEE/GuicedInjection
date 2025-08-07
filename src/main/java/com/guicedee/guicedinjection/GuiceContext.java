@@ -19,6 +19,7 @@ package com.guicedee.guicedinjection;
 import com.google.common.base.Stopwatch;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.guicedee.client.CallScopeProperties;
 import com.guicedee.client.CallScopeSource;
 import com.guicedee.client.CallScoper;
@@ -118,7 +119,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             PatternLayout layout = PatternLayout.newBuilder()
                     .withDisableAnsi(false)
                     .withNoConsoleNoAnsi(true)
-                    .withPattern("%highlight{[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%c] [%t] [%-5level] - [%msg]}%n")
+                    .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%c] [%t] [%-5level] - [%msg]%n")
                     .build();
 
             // Create the Stdout appender for DEBUG, INFO, TRACE
@@ -217,7 +218,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
     public Injector inject() {
         if (GuiceContext.buildingInjector) {
-            log.error("The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.");
+            log.error("💥 The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.");
             new IllegalStateException("The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.").printStackTrace();
             System.exit(1);
         }
@@ -225,7 +226,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             try {
                 GuiceContext.buildingInjector = true;
                 LocalDateTime start = LocalDateTime.now();
-                log.info("Starting up Guice Context");
+                log.info("🚀 Starting up Guice Context and initializing dependency injection framework");
                 GuiceContext
                         .instance()
                         .loadConfiguration();
@@ -245,21 +246,29 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         .loadPreStartups();
 
                 List<com.google.inject.Module> cModules = new ArrayList<>(modules);
-                Set iGuiceModules = GuiceContext
+                Set<? extends IGuiceModule> iGuiceModules = GuiceContext
                         .instance()
                         .loadIGuiceModules();
-                cModules.addAll(iGuiceModules);
+                cModules.addAll(iGuiceModules.stream().filter(a->a.enabled()).toList());
 
                 //cModules.add(new GuiceInjectorModule());
-                log.debug("Modules - {}", Arrays.toString(cModules.toArray()));
+                log.debug("📋 Dependency injection modules prepared for initialization: {} modules", cModules.size());
+                if (log.isTraceEnabled()) {
+                    log.trace("🔍 Detailed module list: {}", Arrays.toString(cModules.toArray()));
+                }
+                
+                log.info("🔧 Creating Guice injector with {} modules", cModules.size());
                 GuiceContext.instance().injector = Guice.createInjector(cModules);
+                log.debug("✅ Guice injector created successfully");
                 GuiceContext.buildingInjector = false;
                 GuiceContext.instance()
                         .loadPreDestroyServices();
+                log.debug("🛡️ Pre-destroy services registered for shutdown handling");
                 GuiceContext.instance()
                         .loadPostStartups().onComplete((handler) -> {
                             LocalDateTime end = LocalDateTime.now();
-                            log.info("System started in {}ms", ChronoUnit.MILLIS.between(start, end));
+                            log.info("🎉 Dependency injection system initialized successfully in {}ms - All services loaded and ready", 
+                                    ChronoUnit.MILLIS.between(start, end));
                             loadingFinished.complete(null);
                         });
                 Runtime
@@ -272,7 +281,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         });
 
             } catch (Throwable e) {
-                log.error("Exception creating Injector : {}", e.getMessage(), e);
+                log.error("💥 Critical failure during dependency injection system initialization: {}", e.getMessage(), e);
                 throw new RuntimeException("Unable to boot Guice Injector", e);
             }
         }
@@ -281,32 +290,55 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Execute on Destroy
+     * Execute on Destroy - Performs cleanup operations when the application is shutting down
      */
     @SuppressWarnings("unused")
     public void destroy() {
+        log.info("🛑 Starting Guice Context shutdown and resource cleanup");
+        Stopwatch shutdownStopwatch = Stopwatch.createStarted();
+        
         try {
-            for (IGuicePreDestroy destroyer : loadPreDestroyServices()) {
+            Set<IGuicePreDestroy> destroyers = loadPreDestroyServices();
+            log.debug("🗑️ Executing {} pre-destroy services for cleanup", destroyers.size());
+            
+            int successCount = 0;
+            int failureCount = 0;
+            
+            for (IGuicePreDestroy destroyer : destroyers) {
+                String destroyerName = destroyer.getClass().getCanonicalName();
+                log.debug("🗑️ Running pre-destroy service: {}", destroyerName);
+                
                 try {
                     destroyer.onDestroy();
+                    successCount++;
+                    log.debug("✅ Successfully executed pre-destroy service: {}", destroyerName);
                 } catch (Throwable T) {
-                    log.error("Could not run destroyer [{}]", destroyer
-                            .getClass()
-                            .getCanonicalName());
+                    failureCount++;
+                    log.error("❌ Failed to run destroyer '{}': {}", destroyerName, T.getMessage(), T);
                 }
             }
+            
+            log.info("📊 Pre-destroy services execution completed - Success: {}, Failed: {}", 
+                    successCount, failureCount);
+            
         } catch (Throwable T) {
-            log.error("Could not run destroyers", T);
+            log.error("💥 Failed to run destroyers: {}", T.getMessage(), T);
         }
+        
+        log.debug("🧹 Cleaning up scanner resources");
         if (GuiceContext.instance().scanResult != null) {
             GuiceContext.instance().scanResult.close();
+            log.debug("✅ Scan result resources released");
         }
-        if (GuiceContext.instance().scanResult != null) {
-            GuiceContext.instance().scanResult.close();
-        }
+        
+        // Clear all references
         GuiceContext.instance().scanResult = null;
         GuiceContext.instance().scanner = null;
         GuiceContext.instance().injector = null;
+        
+        shutdownStopwatch.stop();
+        log.info("🎉 Guice Context shutdown completed in {}ms", 
+                shutdownStopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
     /**
@@ -368,18 +400,50 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      */
     private void loadConfiguration() {
         if (!configured) {
+            log.info("🚀 Initializing Guice configuration");
+            Stopwatch configStopwatch = Stopwatch.createStarted();
+            
+            // Load all configurators
             Set<IGuiceConfigurator> guiceConfigurators = loadIGuiceConfigs();
+            log.debug("📋 Found {} IGuiceConfigurator implementations", guiceConfigurators.size());
+            
+            if (log.isTraceEnabled()) {
+                log.trace("🔍 Configuration initialization starting with default settings: {}", 
+                        GuiceContext.config.toString());
+            }
+            
+            // Apply each configurator
+            int configCount = 0;
             for (IGuiceConfigurator guiceConfigurator : guiceConfigurators) {
-                log.debug("Loading IGuiceConfigurator - {}", guiceConfigurator
-                        .getClass()
-                        .getCanonicalName());
-                guiceConfigurator.configure(GuiceContext.config);
+                String configuratorName = guiceConfigurator.getClass().getCanonicalName();
+                log.debug("🔧 Applying configurator [{}]", configuratorName);
+                
+                try {
+                    guiceConfigurator.configure(GuiceContext.config);
+                    configCount++;
+                    
+                    if (log.isTraceEnabled()) {
+                        log.trace("✅ Successfully applied configurator: {}", configuratorName);
+                    }
+                } catch (Exception e) {
+                    log.error("❌ Failed to apply configurator '{}': {}", configuratorName, e.getMessage(), e);
+                }
             }
+            
+            // Performance warning for unrestricted scanning
             if (!GuiceContext.config.isIncludeModuleAndJars()) {
-                log.warn("Scanning is not restricted to modules and may incur a performance impact. Consider registering your module with GuiceContext.registerModule() to auto enable, or SPI IGuiceConfiguration");
+                log.warn("⚠️ Scanning is not restricted to modules and may incur a performance impact. Consider registering your module with GuiceContext.registerModule() to auto enable, or SPI IGuiceConfiguration");
             }
-            log.debug("IGuiceConfigurator  : {}", GuiceContext.config.toString());
+            
+            // Log final configuration
+            configStopwatch.stop();
+            log.info("✅ Guice configuration completed in {}ms with {} configurators applied", 
+                    configStopwatch.elapsed(TimeUnit.MILLISECONDS), configCount);
+            log.debug("📝 Final configuration: {}", GuiceContext.config.toString());
+            
             configured = true;
+        } else {
+            log.debug("📋 Using existing Guice configuration");
         }
     }
 
@@ -434,47 +498,103 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      */
     private void loadScanner() {
         if (scanner == null) {
+            log.info("🚀 Initializing ClassGraph scanner for dependency discovery");
             scanner = new ClassGraph();
             Stopwatch stopwatch = Stopwatch.createStarted();
-            log.debug("Loading Classpath Scanner");
+            log.debug("📋 Loading classpath scanner configuration");
             loadConfiguration();
+            
+            // Configure the scanner with appropriate settings
+            log.debug("🔧 Configuring scanner with inclusion/exclusion rules");
             scanner = configureScanner(scanner);
+            
             try {
+                // Start the actual scanning process
+                log.debug("🔍 Beginning classpath scan" + (async ? " with parallel processing" : ""));
                 if (async) {
-                    scanResult = scanner.scan(Runtime
-                            .getRuntime()
-                            .availableProcessors());
+                    int processors = Runtime.getRuntime().availableProcessors();
+                    log.debug("📊 Using {} processor threads for parallel scanning", processors);
+                    scanResult = scanner.scan(processors);
                 } else {
                     scanResult = scanner.scan();
                 }
+                
+                // Log scan completion
                 stopwatch.stop();
-                log.info("Scan took [{}] millis.", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                long scanTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+                log.info("✅ Classpath scan completed successfully in {}ms", scanTime);
+                if (log.isTraceEnabled()) {
+                    log.trace("🔍 Scan details - Async: {}, Thread count: {}", 
+                            async, async ? Runtime.getRuntime().availableProcessors() : 1);
+                }
+                
+                // Process file scans
                 stopwatch.reset();
+                stopwatch.start();
+                log.debug("📋 Processing file-based resources from scan results");
+                
                 Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
-                fileScans.forEach((key, value) -> scanResult
-                        .getResourcesWithLeafName(key)
-                        .forEachByteArrayIgnoringIOException(value));
-                quickScanFilesPattern().forEach((key, value) -> scanResult
-                        .getResourcesMatchingPattern(key)
-                        .forEachByteArrayIgnoringIOException(value));
-                log.debug("Byte Scanners took [{}] millis.", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                int resourceCount = 0;
+                
+                for (String key : fileScans.keySet()) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("🔍 Processing resources with name: {}", key);
+                    }
+                    scanResult.getResourcesWithLeafName(key)
+                            .forEachByteArrayIgnoringIOException(fileScans.get(key));
+                    resourceCount++;
+                }
+                
+                // Process pattern-based scans
+                log.debug("🔍 Processing pattern-matched resources from scan results");
+                Map<Pattern, ResourceList.ByteArrayConsumer> patternScans = quickScanFilesPattern();
+                int patternCount = 0;
+                
+                for (Pattern pattern : patternScans.keySet()) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("🔍 Processing resources matching pattern: {}", pattern.pattern());
+                    }
+                    scanResult.getResourcesMatchingPattern(pattern)
+                            .forEachByteArrayIgnoringIOException(patternScans.get(pattern));
+                    patternCount++;
+                }
+                
+                stopwatch.stop();
+                log.debug("📊 Resource processing completed - Processed {} named resources and {} pattern-matched resources in {}ms", 
+                        resourceCount, patternCount, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                
             } catch (Exception mpe) {
-                log.error("Unable to run scanner", mpe);
+                log.error("❌ Failed to run scanner: {}", mpe.getMessage(), mpe);
+                log.debug("🔍 Scanner failure context - Async: {}, Config: {}", 
+                        async, GuiceContext.config.toString());
             }
-            log.trace("Loaded Classpath Scanner - Took [{}] millis.", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            
+            if (log.isTraceEnabled()) {
+                log.trace("📋 ClassGraph scanner initialization complete");
+            }
+        } else {
+            log.debug("📋 Using existing ClassGraph scanner instance");
         }
     }
 
     /**
-     * Configures the scanner from its setup
+     * Configures the scanner from its setup with all inclusion/exclusion rules
+     * and scanning options based on the GuiceContext configuration
      *
      * @param graph The ClassGraph to apply the configuration to
      */
     private ClassGraph configureScanner(ClassGraph graph) {
+        log.debug("🔧 Beginning ClassGraph scanner configuration");
+        int configurationCount = 0;
         if (config.isAllowPaths()) {
             String[] paths = getPathsList();
             if (paths.length != 0) {
+                log.debug("🔍 Configuring accepted paths: {} paths", paths.length);
                 graph = graph.acceptPaths(paths);
+                configurationCount++;
+                if (log.isTraceEnabled()) {
+                    log.trace("📋 Accepted paths: {}", Arrays.toString(paths));
+                }
             }
         }
         if (GuiceContext.config.isExcludePaths()) {
@@ -715,7 +835,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 fileScans.putAll(fileScanner.onMatch());
             }
         } catch (Throwable e) {
-            log.error("Exception scanning for files : {}", e.getMessage(), e);
+            log.error("❌ Failed to scan for files: {}", e.getMessage(), e);
         }
         return fileScans;
     }
@@ -785,11 +905,14 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Method loadPostStartups ...
+     * Method loadPostStartups initializes and executes post-startup services
+     * in order of their priority (sortOrder)
      */
     private Future<CompositeFuture> loadPostStartups() {
         var vertx = VertXPreStartup.getVertx();
-
+        log.info("🚀 Initializing post-startup services");
+        Stopwatch totalStopwatch = Stopwatch.createStarted();
+        
         return vertx.executeBlocking(() -> {
             Set<IGuicePostStartup<?>> startupSet = loadPostStartupServices().stream()
                     .map(a -> (IGuicePostStartup<?>) a)
@@ -812,12 +935,12 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     Promise<CompositeFuture> promise = Promise.promise();
 
                     vertx.runOnContext(v -> {
-                        log.debug("Executing group with sortOrder [{}]", sortOrder);
+                        log.debug("⏳ Executing post-startup group with priority [{}] - {} services", sortOrder, group.size());
 
                         List<Future<Boolean>> groupFutures = group.stream()
                                 .flatMap(startup -> {
                                     IGuiceContext.instance().inject().injectMembers(startup);
-                                    log.info("Starting Post Load [{}] - sortOrder [{}]",
+                                    log.info("🚀 Starting Post Load [{}] - sortOrder [{}]",
                                             startup.getClass().getSimpleName(),
                                             sortOrder);
                                     /*CallScoper callScoper = IGuiceContext.get(CallScoper.class);
@@ -834,11 +957,11 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
                         Future.all(groupFutures)
                                 .onSuccess(res -> {
-                                    log.debug("Completed group with sortOrder [{}]", sortOrder);
+                                    log.debug("✅ Post-startup group with priority [{}] completed successfully", sortOrder);
                                     promise.complete(res);
                                 })
                                 .onFailure(err -> {
-                                    log.error("Error in group with sortOrder [{}]", sortOrder, err);
+                                    log.error("❌ Error in post-startup group with priority [{}]: {}", sortOrder, err.getMessage(), err);
                                     promise.fail(err);
                                 });
                     });
@@ -848,8 +971,14 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             }
 
             // Ensure the call scope is properly exited after all post-startups have completed
+            totalStopwatch.stop();
+            log.info("🎉 Post-startup initialization setup completed in {}ms", 
+                    totalStopwatch.elapsed(TimeUnit.MILLISECONDS));
             return sequentialFuture;
-        }).compose(result -> result); // Flatten the nested Future
+        }).compose(result -> {
+            log.info("🎉 All post-startup services completed execution");
+            return result;
+        }); // Flatten the nested Future
     }
 
     /**
@@ -941,23 +1070,88 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      * Method loadPreStartups gets the pre startups and loads them up
      */
     private void loadPreStartups() {
-        var preStartups = loadPreStartupServices();
+        log.info("🚀 Initializing pre-startup services");
+        Stopwatch totalStopwatch = Stopwatch.createStarted();
+        
+        // Load all pre-startup services
+        Set<IGuicePreStartup<?>>  preStartups = (Set)loadPreStartupServices();
+        log.debug("📋 Found {} pre-startup service implementations", preStartups.size());
+        
+        if (preStartups.isEmpty()) {
+            log.debug("ℹ️ No pre-startup services found, skipping initialization phase");
+            return;
+        }
+        
+        // Group pre-startups by sort order for sequential execution
+           Map<Integer, List<IGuicePreStartup<?>>> groupedStartups = preStartups.stream()
+                .collect(Collectors.groupingBy(IGuicePreStartup::sortOrder, TreeMap::new, Collectors.toList()));
 
-        preStartups.stream()
-                .collect(Collectors.groupingBy(IGuicePreStartup::sortOrder, TreeMap::new, Collectors.toList())) // Use TreeMap for natural key ordering
-                .forEach((key, value) -> {
-                    List<Future<Boolean>> groupFutures = new ArrayList<>();
-                    for (IGuicePreStartup<?> iGuicePreStartup : value) {
-                        log.info("Loading IGuicePreStartup - {} - Start Order [{}]",
-                                iGuicePreStartup.getClass().getSimpleName(), key);
-                        groupFutures.addAll(iGuicePreStartup.onStartup());
+        
+        log.debug("🔢 Pre-startup services grouped into {} priority levels", groupedStartups.size());
+        
+        if (log.isTraceEnabled()) {
+            groupedStartups.forEach((order, services) -> 
+                log.trace("🔍 Priority level [{}] has {} services", order, services.size()));
+        }
+        
+        // Execute each group in order
+        int successCount = 0;
+        int failureCount = 0;
+        
+        for (Map.Entry<Integer, List<IGuicePreStartup<?>>> entry : groupedStartups.entrySet()) {
+            Integer key = entry.getKey();
+            List<IGuicePreStartup<?>> value = entry.getValue();
+            
+            log.info("🔄 Executing pre-startup group with priority [{}] - {} services", key, value.size());
+            Stopwatch groupStopwatch = Stopwatch.createStarted();
+            
+            List<Future<Boolean>> groupFutures = new ArrayList<>();
+            for (IGuicePreStartup<?> iGuicePreStartup : value) {
+                String serviceName = iGuicePreStartup.getClass().getSimpleName();
+                log.info("🚀 Starting pre-startup service [{}] with priority [{}]", serviceName, key);
+                
+                try {
+                    List<Future<Boolean>> serviceFutures = iGuicePreStartup.onStartup();
+                    groupFutures.addAll(serviceFutures);
+                    
+                    if (log.isTraceEnabled()) {
+                        log.trace("📊 Service [{}] returned {} futures to await", 
+                                serviceName, serviceFutures.size());
                     }
-                    try {
-                        Future.all(groupFutures).await(10, TimeUnit.SECONDS);
-                    } catch (TimeoutException e) {
-                        log.error("Startup Timeout on group - [" + key + "]", e);
-                    }
-                });
+                } catch (Exception e) {
+                    log.error("❌ Failed to execute pre-startup service [{}]: {}", 
+                            serviceName, e.getMessage(), e);
+                    failureCount++;
+                }
+            }
+            
+            // Wait for all futures in this group to complete
+            try {
+                log.debug("⏳ Waiting for {} futures in priority group [{}]", groupFutures.size(), key);
+                Future<CompositeFuture> compositeFuture = Future.all(groupFutures);
+                compositeFuture.await(10, TimeUnit.SECONDS);
+                
+                if (compositeFuture.succeeded()) {
+                    successCount += groupFutures.size();
+                    groupStopwatch.stop();
+                    log.info("✅ Pre-startup group [{}] completed successfully in {}ms", 
+                            key, groupStopwatch.elapsed(TimeUnit.MILLISECONDS));
+                } else {
+                    failureCount += (groupFutures.size() - successCount);
+                    log.warn("⚠️ Some pre-startup operations in group [{}] failed: {}", 
+                            key, compositeFuture.cause().getMessage());
+                }
+            } catch (TimeoutException e) {
+                failureCount += (groupFutures.size() - successCount);
+                log.error("⏱️ Timeout waiting for pre-startup group [{}] after 10 seconds: {}", 
+                        key, e.getMessage(), e);
+            }
+        }
+        
+        // Log summary
+        totalStopwatch.stop();
+        log.info("🎉 Pre-startup initialization completed in {}ms - Success: {}, Failed: {}", 
+                totalStopwatch.elapsed(TimeUnit.MILLISECONDS), successCount, failureCount);
     }
 
     /**
