@@ -56,6 +56,7 @@ import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuild
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 import org.apache.logging.log4j.core.filter.ThresholdFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.core.layout.JsonLayout;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -82,6 +83,12 @@ import static com.guicedee.guicedinjection.properties.GlobalProperties.getSystem
 @SuppressWarnings("MissingClassJavaDoc")
 public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     private static Logger log;
+    /**
+     * Default/root logging level used for the Log4j2 root logger. Can be overridden statically via
+     * {@link #setDefaultLogLevel(org.apache.logging.log4j.Level)} or {@link #setDefaultLogLevel(String)}
+     * before GuiceContext is initialized. Changing it at runtime will immediately update the root logger level.
+     */
+    private static volatile Level defaultLogLevel = Level.INFO;
 
     static {
         try {
@@ -91,11 +98,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             LoggerContext context = (LoggerContext) LogManager.getContext(false); // Don't reinitialize
             Configuration config = context.getConfiguration();
 
-
             config.getRootLogger().removeAppender("Console");
             config.getRootLogger().removeAppender("DefaultConsole");
             config.getRootLogger().removeAppender("DefaultConsole-2");
-            //config.get
 
             Configurator.setLevel("bitronix.tm", org.apache.logging.log4j.Level.INFO);
             Configurator.setLevel("org.apache.logging.log4j.jul", Level.ERROR);
@@ -113,44 +118,38 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             Configurator.setLevel("jdk.event.security", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("org.apache.commons.beanutils", org.apache.logging.log4j.Level.ERROR);
 
-            config.getRootLogger().setLevel(Level.INFO);
+            // Apply the configured default root logging level
+            config.getRootLogger().setLevel(defaultLogLevel);
 
-            // Create a PatternLayout for the appenders
-            PatternLayout layout = PatternLayout.newBuilder()
-                    .withDisableAnsi(false)
-                    .withNoConsoleNoAnsi(true)
-                    .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%c] [%t] [%-5level] - [%msg]%n")
-                    .build();
+            // Build default layout using CURRENT style
+            org.apache.logging.log4j.core.Layout<?> layout = buildConsoleLayout(ConsoleLayoutOption.CURRENT, config);
 
             // Create the Stdout appender for DEBUG, INFO, TRACE
             ConsoleAppender stdoutAppender = ConsoleAppender.newBuilder()
                     .setName("Stdout")
                     .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
-                    .setLayout(layout)
+                    .setLayout((org.apache.logging.log4j.core.Layout<?>) layout)
                     .setFilter(ThresholdFilter.createFilter(Level.DEBUG, Filter.Result.ACCEPT, Filter.Result.DENY))
                     .build();
-            stdoutAppender.start(); // Start the appender
+            stdoutAppender.start();
 
             // Create the Stderr appender for WARN, ERROR, FATAL
             ConsoleAppender stderrAppender = ConsoleAppender.newBuilder()
                     .setName("Stderr")
                     .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
-                    .setLayout(layout)
+                    .setLayout((org.apache.logging.log4j.core.Layout<?>) layout)
                     .setFilter(ThresholdFilter.createFilter(org.apache.logging.log4j.Level.WARN, Filter.Result.ACCEPT, Filter.Result.DENY))
                     .build();
-            stderrAppender.start(); // Start the appender
+            stderrAppender.start();
 
             // Add appenders to the existing configuration
             config.addAppender(stdoutAppender);
             config.addAppender(stderrAppender);
 
             // Associate the appenders with the root logger
-            AppenderRef stdoutRef = AppenderRef.createAppenderRef("Stdout", org.apache.logging.log4j.Level.DEBUG, null);
-            AppenderRef stderrRef = AppenderRef.createAppenderRef("Stderr", org.apache.logging.log4j.Level.WARN, null);
-
             LoggerConfig rootLoggerConfig = config.getRootLogger();
-            rootLoggerConfig.addAppender(stdoutAppender, org.apache.logging.log4j.Level.DEBUG, null); // Add Stdout appender
-            rootLoggerConfig.addAppender(stderrAppender, org.apache.logging.log4j.Level.WARN, null);  // Add Stderr appender
+            rootLoggerConfig.addAppender(stdoutAppender, org.apache.logging.log4j.Level.DEBUG, null);
+            rootLoggerConfig.addAppender(stderrAppender, org.apache.logging.log4j.Level.WARN, null);
 
             LogUtils.addFileRollingLogger("system", "");
 
@@ -165,6 +164,150 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             log = context.getLogger("GuiceContext");
         } catch (Exception e) {
             e.printStackTrace(System.err);
+        }
+    }
+
+    /**
+     * Console layout options for the default console appenders.
+     */
+    public enum ConsoleLayoutOption {
+        CURRENT,
+        FIXED,
+        HIGHLIGHT,
+        JSON
+    }
+
+    /**
+     * Applies the given console layout option to the default console appenders (Stdout and Stderr).
+     * Can be called at any time to switch layouts dynamically.
+     *
+     * @param option The desired console layout option.
+     */
+    public static void setConsoleLayout(ConsoleLayoutOption option) {
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+
+        // Build the requested layout
+        org.apache.logging.log4j.core.Layout<?> layout = buildConsoleLayout(option, config);
+
+        // Remove existing console appenders if present
+        LoggerConfig root = config.getRootLogger();
+        org.apache.logging.log4j.core.Appender oldOut = config.getAppender("Stdout");
+        org.apache.logging.log4j.core.Appender oldErr = config.getAppender("Stderr");
+        if (oldOut != null) {
+            root.removeAppender("Stdout");
+            oldOut.stop();
+            config.getAppenders().remove("Stdout");
+        }
+        if (oldErr != null) {
+            root.removeAppender("Stderr");
+            oldErr.stop();
+            config.getAppenders().remove("Stderr");
+        }
+
+        // Recreate appenders with new layout
+        ConsoleAppender stdoutAppender = ConsoleAppender.newBuilder()
+                .setName("Stdout")
+                .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
+                .setLayout(layout)
+                .setFilter(ThresholdFilter.createFilter(Level.DEBUG, Filter.Result.ACCEPT, Filter.Result.DENY))
+                .build();
+        stdoutAppender.start();
+
+        ConsoleAppender stderrAppender = ConsoleAppender.newBuilder()
+                .setName("Stderr")
+                .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
+                .setLayout(layout)
+                .setFilter(ThresholdFilter.createFilter(org.apache.logging.log4j.Level.WARN, Filter.Result.ACCEPT, Filter.Result.DENY))
+                .build();
+        stderrAppender.start();
+
+        config.addAppender(stdoutAppender);
+        config.addAppender(stderrAppender);
+        root.addAppender(stdoutAppender, org.apache.logging.log4j.Level.DEBUG, null);
+        root.addAppender(stderrAppender, org.apache.logging.log4j.Level.WARN, null);
+
+        context.updateLoggers();
+    }
+
+    /**
+     * Sets the default/root logging level to use for Log4j2. If called before the class is initialized,
+     * the level will be applied during static initialization. If called after, it will immediately update
+     * the current root logger level and refresh loggers.
+     *
+     * @param level the Log4j2 Level to set on the root logger (non-null)
+     */
+    public static void setDefaultLogLevel(Level level) {
+        if (level == null) {
+            return;
+        }
+        defaultLogLevel = level;
+        // Apply immediately if Log4j2 is already initialized
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+        config.getRootLogger().setLevel(level);
+        context.updateLoggers();
+    }
+
+    /**
+     * Convenience overload to set the default/root logging level by name, e.g. "INFO", "DEBUG", "WARN".
+     * If the name is not recognized, the request is ignored.
+     *
+     * @param levelName the desired level name
+     */
+    public static void setDefaultLogLevel(String levelName) {
+        if (levelName == null) {
+            return;
+        }
+        Level level = Level.getLevel(levelName.toUpperCase(Locale.ROOT));
+        if (level == null) {
+            // Fallback using toLevel which accepts custom strings and defaults to existing value
+            level = Level.toLevel(levelName, defaultLogLevel);
+        }
+        setDefaultLogLevel(level);
+    }
+
+    /**
+     * Returns the current configured default/root logging level.
+     */
+    public static Level getDefaultLogLevel() {
+        return defaultLogLevel;
+    }
+
+    private static org.apache.logging.log4j.core.Layout<?> buildConsoleLayout(ConsoleLayoutOption option, Configuration config) {
+        switch (option) {
+            case FIXED:
+                // Fixed-width fields (logger, thread, level) except the message
+                return PatternLayout.newBuilder()
+                        .withDisableAnsi(false)
+                        .withNoConsoleNoAnsi(true)
+                        .withConfiguration(config)
+                        .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-40.40c] [%-20.20t] [%-5level] - %msg%n")
+                        .build();
+            case HIGHLIGHT:
+                // Highlight level and add some subtle coloring to logger/thread
+                return PatternLayout.newBuilder()
+                        .withDisableAnsi(false)
+                        .withNoConsoleNoAnsi(true)
+                        .withConfiguration(config)
+                        .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%style{%-40.40c}{cyan}] [%style{%-20.20t}{magenta}] [%highlight{%-5level}] - %msg%n")
+                        .build();
+            case JSON:
+                // JSON formatted logs
+                return JsonLayout.newBuilder()
+                        .setConfiguration(config)
+                        .setEventEol(true)
+                        .setCompact(false)
+                        .setStacktraceAsString(true)
+                        .build();
+            case CURRENT:
+            default:
+                return PatternLayout.newBuilder()
+                        .withDisableAnsi(false)
+                        .withNoConsoleNoAnsi(true)
+                        .withConfiguration(config)
+                        .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-40.40c] [%-20.20t] [%-5level] - [%msg]%n")
+                        .build();
         }
     }
 
@@ -249,14 +392,14 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 Set<? extends IGuiceModule> iGuiceModules = GuiceContext
                         .instance()
                         .loadIGuiceModules();
-                cModules.addAll(iGuiceModules.stream().filter(a->a.enabled()).toList());
+                cModules.addAll(iGuiceModules.stream().filter(a -> a.enabled()).toList());
 
                 //cModules.add(new GuiceInjectorModule());
                 log.debug("📋 Dependency injection modules prepared for initialization: {} modules", cModules.size());
                 if (log.isTraceEnabled()) {
                     log.trace("🔍 Detailed module list: {}", Arrays.toString(cModules.toArray()));
                 }
-                
+
                 log.info("🔧 Creating Guice injector with {} modules", cModules.size());
                 GuiceContext.instance().injector = Guice.createInjector(cModules);
                 log.debug("✅ Guice injector created successfully");
@@ -267,8 +410,10 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 GuiceContext.instance()
                         .loadPostStartups().onComplete((handler) -> {
                             LocalDateTime end = LocalDateTime.now();
-                            log.info("🎉 Dependency injection system initialized successfully in {}ms - All services loaded and ready", 
+                            log.info("🎉 Dependency injection system initialized successfully in {}ms - All services loaded and ready",
                                     ChronoUnit.MILLIS.between(start, end));
+                            GuiceContext.instance()
+                                    .loadPreDestroyServices();
                             loadingFinished.complete(null);
                         });
                 Runtime
@@ -296,18 +441,18 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     public void destroy() {
         log.info("🛑 Starting Guice Context shutdown and resource cleanup");
         Stopwatch shutdownStopwatch = Stopwatch.createStarted();
-        
+
         try {
             Set<IGuicePreDestroy> destroyers = loadPreDestroyServices();
             log.debug("🗑️ Executing {} pre-destroy services for cleanup", destroyers.size());
-            
+
             int successCount = 0;
             int failureCount = 0;
-            
+
             for (IGuicePreDestroy destroyer : destroyers) {
                 String destroyerName = destroyer.getClass().getCanonicalName();
                 log.debug("🗑️ Running pre-destroy service: {}", destroyerName);
-                
+
                 try {
                     destroyer.onDestroy();
                     successCount++;
@@ -317,27 +462,27 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     log.error("❌ Failed to run destroyer '{}': {}", destroyerName, T.getMessage(), T);
                 }
             }
-            
-            log.info("📊 Pre-destroy services execution completed - Success: {}, Failed: {}", 
+
+            log.info("📊 Pre-destroy services execution completed - Success: {}, Failed: {}",
                     successCount, failureCount);
-            
+
         } catch (Throwable T) {
             log.error("💥 Failed to run destroyers: {}", T.getMessage(), T);
         }
-        
+
         log.debug("🧹 Cleaning up scanner resources");
         if (GuiceContext.instance().scanResult != null) {
             GuiceContext.instance().scanResult.close();
             log.debug("✅ Scan result resources released");
         }
-        
+
         // Clear all references
         GuiceContext.instance().scanResult = null;
         GuiceContext.instance().scanner = null;
         GuiceContext.instance().injector = null;
-        
+
         shutdownStopwatch.stop();
-        log.info("🎉 Guice Context shutdown completed in {}ms", 
+        log.info("🎉 Guice Context shutdown completed in {}ms",
                 shutdownStopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
@@ -402,26 +547,26 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
         if (!configured) {
             log.info("🚀 Initializing Guice configuration");
             Stopwatch configStopwatch = Stopwatch.createStarted();
-            
+
             // Load all configurators
             Set<IGuiceConfigurator> guiceConfigurators = loadIGuiceConfigs();
             log.debug("📋 Found {} IGuiceConfigurator implementations", guiceConfigurators.size());
-            
+
             if (log.isTraceEnabled()) {
-                log.trace("🔍 Configuration initialization starting with default settings: {}", 
+                log.trace("🔍 Configuration initialization starting with default settings: {}",
                         GuiceContext.config.toString());
             }
-            
+
             // Apply each configurator
             int configCount = 0;
             for (IGuiceConfigurator guiceConfigurator : guiceConfigurators) {
                 String configuratorName = guiceConfigurator.getClass().getCanonicalName();
                 log.debug("🔧 Applying configurator [{}]", configuratorName);
-                
+
                 try {
                     guiceConfigurator.configure(GuiceContext.config);
                     configCount++;
-                    
+
                     if (log.isTraceEnabled()) {
                         log.trace("✅ Successfully applied configurator: {}", configuratorName);
                     }
@@ -429,18 +574,18 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     log.error("❌ Failed to apply configurator '{}': {}", configuratorName, e.getMessage(), e);
                 }
             }
-            
+
             // Performance warning for unrestricted scanning
             if (!GuiceContext.config.isIncludeModuleAndJars()) {
                 log.warn("⚠️ Scanning is not restricted to modules and may incur a performance impact. Consider registering your module with GuiceContext.registerModule() to auto enable, or SPI IGuiceConfiguration");
             }
-            
+
             // Log final configuration
             configStopwatch.stop();
-            log.info("✅ Guice configuration completed in {}ms with {} configurators applied", 
+            log.info("✅ Guice configuration completed in {}ms with {} configurators applied",
                     configStopwatch.elapsed(TimeUnit.MILLISECONDS), configCount);
             log.debug("📝 Final configuration: {}", GuiceContext.config.toString());
-            
+
             configured = true;
         } else {
             log.debug("📋 Using existing Guice configuration");
@@ -503,11 +648,11 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             Stopwatch stopwatch = Stopwatch.createStarted();
             log.debug("📋 Loading classpath scanner configuration");
             loadConfiguration();
-            
+
             // Configure the scanner with appropriate settings
             log.debug("🔧 Configuring scanner with inclusion/exclusion rules");
             scanner = configureScanner(scanner);
-            
+
             try {
                 // Start the actual scanning process
                 log.debug("🔍 Beginning classpath scan" + (async ? " with parallel processing" : ""));
@@ -518,24 +663,24 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 } else {
                     scanResult = scanner.scan();
                 }
-                
+
                 // Log scan completion
                 stopwatch.stop();
                 long scanTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
                 log.info("✅ Classpath scan completed successfully in {}ms", scanTime);
                 if (log.isTraceEnabled()) {
-                    log.trace("🔍 Scan details - Async: {}, Thread count: {}", 
+                    log.trace("🔍 Scan details - Async: {}, Thread count: {}",
                             async, async ? Runtime.getRuntime().availableProcessors() : 1);
                 }
-                
+
                 // Process file scans
                 stopwatch.reset();
                 stopwatch.start();
                 log.debug("📋 Processing file-based resources from scan results");
-                
+
                 Map<String, ResourceList.ByteArrayConsumer> fileScans = quickScanFiles();
                 int resourceCount = 0;
-                
+
                 for (String key : fileScans.keySet()) {
                     if (log.isTraceEnabled()) {
                         log.trace("🔍 Processing resources with name: {}", key);
@@ -544,12 +689,12 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                             .forEachByteArrayIgnoringIOException(fileScans.get(key));
                     resourceCount++;
                 }
-                
+
                 // Process pattern-based scans
                 log.debug("🔍 Processing pattern-matched resources from scan results");
                 Map<Pattern, ResourceList.ByteArrayConsumer> patternScans = quickScanFilesPattern();
                 int patternCount = 0;
-                
+
                 for (Pattern pattern : patternScans.keySet()) {
                     if (log.isTraceEnabled()) {
                         log.trace("🔍 Processing resources matching pattern: {}", pattern.pattern());
@@ -558,17 +703,17 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                             .forEachByteArrayIgnoringIOException(patternScans.get(pattern));
                     patternCount++;
                 }
-                
+
                 stopwatch.stop();
-                log.debug("📊 Resource processing completed - Processed {} named resources and {} pattern-matched resources in {}ms", 
+                log.debug("📊 Resource processing completed - Processed {} named resources and {} pattern-matched resources in {}ms",
                         resourceCount, patternCount, stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                
+
             } catch (Exception mpe) {
                 log.error("❌ Failed to run scanner: {}", mpe.getMessage(), mpe);
-                log.debug("🔍 Scanner failure context - Async: {}, Config: {}", 
+                log.debug("🔍 Scanner failure context - Async: {}, Config: {}",
                         async, GuiceContext.config.toString());
             }
-            
+
             if (log.isTraceEnabled()) {
                 log.trace("📋 ClassGraph scanner initialization complete");
             }
@@ -912,7 +1057,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
         var vertx = VertXPreStartup.getVertx();
         log.info("🚀 Initializing post-startup services");
         Stopwatch totalStopwatch = Stopwatch.createStarted();
-        
+
         return vertx.executeBlocking(() -> {
             Set<IGuicePostStartup<?>> startupSet = loadPostStartupServices().stream()
                     .map(a -> (IGuicePostStartup<?>) a)
@@ -948,7 +1093,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                                         callScoper.enter();
                                         CallScopeProperties csp = IGuiceContext.get(CallScopeProperties.class);
                                         csp.setSource(CallScopeSource.Startup);*/
-                                        return startup.postLoad().stream();
+                                    return startup.postLoad().stream();
                                    /* }finally {
                                         callScoper.exit();
                                     }*/
@@ -972,7 +1117,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
             // Ensure the call scope is properly exited after all post-startups have completed
             totalStopwatch.stop();
-            log.info("🎉 Post-startup initialization setup completed in {}ms", 
+            log.info("🎉 Post-startup initialization setup completed in {}ms",
                     totalStopwatch.elapsed(TimeUnit.MILLISECONDS));
             return sequentialFuture;
         }).compose(result -> {
@@ -1072,85 +1217,85 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     private void loadPreStartups() {
         log.info("🚀 Initializing pre-startup services");
         Stopwatch totalStopwatch = Stopwatch.createStarted();
-        
+
         // Load all pre-startup services
-        Set<IGuicePreStartup<?>>  preStartups = (Set)loadPreStartupServices();
+        Set<IGuicePreStartup<?>> preStartups = (Set) loadPreStartupServices();
         log.debug("📋 Found {} pre-startup service implementations", preStartups.size());
-        
+
         if (preStartups.isEmpty()) {
             log.debug("ℹ️ No pre-startup services found, skipping initialization phase");
             return;
         }
-        
+
         // Group pre-startups by sort order for sequential execution
-           Map<Integer, List<IGuicePreStartup<?>>> groupedStartups = preStartups.stream()
+        Map<Integer, List<IGuicePreStartup<?>>> groupedStartups = preStartups.stream()
                 .collect(Collectors.groupingBy(IGuicePreStartup::sortOrder, TreeMap::new, Collectors.toList()));
 
-        
+
         log.debug("🔢 Pre-startup services grouped into {} priority levels", groupedStartups.size());
-        
+
         if (log.isTraceEnabled()) {
-            groupedStartups.forEach((order, services) -> 
-                log.trace("🔍 Priority level [{}] has {} services", order, services.size()));
+            groupedStartups.forEach((order, services) ->
+                    log.trace("🔍 Priority level [{}] has {} services", order, services.size()));
         }
-        
+
         // Execute each group in order
         int successCount = 0;
         int failureCount = 0;
-        
+
         for (Map.Entry<Integer, List<IGuicePreStartup<?>>> entry : groupedStartups.entrySet()) {
             Integer key = entry.getKey();
             List<IGuicePreStartup<?>> value = entry.getValue();
-            
+
             log.info("🔄 Executing pre-startup group with priority [{}] - {} services", key, value.size());
             Stopwatch groupStopwatch = Stopwatch.createStarted();
-            
+
             List<Future<Boolean>> groupFutures = new ArrayList<>();
             for (IGuicePreStartup<?> iGuicePreStartup : value) {
                 String serviceName = iGuicePreStartup.getClass().getSimpleName();
                 log.info("🚀 Starting pre-startup service [{}] with priority [{}]", serviceName, key);
-                
+
                 try {
                     List<Future<Boolean>> serviceFutures = iGuicePreStartup.onStartup();
                     groupFutures.addAll(serviceFutures);
-                    
+
                     if (log.isTraceEnabled()) {
-                        log.trace("📊 Service [{}] returned {} futures to await", 
+                        log.trace("📊 Service [{}] returned {} futures to await",
                                 serviceName, serviceFutures.size());
                     }
                 } catch (Exception e) {
-                    log.error("❌ Failed to execute pre-startup service [{}]: {}", 
+                    log.error("❌ Failed to execute pre-startup service [{}]: {}",
                             serviceName, e.getMessage(), e);
                     failureCount++;
                 }
             }
-            
+
             // Wait for all futures in this group to complete
             try {
                 log.debug("⏳ Waiting for {} futures in priority group [{}]", groupFutures.size(), key);
                 Future<CompositeFuture> compositeFuture = Future.all(groupFutures);
                 compositeFuture.await(10, TimeUnit.SECONDS);
-                
+
                 if (compositeFuture.succeeded()) {
                     successCount += groupFutures.size();
                     groupStopwatch.stop();
-                    log.info("✅ Pre-startup group [{}] completed successfully in {}ms", 
+                    log.info("✅ Pre-startup group [{}] completed successfully in {}ms",
                             key, groupStopwatch.elapsed(TimeUnit.MILLISECONDS));
                 } else {
                     failureCount += (groupFutures.size() - successCount);
-                    log.warn("⚠️ Some pre-startup operations in group [{}] failed: {}", 
+                    log.warn("⚠️ Some pre-startup operations in group [{}] failed: {}",
                             key, compositeFuture.cause().getMessage());
                 }
             } catch (TimeoutException e) {
                 failureCount += (groupFutures.size() - successCount);
-                log.error("⏱️ Timeout waiting for pre-startup group [{}] after 10 seconds: {}", 
+                log.error("⏱️ Timeout waiting for pre-startup group [{}] after 10 seconds: {}",
                         key, e.getMessage(), e);
             }
         }
-        
+
         // Log summary
         totalStopwatch.stop();
-        log.info("🎉 Pre-startup initialization completed in {}ms - Success: {}, Failed: {}", 
+        log.info("🎉 Pre-startup initialization completed in {}ms - Success: {}, Failed: {}",
                 totalStopwatch.elapsed(TimeUnit.MILLISECONDS), successCount, failureCount);
     }
 
