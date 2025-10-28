@@ -22,6 +22,48 @@ public class LogUtils
 {
     private static final Set<String> names = new HashSet<>();
 
+    // Sanitize file base names for Windows reserved names and illegal characters.
+    // This does NOT change the logger name, only the generated file name.
+    private static String sanitizeForWindows(String baseName)
+    {
+        if (baseName == null || baseName.isEmpty())
+        {
+            return "_log";
+        }
+        String s = baseName.trim();
+        // Replace illegal characters
+        s = s.replaceAll("[\\\\/:*?\"<>|]", "_");
+        // Trim trailing dots and spaces
+        while (s.endsWith(" ") || s.endsWith("."))
+        {
+            s = s.substring(0, s.length() - 1);
+        }
+        if (s.isEmpty())
+        {
+            s = "_log";
+        }
+        // Windows reserved device names
+        String up = s.toUpperCase();
+        // Special case: COM0 should use the shared cerial log, not a per-port file
+        if (up.equals("COM0"))
+        {
+            return "cerial";
+        }
+        if (up.equals("CON") || up.equals("PRN") || up.equals("AUX") || up.equals("NUL"))
+        {
+            return "_" + s;
+        }
+        if ((up.startsWith("COM") || up.startsWith("LPT")) && up.length() == 4)
+        {
+            char d = up.charAt(3);
+            if (d >= '1' && d <= '9')
+            {
+                return "_" + s;
+            }
+        }
+        return s;
+    }
+
     public static void addFileRollingLogger(String name, String baseLogFolder)
     {
         if (names.contains(name))
@@ -32,7 +74,8 @@ public class LogUtils
         Configuration config = context.getConfiguration();
 
         String logFolderPath = Strings.isNullOrEmpty(baseLogFolder) ? "logs" : baseLogFolder; // Base folder for logs
-        String logFileName = name + ".log";
+        String safeBase = sanitizeForWindows(name);
+        String logFileName = safeBase + ".log";
 
         PatternLayout layout = PatternLayout.newBuilder()
                 .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level] - [%msg]%n")
@@ -69,7 +112,8 @@ public class LogUtils
         Configuration config = context.getConfiguration();
 
         String logFolderPath = "logs"; // Base folder for logs
-        String logFileName = name + ".log";
+        String safeBase = sanitizeForWindows(name);
+        String logFileName = safeBase + ".log";
 
         PatternLayout layout = PatternLayout.newBuilder()
                 .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%25.25C{3}] [%t] [%-5level] - [%msg]%n")
@@ -111,7 +155,8 @@ public class LogUtils
                 .build();
 
         String logFolderPath = Strings.isNullOrEmpty(baseLogFolder) ? "logs" : baseLogFolder; // Base folder for logs
-        String logFileName = name + ".log";
+        String safeBase = sanitizeForWindows(name);
+        String logFileName = safeBase + ".log";
 
         RollingFileAppender rollingFileAppender = RollingFileAppender.newBuilder()
                 .withFileName(logFolderPath + "/" + logFileName)
