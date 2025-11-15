@@ -20,10 +20,7 @@ import com.google.common.base.Stopwatch;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.guicedee.client.CallScopeProperties;
-import com.guicedee.client.CallScopeSource;
-import com.guicedee.client.CallScoper;
-import com.guicedee.client.IGuiceContext;
+import com.guicedee.client.*;
 import com.guicedee.guicedinjection.interfaces.*;
 import com.guicedee.vertx.spi.VertXPreStartup;
 import io.github.classgraph.ClassGraph;
@@ -55,6 +52,7 @@ import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFact
 import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 import org.apache.logging.log4j.core.filter.ThresholdFilter;
+import org.apache.logging.log4j.core.filter.LevelRangeFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.core.layout.JsonLayout;
 
@@ -88,7 +86,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      * {@link #setDefaultLogLevel(org.apache.logging.log4j.Level)} or {@link #setDefaultLogLevel(String)}
      * before GuiceContext is initialized. Changing it at runtime will immediately update the root logger level.
      */
-    private static volatile Level defaultLogLevel = Level.INFO;
+    private static volatile Level defaultLogLevel = Level.DEBUG;
 
     static {
         try {
@@ -118,18 +116,49 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             Configurator.setLevel("jdk.event.security", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("org.apache.commons.beanutils", org.apache.logging.log4j.Level.ERROR);
 
+            // Determine desired default/root logging level from system properties or environment before applying
+            try {
+                String lvl = getSystemPropertyOrEnvironment("guicedee.log.level",
+                        getSystemPropertyOrEnvironment("GUICEDEE_LOG_LEVEL",
+                                getSystemPropertyOrEnvironment("LOG_LEVEL", null)));
+                if (lvl == null) {
+                    // Fallback toggles
+                    String debugToggle = getSystemPropertyOrEnvironment("guicedee.debug",
+                            getSystemPropertyOrEnvironment("DEBUG", null));
+                    String traceToggle = getSystemPropertyOrEnvironment("guicedee.trace",
+                            getSystemPropertyOrEnvironment("TRACE", null));
+                    if (traceToggle != null && traceToggle.equalsIgnoreCase("true")) {
+                        defaultLogLevel = Level.TRACE;
+                    } else if (debugToggle != null && debugToggle.equalsIgnoreCase("true")) {
+                        defaultLogLevel = Level.DEBUG;
+                    }
+                } else {
+                    try {
+                        setDefaultLogLevel(lvl);
+                    } catch (IllegalArgumentException ignored) {
+                        // If invalid level provided, keep existing default
+                    }
+                }
+            } catch (Throwable ignored) {
+                // Ignore any issues reading properties
+            }
+
             // Apply the configured default root logging level
             config.getRootLogger().setLevel(defaultLogLevel);
 
-            // Build default layout using CURRENT style
-            org.apache.logging.log4j.core.Layout<?> layout = buildConsoleLayout(ConsoleLayoutOption.CURRENT, config);
+            // Determine cloud environment and choose console layout
+            boolean isCloud = Boolean.parseBoolean(Environment.getSystemPropertyOrEnvironment("CLOUD", "false"));
+            ConsoleLayoutOption layoutOption = isCloud ? ConsoleLayoutOption.JSON : ConsoleLayoutOption.CURRENT;
+
+            // Build default layout based on environment
+            org.apache.logging.log4j.core.Layout<?> layout = buildConsoleLayout(layoutOption, config);
 
             // Create the Stdout appender for DEBUG, INFO, TRACE
             ConsoleAppender stdoutAppender = ConsoleAppender.newBuilder()
                     .setName("Stdout")
                     .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
                     .setLayout((org.apache.logging.log4j.core.Layout<?>) layout)
-                    .setFilter(ThresholdFilter.createFilter(Level.DEBUG, Filter.Result.ACCEPT, Filter.Result.DENY))
+                    .setFilter(LevelRangeFilter.createFilter(Level.DEBUG, Level.INFO, Filter.Result.ACCEPT, Filter.Result.DENY))
                     .build();
             stdoutAppender.start();
 
@@ -138,7 +167,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     .setName("Stderr")
                     .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
                     .setLayout((org.apache.logging.log4j.core.Layout<?>) layout)
-                    .setFilter(ThresholdFilter.createFilter(org.apache.logging.log4j.Level.WARN, Filter.Result.ACCEPT, Filter.Result.DENY))
+                    .setFilter(LevelRangeFilter.createFilter(Level.WARN, Level.FATAL, Filter.Result.ACCEPT, Filter.Result.DENY))
                     .build();
             stderrAppender.start();
 
@@ -151,17 +180,79 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             rootLoggerConfig.addAppender(stdoutAppender, org.apache.logging.log4j.Level.DEBUG, null);
             rootLoggerConfig.addAppender(stderrAppender, org.apache.logging.log4j.Level.WARN, null);
 
-            LogUtils.addFileRollingLogger("system", "");
+            // If not running in cloud, also attach a highlighted console and the system rolling file logger
+            if (!isCloud) {
+                org.apache.logging.log4j.core.Layout<?> highlightLayout = buildConsoleLayout(ConsoleLayoutOption.HIGHLIGHT, config);
+
+                ConsoleAppender stdoutHighlight = ConsoleAppender.newBuilder()
+                        .setName("StdoutHighlight")
+                        .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
+                        .setLayout(highlightLayout)
+                        .setFilter(LevelRangeFilter.createFilter(Level.DEBUG, Level.INFO, Filter.Result.ACCEPT, Filter.Result.DENY))
+                        .build();
+                stdoutHighlight.start();
+                config.addAppender(stdoutHighlight);
+                rootLoggerConfig.addAppender(stdoutHighlight, org.apache.logging.log4j.Level.DEBUG, null);
+
+                ConsoleAppender stderrHighlight = ConsoleAppender.newBuilder()
+                        .setName("StderrHighlight")
+                        .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
+                        .setLayout(highlightLayout)
+                        .setFilter(LevelRangeFilter.createFilter(Level.WARN, Level.FATAL, Filter.Result.ACCEPT, Filter.Result.DENY))
+                        .build();
+                stderrHighlight.start();
+                config.addAppender(stderrHighlight);
+                rootLoggerConfig.addAppender(stderrHighlight, org.apache.logging.log4j.Level.WARN, null);
+
+                // Attach rolling file appender (system logger)
+                LogUtils.addFileRollingLogger("system", "");
+            }
 
             ServiceLoader<Log4JConfigurator> log4JConfigurators = ServiceLoader.load(Log4JConfigurator.class);
             for (Log4JConfigurator log4jConfigurator : log4JConfigurators) {
                 log4jConfigurator.configure(config);
             }
 
+            // Safeguard: ensure root level and console appenders remain as intended after external configurators
+            rootLoggerConfig.setLevel(defaultLogLevel);
+
+            org.apache.logging.log4j.core.Appender stdOut = config.getAppender("Stdout");
+            if (stdOut == null) {
+                ConsoleAppender newStdout = ConsoleAppender.newBuilder()
+                        .setName("Stdout")
+                        .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
+                        .setLayout((org.apache.logging.log4j.core.Layout<?>) layout)
+                        .setFilter(LevelRangeFilter.createFilter(Level.TRACE, Level.INFO, Filter.Result.ACCEPT, Filter.Result.DENY))
+                        .build();
+                newStdout.start();
+                config.addAppender(newStdout);
+                stdOut = newStdout;
+            }
+
+            org.apache.logging.log4j.core.Appender stdErr = config.getAppender("Stderr");
+            if (stdErr == null) {
+                ConsoleAppender newStderr = ConsoleAppender.newBuilder()
+                        .setName("Stderr")
+                        .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
+                        .setLayout((org.apache.logging.log4j.core.Layout<?>) layout)
+                        .setFilter(LevelRangeFilter.createFilter(Level.WARN, Level.FATAL, Filter.Result.ACCEPT, Filter.Result.DENY))
+                        .build();
+                newStderr.start();
+                config.addAppender(newStderr);
+                stdErr = newStderr;
+            }
+
+            if (!rootLoggerConfig.getAppenders().containsKey("Stdout")) {
+                rootLoggerConfig.addAppender(stdOut, org.apache.logging.log4j.Level.TRACE, null);
+            }
+            if (!rootLoggerConfig.getAppenders().containsKey("Stderr")) {
+                rootLoggerConfig.addAppender(stdErr, org.apache.logging.log4j.Level.WARN, null);
+            }
+
             // Update the context with the modified configuration
             context.updateLoggers();
 
-            log = context.getLogger("GuiceContext");
+            log = context.getLogger(GuiceContext.class.getCanonicalName());
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
@@ -210,7 +301,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 .setName("Stdout")
                 .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
                 .setLayout(layout)
-                .setFilter(ThresholdFilter.createFilter(Level.DEBUG, Filter.Result.ACCEPT, Filter.Result.DENY))
+                .setFilter(LevelRangeFilter.createFilter(Level.DEBUG, Level.INFO, Filter.Result.ACCEPT, Filter.Result.DENY))
                 .build();
         stdoutAppender.start();
 
@@ -218,7 +309,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 .setName("Stderr")
                 .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
                 .setLayout(layout)
-                .setFilter(ThresholdFilter.createFilter(org.apache.logging.log4j.Level.WARN, Filter.Result.ACCEPT, Filter.Result.DENY))
+                .setFilter(LevelRangeFilter.createFilter(Level.WARN, Level.FATAL, Filter.Result.ACCEPT, Filter.Result.DENY))
                 .build();
         stderrAppender.start();
 
