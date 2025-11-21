@@ -101,7 +101,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public J setServiceLoadWithClassPath(boolean serviceLoadWithClassPath)
+	public @org.jspecify.annotations.NonNull J setServiceLoadWithClassPath(boolean serviceLoadWithClassPath)
 	{
 		this.serviceLoadWithClassPath = serviceLoadWithClassPath;
 		setClasspathScanning(true);
@@ -124,7 +124,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	@Override
 	@SuppressWarnings("unchecked")
 	
-	public J setFieldScanning(boolean fieldScanning)
+	public @org.jspecify.annotations.NonNull J setFieldScanning(boolean fieldScanning)
 	{
 		this.fieldScanning = fieldScanning;
 		return (J) this;
@@ -139,7 +139,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	@Override
 	@SuppressWarnings("unchecked")
 	
-	public J setAnnotationScanning(boolean annotationScanning)
+	public @org.jspecify.annotations.NonNull J setAnnotationScanning(boolean annotationScanning)
 	{
 		this.annotationScanning = annotationScanning;
 		return (J) this;
@@ -154,7 +154,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	@Override
 	@SuppressWarnings("unchecked")
 	
-	public J setMethodInfo(boolean methodInfo)
+	public @org.jspecify.annotations.NonNull J setMethodInfo(boolean methodInfo)
 	{
 		this.methodInfo = methodInfo;
 		return (J) this;
@@ -169,7 +169,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	@Override
 	@SuppressWarnings("unchecked")
 	
-	public J setIgnoreFieldVisibility(boolean ignoreFieldVisibility)
+	public @org.jspecify.annotations.NonNull J setIgnoreFieldVisibility(boolean ignoreFieldVisibility)
 	{
 		this.ignoreFieldVisibility = ignoreFieldVisibility;
 		return (J) this;
@@ -184,7 +184,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	@Override
 	@SuppressWarnings("unchecked")
 	
-	public J setIgnoreMethodVisibility(boolean ignoreMethodVisibility)
+	public @org.jspecify.annotations.NonNull J setIgnoreMethodVisibility(boolean ignoreMethodVisibility)
 	{
 		this.ignoreMethodVisibility = ignoreMethodVisibility;
 		return (J) this;
@@ -199,7 +199,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	@Override
 	@SuppressWarnings("unchecked")
 	
-	public J setIncludePackages(boolean includePackages)
+	public @org.jspecify.annotations.NonNull J setIncludePackages(boolean includePackages)
 	{
 		this.includePackages = includePackages;
 		return (J) this;
@@ -214,7 +214,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	@Override
 	@SuppressWarnings("unchecked")
 	
-	public J setFieldInfo(boolean fieldInfo)
+	public @org.jspecify.annotations.NonNull J setFieldInfo(boolean fieldInfo)
 	{
 		this.fieldInfo = fieldInfo;
 		setFieldScanning(fieldInfo);
@@ -230,7 +230,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	@Override
 	@SuppressWarnings("unchecked")
 	
-	public J setVerbose(boolean verbose)
+	public @org.jspecify.annotations.NonNull J setVerbose(boolean verbose)
 	{
 		this.verbose = verbose;
 
@@ -246,7 +246,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	@Override
 	@SuppressWarnings("unchecked")
 	
-	public J setClasspathScanning(boolean classpathScanning)
+	public @org.jspecify.annotations.NonNull J setClasspathScanning(boolean classpathScanning)
 	{
 		this.classpathScanning = classpathScanning;
 		return (J) this;
@@ -261,7 +261,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	@Override
 	@SuppressWarnings("unchecked")
 	
-	public J setExcludeModulesAndJars(boolean excludeModulesAndJars)
+	public @org.jspecify.annotations.NonNull J setExcludeModulesAndJars(boolean excludeModulesAndJars)
 	{
 		this.excludeModulesAndJars = excludeModulesAndJars;
 		return (J) this;
@@ -276,7 +276,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	@Override
 	@SuppressWarnings("unchecked")
 	
-	public J setExcludePaths(boolean excludePaths)
+	public @org.jspecify.annotations.NonNull J setExcludePaths(boolean excludePaths)
 	{
 		this.excludePaths = excludePaths;
 		return (J) this;
@@ -315,7 +315,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	}
 
 	@Override
-	public J setAllowPaths(boolean allowedPaths)
+	public @org.jspecify.annotations.NonNull J setAllowPaths(boolean allowedPaths)
 	{
 		this.allowedPaths = allowedPaths;
 		return (J)this;
@@ -329,7 +329,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public J setIgnoreClassVisibility(boolean ignoreClassVisibility)
+	public @org.jspecify.annotations.NonNull J setIgnoreClassVisibility(boolean ignoreClassVisibility)
 	{
 		this.ignoreClassVisibility = ignoreClassVisibility;
 		return (J) this;
@@ -341,7 +341,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	}
 
 	@Override
-	public J setIncludeModuleAndJars(boolean includeModuleAndJars) {
+	public @org.jspecify.annotations.NonNull J setIncludeModuleAndJars(boolean includeModuleAndJars) {
 		this.includeModuleAndJars = includeModuleAndJars;
 		return (J)this;
 	}
@@ -353,7 +353,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	}
 
 	@Override
-	public J setPathScanning(boolean pathScanning)
+	public @org.jspecify.annotations.NonNull J setPathScanning(boolean pathScanning)
 	{
 		this.pathScanning = pathScanning;
 		return (J)this;
@@ -368,7 +368,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 
 	@Override
 	@SuppressWarnings("unused")
-	public J setExcludeParentModules(boolean excludeParentModules)
+	public @org.jspecify.annotations.NonNull J setExcludeParentModules(boolean excludeParentModules)
 	{
 		this.excludeParentModules = excludeParentModules;
 		return (J)this;
@@ -381,7 +381,7 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guice
 	}
 
 	@Override
-	public J setExcludePackages(boolean excludePackages)
+	public @org.jspecify.annotations.NonNull J setExcludePackages(boolean excludePackages)
 	{
 		this.excludePackages = excludePackages;
 		return (J)this;
