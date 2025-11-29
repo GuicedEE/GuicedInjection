@@ -3,8 +3,8 @@ package com.guicedee.tests;
 import com.guicedee.client.*;
 import com.guicedee.guicedinjection.GuiceConfig;
 import com.guicedee.guicedinjection.GuiceContext;
-import com.guicedee.guicedinjection.interfaces.IGuiceConfig;
-import com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
+import com.guicedee.client.services.IGuiceConfig;
+import com.guicedee.client.services.lifecycle.IGuiceConfigurator;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 

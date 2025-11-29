@@ -6,10 +6,10 @@ import com.google.inject.matcher.Matchers;
 import com.guicedee.guicedinjection.GuiceConfig;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.JobService;
-import com.guicedee.guicedinjection.interfaces.IGuiceModule;
-import com.guicedee.guicedinjection.interfaces.IJobService;
+import com.guicedee.client.services.lifecycle.IGuiceModule;
+import com.guicedee.client.services.IJobService;
 import com.guicedee.guicedinjection.logging.Log4JTypeListener;
-import com.guicedee.guicedinjection.properties.GlobalProperties;
+import com.guicedee.client.utils.GlobalProperties;
 import io.github.classgraph.ScanResult;
 import lombok.extern.log4j.Log4j2;
 

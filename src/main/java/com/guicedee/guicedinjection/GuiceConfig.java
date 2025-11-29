@@ -1,13 +1,15 @@
 package com.guicedee.guicedinjection;
 
 import com.google.inject.Singleton;
+import com.guicedee.client.services.IGuiceConfig;
 
 /**
  * The configuration class for Guice Context and the Classpath Scanner
  */
 @SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue"})
 @Singleton
-public class GuiceConfig<J extends GuiceConfig<J>> implements com.guicedee.guicedinjection.interfaces.IGuiceConfig<J> {
+public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
+{
 	/**
 	 * Property to use when everything is found in the boot module
 	 */

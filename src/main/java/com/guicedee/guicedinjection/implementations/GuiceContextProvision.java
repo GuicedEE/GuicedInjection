@@ -1,8 +1,8 @@
 package com.guicedee.guicedinjection.implementations;
 
 import com.guicedee.client.*;
+import com.guicedee.client.services.IGuiceProvider;
 import com.guicedee.guicedinjection.*;
-import com.guicedee.guicedinjection.interfaces.*;
 
 public class GuiceContextProvision implements IGuiceProvider
 {

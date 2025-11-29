@@ -1,9 +1,11 @@
+import com.guicedee.client.services.*;
+import com.guicedee.client.services.config.*;
+import com.guicedee.client.services.lifecycle.*;
 import com.guicedee.guicedinjection.JobService;
 import com.guicedee.guicedinjection.implementations.GuiceContextProvision;
 import com.guicedee.guicedinjection.implementations.JobServiceProvision;
-import com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
-import com.guicedee.guicedinjection.interfaces.IGuiceProvider;
-import com.guicedee.guicedinjection.interfaces.IJobServiceProvider;
+import com.guicedee.client.services.IGuiceProvider;
+import com.guicedee.client.services.IJobServiceProvider;
 
 module com.guicedee.guicedinjection {
 	requires transitive com.guicedee.client;
@@ -23,31 +25,31 @@ module com.guicedee.guicedinjection {
 	//exports com.guicedee.services.jsonrepresentation.json;
 	exports com.guicedee.guicedinjection.representations;
 	
-	uses com.guicedee.guicedinjection.interfaces.IPackageContentsScanner;
-	uses com.guicedee.guicedinjection.interfaces.IFileContentsScanner;
-	uses com.guicedee.guicedinjection.interfaces.IFileContentsPatternScanner;
-	uses com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
+	uses IPackageContentsScanner;
+	uses IFileContentsScanner;
+	uses IFileContentsPatternScanner;
+	uses IGuiceConfigurator;
 	//uses com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder;
-	uses com.guicedee.guicedinjection.interfaces.IGuicePreStartup;
-	uses com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
+	uses IGuicePreStartup;
+	uses IGuicePreDestroy;
 	
 	
-	uses com.guicedee.guicedinjection.interfaces.IGuiceModule;
-	uses com.guicedee.guicedinjection.interfaces.IGuicePostStartup;
-	uses com.guicedee.guicedinjection.interfaces.IPathContentsScanner;
-	uses com.guicedee.guicedinjection.interfaces.IPathContentsRejectListScanner;
-	uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions;
-	uses com.guicedee.guicedinjection.interfaces.IGuiceScanModuleInclusions;
-	uses com.guicedee.guicedinjection.interfaces.IPackageRejectListScanner;
-	uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
-	uses com.guicedee.guicedinjection.interfaces.IGuiceScanJarInclusions;
-    uses com.guicedee.guicedinjection.interfaces.Log4JConfigurator;
+	uses IGuiceModule;
+	uses IGuicePostStartup;
+	uses IPathContentsScanner;
+	uses IPathContentsRejectListScanner;
+	uses IGuiceScanModuleExclusions;
+	uses IGuiceScanModuleInclusions;
+	uses IPackageRejectListScanner;
+	uses IGuiceScanJarExclusions;
+	uses IGuiceScanJarInclusions;
+    uses Log4JConfigurator;
 
-    provides com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
-	provides com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
+    provides IGuiceScanModuleExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
+	provides IGuiceScanJarExclusions with com.guicedee.guicedinjection.implementations.GuiceDefaultModuleExclusions;
 	
-	provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.injections.ContextBinderGuice;
-	//provides com.guicedee.guicedinjection.interfaces.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
+	provides IGuiceModule with com.guicedee.guicedinjection.injections.ContextBinderGuice;
+	//provides com.guicedee.client.services.lifecycle.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
 	provides IGuiceProvider with GuiceContextProvision;
 	provides IJobServiceProvider with JobServiceProvision;
 	

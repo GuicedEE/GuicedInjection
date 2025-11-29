@@ -19,9 +19,11 @@ package com.guicedee.guicedinjection;
 import com.google.common.base.Stopwatch;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 import com.guicedee.client.*;
-import com.guicedee.guicedinjection.interfaces.*;
+import com.guicedee.client.services.*;
+import com.guicedee.client.services.config.*;
+import com.guicedee.client.services.lifecycle.*;
+import com.guicedee.client.utils.LogUtils;
 import com.guicedee.vertx.spi.VertXPreStartup;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ResourceList;
@@ -29,45 +31,29 @@ import io.github.classgraph.ScanResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
-import org.apache.logging.log4j.core.appender.RollingFileAppender;
-import org.apache.logging.log4j.core.appender.rolling.CompositeTriggeringPolicy;
-import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
-import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
-import org.apache.logging.log4j.core.appender.rolling.TimeBasedTriggeringPolicy;
-import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
-import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
-import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
-import org.apache.logging.log4j.core.config.builder.api.RootLoggerComponentBuilder;
-import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
-import org.apache.logging.log4j.core.filter.ThresholdFilter;
 import org.apache.logging.log4j.core.filter.LevelRangeFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.core.layout.JsonLayout;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.guicedee.guicedinjection.properties.GlobalProperties.getSystemPropertyOrEnvironment;
+import static com.guicedee.client.Environment.getSystemPropertyOrEnvironment;
 
 /**
  * Provides an interface for reflection and injection in one.
@@ -147,7 +133,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             config.getRootLogger().setLevel(defaultLogLevel);
 
             // Determine cloud environment and choose console layout
-            boolean isCloud = Boolean.parseBoolean(Environment.getSystemPropertyOrEnvironment("CLOUD", "false"));
+            boolean isCloud = Boolean.parseBoolean(getSystemPropertyOrEnvironment("CLOUD", "false"));
             ConsoleLayoutOption layoutOption = isCloud ? ConsoleLayoutOption.JSON : ConsoleLayoutOption.CURRENT;
 
             // Build default layout based on environment

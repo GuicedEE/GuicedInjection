@@ -1,7 +1,7 @@
 package com.guicedee.tests;
 
 import com.guicedee.guicedinjection.GuiceContext;
-import com.guicedee.guicedinjection.pairing.Pair;
+import com.guicedee.client.utils.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

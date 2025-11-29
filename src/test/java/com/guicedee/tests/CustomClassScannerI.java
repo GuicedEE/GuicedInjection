@@ -1,6 +1,6 @@
 package com.guicedee.tests;
 
-import com.guicedee.guicedinjection.interfaces.IFileContentsScanner;
+import com.guicedee.client.services.config.IFileContentsScanner;
 import io.github.classgraph.ResourceList;
 
 import java.util.HashMap;

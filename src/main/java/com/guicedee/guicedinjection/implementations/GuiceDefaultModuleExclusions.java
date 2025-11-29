@@ -1,7 +1,7 @@
 package com.guicedee.guicedinjection.implementations;
 
-import com.guicedee.guicedinjection.interfaces.IGuiceScanJarExclusions;
-import com.guicedee.guicedinjection.interfaces.IGuiceScanModuleExclusions;
+import com.guicedee.client.services.config.IGuiceScanJarExclusions;
+import com.guicedee.client.services.config.IGuiceScanModuleExclusions;
 
 import java.util.HashSet;
 import java.util.Set;

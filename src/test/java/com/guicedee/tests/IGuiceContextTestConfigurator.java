@@ -1,7 +1,7 @@
 package com.guicedee.tests;
 
-import com.guicedee.guicedinjection.interfaces.IGuiceConfig;
-import com.guicedee.guicedinjection.interfaces.IGuiceConfigurator;
+import com.guicedee.client.services.IGuiceConfig;
+import com.guicedee.client.services.lifecycle.IGuiceConfigurator;
 
 public class IGuiceContextTestConfigurator
 		implements IGuiceConfigurator {

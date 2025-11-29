@@ -2,8 +2,8 @@ package com.guicedee.tests;
 
 import com.guicedee.client.*;
 import com.guicedee.guicedinjection.GuiceContext;
-import com.guicedee.guicedinjection.pairing.OptionalPair;
-import com.guicedee.guicedinjection.properties.GlobalProperties;
+import com.guicedee.client.utils.OptionalPair;
+import com.guicedee.client.utils.GlobalProperties;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

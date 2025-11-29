@@ -1,7 +1,8 @@
 package com.guicedee.guicedinjection.implementations;
 
+import com.guicedee.client.services.IJobService;
+import com.guicedee.client.services.IJobServiceProvider;
 import com.guicedee.guicedinjection.*;
-import com.guicedee.guicedinjection.interfaces.*;
 
 public class JobServiceProvision implements IJobServiceProvider
 {

@@ -2,6 +2,7 @@ package com.guicedee.tests;
 
 import com.google.inject.Key;
 import com.guicedee.client.*;
+import com.guicedee.client.scopes.CallScoper;
 import com.guicedee.guicedinjection.GuiceContext;
 import io.smallrye.mutiny.Uni;
 import org.junit.jupiter.api.Test;

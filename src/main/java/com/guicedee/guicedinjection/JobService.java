@@ -1,8 +1,8 @@
 package com.guicedee.guicedinjection;
 
 import com.google.inject.Singleton;
-import com.guicedee.guicedinjection.interfaces.IGuicePreDestroy;
-import com.guicedee.guicedinjection.interfaces.IJobService;
+import com.guicedee.client.services.lifecycle.IGuicePreDestroy;
+import com.guicedee.client.services.IJobService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
