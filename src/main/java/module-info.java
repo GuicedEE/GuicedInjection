@@ -29,7 +29,6 @@ module com.guicedee.guicedinjection {
 	uses IFileContentsScanner;
 	uses IFileContentsPatternScanner;
 	uses IGuiceConfigurator;
-	//uses com.guicedee.guicedinjection.interfaces.IGuiceDefaultBinder;
 	uses IGuicePreStartup;
 	uses IGuicePreDestroy;
 	

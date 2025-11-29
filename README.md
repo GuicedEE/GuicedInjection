@@ -33,9 +33,9 @@ Maven coordinates (managed by the GuicedEE BOM):
 - `META-INF/services/<fqcn>` for each SPI implementation.
 - `module-info.java` `provides ... with ...;` and `uses ...;` for JPMS environments.
 
-3) Provide binders/modules:
-- Extend `GuiceDefaultBinder` or `GuiceSiteBinder` and register via SPI.
-- Keep binders side-effect free; perform wiring in `onBind`.
+3) Provide modules:
+- Extend standard Guice modules (e.g., `AbstractModule`, `PrivateModule`) and implement `IGuiceModule<?>` (CRTP) so they are discoverable.
+- Keep modules side-effect free; perform wiring in `configure`/`onBind` methods and register via SPI.
 
 4) Bootstrap:
 - Use `GuiceContext` (core bootstrap) to run scanning → SPI discovery → registry assembly → injector creation → logging/job service startup.
