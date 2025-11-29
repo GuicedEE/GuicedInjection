@@ -15,10 +15,7 @@
     <packaging>jar</packaging>
     <version>2.0.0-SNAPSHOT</version>
     <name>Guiced Injector</name>
-    <description>Guice Injection allows you to access multiple Guice Binders and Modules across separate archives.
-        Allowing you to configure your applications with injection from multiple dependancies. Servlets, EJB's, and
-        Stand-Alone is supported. Requires JDK 8 or 10.
-    </description>
+      <description>GuicedEE Inject is an open-source Guice integration library that discovers binders/modules across JARs via SPI and classpath scanning, bootstraps logging, job services, and JRT URL handling, and keeps optional adapters (e.g., Vert.x) isolated. Requires Java 25 LTS.</description>
     <url>https://github.com/GedMarc/GuiceInjection</url>
 
     <properties>
@@ -133,11 +130,6 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
-
-        <!--     <dependency>
-                 <groupId>jakarta.inject</groupId>
-                 <artifactId>jakarta.inject-api</artifactId>
-             </dependency>-->
 
         <dependency>
             <groupId>com.guicedee.services</groupId>
