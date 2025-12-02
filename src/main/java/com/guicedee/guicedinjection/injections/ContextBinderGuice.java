@@ -7,7 +7,6 @@ import com.guicedee.guicedinjection.GuiceConfig;
 import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.guicedinjection.JobService;
 import com.guicedee.client.services.lifecycle.IGuiceModule;
-import com.guicedee.client.services.IJobService;
 import com.guicedee.guicedinjection.logging.Log4JTypeListener;
 import com.guicedee.client.utils.GlobalProperties;
 import io.github.classgraph.ScanResult;
@@ -41,11 +40,13 @@ public class ContextBinderGuice
                         .getScanResult())
                 .in(Singleton.class);
 
+/*
         ContextBinderGuice.log.debug("Bound JobService.class");
 	    bind(IJobService.class)
 			    .toInstance(JobService.INSTANCE);
         bind(JobService.class)
                 .toInstance(JobService.INSTANCE);
+*/
 
         bindListener(Matchers.any(), new Log4JTypeListener());
     }

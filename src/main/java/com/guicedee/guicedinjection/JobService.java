@@ -2,7 +2,6 @@ package com.guicedee.guicedinjection;
 
 import com.google.inject.Singleton;
 import com.guicedee.client.services.lifecycle.IGuicePreDestroy;
-import com.guicedee.client.services.IJobService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -18,7 +17,7 @@ import java.util.concurrent.*;
 
 @Singleton
 @Log4j2
-public class JobService implements IGuicePreDestroy<JobService>, IJobService
+public class JobService implements IGuicePreDestroy<JobService>
 {
 	private final Map<String, ExecutorService> serviceMap = new ConcurrentHashMap<>();
 	private final Map<String, ScheduledExecutorService> pollingMap = new ConcurrentHashMap<>();
@@ -52,7 +51,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	 *
 	 * @return
 	 */
-	@Override
+	
 	public Set<String> getJobPools()
 	{
 		return serviceMap.keySet();
@@ -63,7 +62,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	 *
 	 * @return
 	 */
-	@Override
+	
 	public Set<String> getPollingPools()
 	{
 		return pollingMap.keySet();
@@ -74,7 +73,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	 *
 	 * @param pool The pool to remove
 	 */
-	@Override
+	
 	public ExecutorService removeJob(String pool)
 	{
 		ExecutorService es = serviceMap.get(pool);
@@ -111,7 +110,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	 *
 	 * @param pool The pool name to remove
 	 */
-	@Override
+	
 	public ScheduledExecutorService removePollingJob(String pool)
 	{
 		ScheduledExecutorService es = pollingMap.get(pool);
@@ -131,7 +130,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	 * @param name
 	 * @param executorService
 	 */
-	@Override
+	
 	public ExecutorService registerJobPool(String name, ExecutorService executorService)
 	{
 		if (serviceMap.containsKey(name))
@@ -164,7 +163,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	 * @param name            The name of the pool
 	 * @param executorService The service executor
 	 */
-	@Override
+	
 	public ScheduledExecutorService registerJobPollingPool(String name, ScheduledExecutorService executorService)
 	{
 		if (pollingMap.containsKey(name))
@@ -181,7 +180,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	 * @param jobPoolName
 	 * @param thread
 	 */
-	@Override
+	
 	public ExecutorService addJob(String jobPoolName, Runnable thread)
 	{
 		if (!serviceMap.containsKey(jobPoolName) || serviceMap
@@ -210,7 +209,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	 * @param jobPoolName
 	 * @param thread
 	 */
-	@Override
+	
 	public Future<?> addTask(String jobPoolName, Callable<?> thread)
 	{
 		if (!serviceMap.containsKey(jobPoolName) || serviceMap
@@ -232,13 +231,13 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		return service.submit(thread);
 	}
 
-	@Override
+	
 	public void waitForJob(String jobName)
 	{
 		waitForJob(jobName, defaultWaitTime, defaultWaitUnit);
 	}
 
-	@Override
+	
 	public void waitForJob(String jobName, long timeout, TimeUnit unit)
 	{
 		if (!serviceMap.containsKey(jobName))
@@ -292,7 +291,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	 * @param jobPoolName
 	 * @param thread
 	 */
-	@Override
+	
 	public ScheduledExecutorService addPollingJob(String jobPoolName, Runnable thread, long delay, TimeUnit unit)
 	{
 		if (!pollingMap.containsKey(jobPoolName) || pollingMap
@@ -315,7 +314,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	 * @param jobPoolName
 	 * @param thread
 	 */
-	@Override
+	
 	public ScheduledExecutorService addPollingJob(String jobPoolName, Runnable thread, long initialDelay, long delay, TimeUnit unit)
 	{
 		ScheduledExecutorService scheduledExecutorService = null;
@@ -335,7 +334,7 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 	/**
 	 * Shutdowns
 	 */
-	@Override
+	
 	public void destroy()
 	{
 		log.info("Destroying all running jobs...");
@@ -370,13 +369,13 @@ public class JobService implements IGuicePreDestroy<JobService>, IJobService
 		maxQueueCount.put(queueName, queueCount);
 	}
 
-	@Override
+	
 	public void onDestroy()
 	{
 		destroy();
 	}
 
-	@Override
+	
 	public Integer sortOrder()
 	{
 		return Integer.MIN_VALUE + 8;

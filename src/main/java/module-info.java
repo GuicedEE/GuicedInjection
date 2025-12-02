@@ -3,9 +3,7 @@ import com.guicedee.client.services.config.*;
 import com.guicedee.client.services.lifecycle.*;
 import com.guicedee.guicedinjection.JobService;
 import com.guicedee.guicedinjection.implementations.GuiceContextProvision;
-import com.guicedee.guicedinjection.implementations.JobServiceProvision;
 import com.guicedee.client.services.IGuiceProvider;
-import com.guicedee.client.services.IJobServiceProvider;
 
 module com.guicedee.guicedinjection {
 	requires transitive com.guicedee.client;
@@ -50,7 +48,6 @@ module com.guicedee.guicedinjection {
 	provides IGuiceModule with com.guicedee.guicedinjection.injections.ContextBinderGuice;
 	//provides com.guicedee.client.services.lifecycle.IGuiceModule with com.guicedee.guicedinjection.abstractions.GuiceInjectorModule;
 	provides IGuiceProvider with GuiceContextProvision;
-	provides IJobServiceProvider with JobServiceProvision;
 	
 	provides IGuicePreDestroy with JobService;
 	
