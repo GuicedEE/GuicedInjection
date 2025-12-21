@@ -1136,6 +1136,18 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
         Stopwatch totalStopwatch = Stopwatch.createStarted();
 
         return vertx.executeBlocking(() -> {
+            com.guicedee.client.scopes.CallScoper callScoper = null;
+            boolean started = false;
+            try {
+                callScoper = IGuiceContext.get(com.guicedee.client.scopes.CallScoper.class);
+                if (!callScoper.isStartedScope()) {
+                    callScoper.enter();
+                    started = true;
+                }
+                com.guicedee.client.scopes.CallScopeProperties props = IGuiceContext.get(com.guicedee.client.scopes.CallScopeProperties.class);
+                if (props.getSource() == null || props.getSource() == com.guicedee.client.scopes.CallScopeSource.Unknown) {
+                    props.setSource(com.guicedee.client.scopes.CallScopeSource.Startup);
+                }
             Set<IGuicePostStartup<?>> startupSet = loadPostStartupServices().stream()
                     .map(a -> (IGuicePostStartup<?>) a)
                     .collect(Collectors.toSet());
@@ -1197,6 +1209,11 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             log.info("🎉 Post-startup initialization setup completed in {}ms",
                     totalStopwatch.elapsed(TimeUnit.MILLISECONDS));
             return sequentialFuture;
+            } finally {
+                if (started && callScoper != null) {
+                    callScoper.exit();
+                }
+            }
         }).compose(result -> {
             log.info("🎉 All post-startup services completed execution");
             return result;
