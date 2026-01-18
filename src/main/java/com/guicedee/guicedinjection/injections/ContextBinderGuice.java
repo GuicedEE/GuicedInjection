@@ -13,7 +13,7 @@ import io.github.classgraph.ScanResult;
 import lombok.extern.log4j.Log4j2;
 
 /**
- * Binds the basic objects for the Guice Context to be injected everywhere
+ * Guice module that binds core GuiceContext services for injection.
  */
 @SuppressWarnings("unused")
 @Log4j2
@@ -24,6 +24,10 @@ public class ContextBinderGuice
         //No config required
     }
 
+    /**
+     * Configures core bindings including {@link GuiceConfig}, {@link GlobalProperties},
+     * and the active {@link ScanResult}.
+     */
     @Override
     public void configure() {
         ContextBinderGuice.log.debug("Bound GuiceConfig.class");
@@ -39,14 +43,6 @@ public class ContextBinderGuice
                 .toProvider(() -> GuiceContext.instance()
                         .getScanResult())
                 .in(Singleton.class);
-
-/*
-        ContextBinderGuice.log.debug("Bound JobService.class");
-	    bind(IJobService.class)
-			    .toInstance(JobService.INSTANCE);
-        bind(JobService.class)
-                .toInstance(JobService.INSTANCE);
-*/
 
         bindListener(Matchers.any(), new Log4JTypeListener());
     }

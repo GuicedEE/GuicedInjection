@@ -6,9 +6,17 @@ import com.guicedee.client.services.config.IGuiceScanModuleExclusions;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Default module and jar exclusion lists used to trim classpath scanning.
+ */
 public class GuiceDefaultModuleExclusions
 		implements IGuiceScanModuleExclusions<GuiceDefaultModuleExclusions>, IGuiceScanJarExclusions<GuiceDefaultModuleExclusions>
 {
+	/**
+	 * Returns the default module names to exclude from scanning.
+	 *
+	 * @return a set of module names to exclude
+	 */
 	@Override
 	public 
 	Set<String> excludeModules()
@@ -99,6 +107,11 @@ public class GuiceDefaultModuleExclusions
 		return strings;
 	}
 
+	/**
+	 * Returns the default jar name patterns to exclude from scanning.
+	 *
+	 * @return a set of jar patterns to exclude
+	 */
 	@Override
 	public  Set<String> excludeJars() {
 		Set<String> strings = new HashSet<>();

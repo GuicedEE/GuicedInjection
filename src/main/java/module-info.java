@@ -5,6 +5,9 @@ import com.guicedee.guicedinjection.JobService;
 import com.guicedee.guicedinjection.implementations.GuiceContextProvision;
 import com.guicedee.client.services.IGuiceProvider;
 
+/**
+ * Core Guice context module providing configuration, scanning, and lifecycle hooks.
+ */
 module com.guicedee.guicedinjection {
 	requires transitive com.guicedee.client;
 	requires transitive org.apache.commons.lang3;

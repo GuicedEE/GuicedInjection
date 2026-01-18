@@ -9,6 +9,9 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * URLConnection for {@code jrt:} URLs, normalizing {@code jar:jrt:/} variants.
+ */
 public class JrtUrlConnection
 		extends URLConnection
 {
@@ -16,7 +19,8 @@ public class JrtUrlConnection
 	
 	/**
 	 * Cleans up incorrectly found jar:jrt urls and returns a viable URI
-	 * @param url
+	 *
+	 * @param url the original URL to normalize
 	 */
 	protected JrtUrlConnection(URL url)
 	{
@@ -27,11 +31,19 @@ public class JrtUrlConnection
 		path = Path.of(uri);
 	}
 
+	/**
+	 * No-op connect, as the path is resolved on construction.
+	 */
 	@Override
 	public void connect() throws IOException
 	{
 	}
 
+	/**
+	 * Returns the content length of the resolved path.
+	 *
+	 * @return the content length in bytes
+	 */
 	@Override
 	public int getContentLength()
 	{
@@ -39,6 +51,11 @@ public class JrtUrlConnection
 		                 .length();
 	}
 
+	/**
+	 * Returns the content length of the resolved path.
+	 *
+	 * @return the content length in bytes
+	 */
 	@Override
 	public long getContentLengthLong()
 	{
@@ -46,6 +63,11 @@ public class JrtUrlConnection
 		           .length();
 	}
 
+	/**
+	 * Returns the last modified time of the resolved path.
+	 *
+	 * @return the last modified time in milliseconds since epoch
+	 */
 	@Override
 	public long getDate()
 	{
@@ -53,6 +75,11 @@ public class JrtUrlConnection
 		           .lastModified();
 	}
 
+	/**
+	 * Returns the last modified time of the resolved path.
+	 *
+	 * @return the last modified time in milliseconds since epoch
+	 */
 	@Override
 	public long getLastModified()
 	{
@@ -60,12 +87,22 @@ public class JrtUrlConnection
 		           .lastModified();
 	}
 
+	/**
+	 * Opens an input stream to the resolved path.
+	 *
+	 * @return an input stream for the resolved path
+	 */
 	@Override
 	public InputStream getInputStream() throws IOException
 	{
 		return Files.newInputStream(path);
 	}
 
+	/**
+	 * Opens an output stream to the resolved path.
+	 *
+	 * @return an output stream for the resolved path
+	 */
 	@Override
 	public OutputStream getOutputStream() throws IOException
 	{

@@ -90,6 +90,9 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
 
     private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
+    /**
+     * Creates a GlueList with the default initial capacity.
+     */
     public GlueList() {
 
         Node<T> initNode = new Node<>(null, null, 0, DEFAULT_CAPACITY);
@@ -98,6 +101,11 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         last = initNode;
     }
 
+    /**
+     * Creates a GlueList with the provided initial capacity.
+     *
+     * @param initialCapacity the desired initial capacity
+     */
     public GlueList(int initialCapacity) {
 
         this.initialCapacity = (initialCapacity > MAX_ARRAY_SIZE) ? MAX_ARRAY_SIZE : initialCapacity;
@@ -108,6 +116,11 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         last = initNode;
     }
 
+    /**
+     * Creates a GlueList containing the elements of the provided collection.
+     *
+     * @param c the collection whose elements are to be placed into this list
+     */
     public GlueList(Collection<? extends T> c) {
 
         Objects.requireNonNull(c);
@@ -138,6 +151,12 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         size += len;
     }
 
+    /**
+     * Appends the specified element to the end of this list.
+     *
+     * @param element the element to add
+     * @return {@code true} (as specified by {@link Collection#add})
+     */
     @Override
     public boolean add(T element) {
 
@@ -158,6 +177,12 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         return true;
     }
 
+    /**
+     * Inserts the specified element at the specified position in this list.
+     *
+     * @param index the index at which the element is to be inserted
+     * @param element the element to insert
+     */
     @SuppressWarnings("unchecked")
     @Override
     public void add(int index, T element) {
@@ -235,6 +260,12 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         }
     }
 
+    /**
+     * Appends all elements from the specified collection to this list.
+     *
+     * @param c the collection containing elements to add
+     * @return {@code true} if this list changed as a result
+     */
     @SuppressWarnings("unchecked")
     @Override
     public boolean addAll(Collection<? extends T> c) {
@@ -337,6 +368,13 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         return false;
     }
 
+    /**
+     * Replaces the element at the specified position with the specified element.
+     *
+     * @param index the index of the element to replace
+     * @param element the element to store
+     * @return the element previously at the specified position
+     */
     @Override
     public T set(int index, T element) {
 
@@ -353,6 +391,12 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         return oldValue;
     }
 
+    /**
+     * Returns the element at the specified position in this list.
+     *
+     * @param index the index of the element to return
+     * @return the element at the specified position
+     */
     @Override
     public T get(int index) {
 
@@ -363,6 +407,12 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         return node.elementData[index - node.startingIndex];
     }
 
+    /**
+     * Returns the index of the first occurrence of the specified element.
+     *
+     * @param o the element to search for
+     * @return the index of the first occurrence, or {@code -1} if not present
+     */
     @Override
     public int indexOf(Object o) {
 
@@ -393,6 +443,12 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         return -1;
     }
 
+    /**
+     * Returns the index of the last occurrence of the specified element.
+     *
+     * @param o the element to search for
+     * @return the index of the last occurrence, or {@code -1} if not present
+     */
     @Override
     public int lastIndexOf(Object o) {
 
@@ -422,11 +478,23 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         return -1;
     }
 
+    /**
+     * Returns {@code true} if this list contains the specified element.
+     *
+     * @param o the element to search for
+     * @return {@code true} if this list contains the element
+     */
     @Override
     public boolean contains(Object o) {
         return indexOf(o) != -1;
     }
 
+    /**
+     * Removes the element at the specified position in this list.
+     *
+     * @param index the index of the element to remove
+     * @return the element previously at the specified position
+     */
     @SuppressWarnings("unchecked")
     @Override
     public T remove(int index) {
@@ -499,6 +567,12 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         return oldValue;
     }
 
+    /**
+     * Removes all elements in this list that are also contained in the specified collection.
+     *
+     * @param c the collection containing elements to remove
+     * @return {@code true} if this list changed as a result
+     */
     @Override
     public boolean removeAll(Collection<?> c) {
 
@@ -518,6 +592,12 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         return isModified;
     }
 
+    /**
+     * Retains only the elements in this list that are contained in the specified collection.
+     *
+     * @param c the collection containing elements to retain
+     * @return {@code true} if this list changed as a result
+     */
     @Override
     public boolean retainAll(Collection<?> c) {
 
@@ -542,6 +622,12 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         return isModified;
     }
 
+    /**
+     * Removes the first occurrence of the specified element from this list.
+     *
+     * @param o the element to remove
+     * @return {@code true} if an element was removed
+     */
     @Override
     public boolean remove(Object o) {
 
@@ -617,6 +703,9 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         }
     }
 
+    /**
+     * Removes all of the elements from this list and resets internal storage.
+     */
     @Override
     public void clear() {
 
@@ -646,6 +735,9 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         size = 0;
     }
 
+    /**
+     * Trims the internal storage of the last node to minimize memory usage.
+     */
     public void trimToSize() {
 
         int pointer = last.elementDataPointer;
@@ -663,11 +755,23 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         }
     }
 
+    /**
+     * Returns a view of the portion of this list between the specified indices.
+     *
+     * @param fromIndex low endpoint (inclusive) of the subList
+     * @param toIndex high endpoint (exclusive) of the subList
+     * @return a view of the specified range within this list
+     */
     @Override
     public List<T> subList(int fromIndex, int toIndex) {
         return super.subList(fromIndex, toIndex);
     }
 
+    /**
+     * Returns an array containing all elements in this list.
+     *
+     * @return an array containing all elements
+     */
     @Override
     public Object[] toArray() {
 
@@ -688,16 +792,34 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         return objects;
     }
 
+    /**
+     * Returns an array containing all elements in this list; the runtime type
+     * of the returned array is that of the specified array.
+     *
+     * @param a the array into which the elements are to be stored
+     * @param <T> the runtime type of the array to contain the collection
+     * @return an array containing the elements of this list
+     */
     @SuppressWarnings("unchecked")
     @Override
     public <T> T[] toArray(T[] a) {
         return (T[]) Arrays.copyOf(toArray(), size, a.getClass());
     }
 
+    /**
+     * Returns {@code true} if this list contains no elements.
+     *
+     * @return {@code true} if this list is empty
+     */
     public boolean isEmpty() {
         return size == 0;
     }
 
+    /**
+     * Returns an iterator over the elements in this list.
+     *
+     * @return an iterator over the elements in this list
+     */
     @Override
     public Iterator<T> iterator() {
         return new Itr();
@@ -785,6 +907,12 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         }
     }
 
+    /**
+     * Returns a list iterator over the elements in this list, starting at the specified position.
+     *
+     * @param index index of the first element to be returned from the list iterator
+     * @return a list iterator starting at the specified position
+     */
     @Override
     public ListIterator<T> listIterator(int index) {
 
@@ -800,6 +928,11 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         }
     }
 
+    /**
+     * Returns a list iterator over the elements in this list starting at index 0.
+     *
+     * @return a list iterator over the elements in this list
+     */
     @Override
     public ListIterator<T> listIterator() {
         return new ListItr(0);
@@ -917,11 +1050,21 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         }
     }
 
+    /**
+     * Returns the number of elements in this list.
+     *
+     * @return the number of elements in this list
+     */
     @Override
     public int size() {
         return size;
     }
 
+    /**
+     * Returns a shallow copy of this list.
+     *
+     * @return a clone of this list
+     */
     @SuppressWarnings("unchecked")
     @Override
     public Object clone() {

@@ -346,6 +346,8 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
     /**
      * Returns the current configured default/root logging level.
+     *
+     * @return the active default/root Log4j2 level
      */
     public static Level getDefaultLogLevel() {
         return defaultLogLevel;
@@ -711,6 +713,11 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
         return strings.toArray(new String[0]);
     }
 
+    /**
+     * Returns a future that completes when post-startup services finish.
+     *
+     * @return a future completed when startup has fully finished
+     */
     public Future<Void> getLoadingFinished() {
         return Future.fromCompletionStage(loadingFinished);
     }
@@ -1101,6 +1108,11 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 .get(loaderType);
     }
 
+    /**
+     * Indicates whether the injector is currently being constructed.
+     *
+     * @return {@code true} while the injector is building
+     */
     @Override
     public boolean isBuildingInjector() {
         return buildingInjector;
@@ -1423,18 +1435,18 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * If this scanner is registered to run asynchronously
+     * Returns whether the classpath scanner runs asynchronously.
      *
-     * @return
+     * @return {@code true} when scanning uses parallel execution
      */
     public boolean isAsync() {
         return async;
     }
 
     /**
-     * Sets if the scanner must run asynchronously
+     * Sets whether the scanner must run asynchronously.
      *
-     * @param async
+     * @param async {@code true} to enable parallel scanning
      */
     public void setAsync(boolean async) {
         this.async = async;

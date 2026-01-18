@@ -4,7 +4,12 @@ import com.google.inject.Singleton;
 import com.guicedee.client.services.IGuiceConfig;
 
 /**
- * The configuration class for Guice Context and the Classpath Scanner
+ * Configuration for {@link GuiceContext} and the ClassGraph-based classpath scanner.
+ * <p>
+ * The configuration is fluent and is typically supplied by {@code IGuiceConfigurator}
+ * implementations discovered via {@link java.util.ServiceLoader}.
+ *
+ * @param <J> self type for fluent setter chaining
  */
 @SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue"})
 @Singleton
@@ -95,12 +100,24 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 		//No Config
 	}
 
+	/**
+	 * Returns whether service-loading should be performed using classpath scanning.
+	 *
+	 * @return {@code true} if classpath-backed service loading is enabled
+	 */
 	@Override
 	public boolean isServiceLoadWithClassPath()
 	{
 		return serviceLoadWithClassPath;
 	}
 
+	/**
+	 * Enables service loading via classpath scanning and turns on related scan flags
+	 * required for service discovery in modular runtimes.
+	 *
+	 * @param serviceLoadWithClassPath {@code true} to enable classpath-based service loading
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public @org.jspecify.annotations.NonNull J setServiceLoadWithClassPath(boolean serviceLoadWithClassPath)
@@ -117,105 +134,177 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 	}
 
 
+	/**
+	 * Returns whether field scanning is enabled.
+	 *
+	 * @return {@code true} when field scanning is enabled
+	 */
 	@Override
 	public boolean isFieldScanning()
 	{
 		return fieldScanning;
 	}
 
+	/**
+	 * Enables or disables field scanning.
+	 *
+	 * @param fieldScanning {@code true} to enable field scanning
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	
 	public @org.jspecify.annotations.NonNull J setFieldScanning(boolean fieldScanning)
 	{
 		this.fieldScanning = fieldScanning;
 		return (J) this;
 	}
 
+	/**
+	 * Returns whether annotation scanning is enabled.
+	 *
+	 * @return {@code true} when annotation scanning is enabled
+	 */
 	@Override
 	public boolean isAnnotationScanning()
 	{
 		return annotationScanning;
 	}
 
+	/**
+	 * Enables or disables annotation scanning.
+	 *
+	 * @param annotationScanning {@code true} to enable annotation scanning
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	
 	public @org.jspecify.annotations.NonNull J setAnnotationScanning(boolean annotationScanning)
 	{
 		this.annotationScanning = annotationScanning;
 		return (J) this;
 	}
 
+	/**
+	 * Returns whether method metadata is collected during scanning.
+	 *
+	 * @return {@code true} when method information is enabled
+	 */
 	@Override
 	public boolean isMethodInfo()
 	{
 		return methodInfo;
 	}
 
+	/**
+	 * Enables or disables method metadata collection during scanning.
+	 *
+	 * @param methodInfo {@code true} to enable method info
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	
 	public @org.jspecify.annotations.NonNull J setMethodInfo(boolean methodInfo)
 	{
 		this.methodInfo = methodInfo;
 		return (J) this;
 	}
 
+	/**
+	 * Returns whether field visibility checks are ignored.
+	 *
+	 * @return {@code true} when field visibility is ignored
+	 */
 	@Override
 	public boolean isIgnoreFieldVisibility()
 	{
 		return ignoreFieldVisibility;
 	}
 
+	/**
+	 * Enables or disables ignoring of field visibility during scanning.
+	 *
+	 * @param ignoreFieldVisibility {@code true} to ignore field visibility
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	
 	public @org.jspecify.annotations.NonNull J setIgnoreFieldVisibility(boolean ignoreFieldVisibility)
 	{
 		this.ignoreFieldVisibility = ignoreFieldVisibility;
 		return (J) this;
 	}
 
+	/**
+	 * Returns whether method visibility checks are ignored.
+	 *
+	 * @return {@code true} when method visibility is ignored
+	 */
 	@Override
 	public boolean isIgnoreMethodVisibility()
 	{
 		return ignoreMethodVisibility;
 	}
 
+	/**
+	 * Enables or disables ignoring of method visibility during scanning.
+	 *
+	 * @param ignoreMethodVisibility {@code true} to ignore method visibility
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	
 	public @org.jspecify.annotations.NonNull J setIgnoreMethodVisibility(boolean ignoreMethodVisibility)
 	{
 		this.ignoreMethodVisibility = ignoreMethodVisibility;
 		return (J) this;
 	}
 
+	/**
+	 * Returns whether package allow-listing is enabled.
+	 *
+	 * @return {@code true} when include-packages mode is enabled
+	 */
 	@Override
 	public boolean isIncludePackages()
 	{
 		return includePackages;
 	}
 
+	/**
+	 * Enables or disables package allow-listing.
+	 *
+	 * @param includePackages {@code true} to enable allow-listed package scanning
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	
 	public @org.jspecify.annotations.NonNull J setIncludePackages(boolean includePackages)
 	{
 		this.includePackages = includePackages;
 		return (J) this;
 	}
 
+	/**
+	 * Returns whether field metadata collection is enabled.
+	 *
+	 * @return {@code true} when field metadata is enabled
+	 */
 	@Override
 	public boolean isFieldInfo()
 	{
 		return fieldInfo;
 	}
 
+	/**
+	 * Enables or disables field metadata collection.
+	 * <p>
+	 * Enabling this also enables field scanning.
+	 *
+	 * @param fieldInfo {@code true} to enable field metadata
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	
 	public @org.jspecify.annotations.NonNull J setFieldInfo(boolean fieldInfo)
 	{
 		this.fieldInfo = fieldInfo;
@@ -223,15 +312,25 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 		return (J) this;
 	}
 
+	/**
+	 * Returns whether verbose scanner logging is enabled.
+	 *
+	 * @return {@code true} when verbose mode is enabled
+	 */
 	@Override
 	public boolean isVerbose()
 	{
 		return verbose;
 	}
 
+	/**
+	 * Enables or disables verbose scanner logging.
+	 *
+	 * @param verbose {@code true} to enable verbose logging
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	
 	public @org.jspecify.annotations.NonNull J setVerbose(boolean verbose)
 	{
 		this.verbose = verbose;
@@ -239,45 +338,75 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 		return (J) this;
 	}
 
+	/**
+	 * Returns whether classpath scanning is enabled.
+	 *
+	 * @return {@code true} when classpath scanning is enabled
+	 */
 	@Override
 	public boolean isClasspathScanning()
 	{
 		return classpathScanning;
 	}
 
+	/**
+	 * Enables or disables classpath scanning.
+	 *
+	 * @param classpathScanning {@code true} to enable classpath scanning
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	
 	public @org.jspecify.annotations.NonNull J setClasspathScanning(boolean classpathScanning)
 	{
 		this.classpathScanning = classpathScanning;
 		return (J) this;
 	}
 
+	/**
+	 * Returns whether module or jar exclusions are enabled.
+	 *
+	 * @return {@code true} when module/jar exclusion is enabled
+	 */
 	@Override
 	public boolean isExcludeModulesAndJars()
 	{
 		return excludeModulesAndJars;
 	}
 
+	/**
+	 * Enables or disables module/jar exclusion during scanning.
+	 *
+	 * @param excludeModulesAndJars {@code true} to exclude modules/jars
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	
 	public @org.jspecify.annotations.NonNull J setExcludeModulesAndJars(boolean excludeModulesAndJars)
 	{
 		this.excludeModulesAndJars = excludeModulesAndJars;
 		return (J) this;
 	}
 
+	/**
+	 * Returns whether path exclusions are enabled.
+	 *
+	 * @return {@code true} when path exclusion is enabled
+	 */
 	@Override
 	public boolean isExcludePaths()
 	{
 		return excludePaths;
 	}
 
+	/**
+	 * Enables or disables path exclusions during scanning.
+	 *
+	 * @param excludePaths {@code true} to enable path exclusions
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	
 	public @org.jspecify.annotations.NonNull J setExcludePaths(boolean excludePaths)
 	{
 		this.excludePaths = excludePaths;
@@ -310,12 +439,23 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 		       '}';
 	}
 
+	/**
+	 * Returns whether only explicitly allowed paths are scanned.
+	 *
+	 * @return {@code true} when allowed paths are enforced
+	 */
 	@Override
 	public boolean isAllowPaths()
 	{
 		return allowedPaths;
 	}
 
+	/**
+	 * Enables or disables allowed-paths mode.
+	 *
+	 * @param allowedPaths {@code true} to restrict scanning to allowed paths
+	 * @return this config for chaining
+	 */
 	@Override
 	public @org.jspecify.annotations.NonNull J setAllowPaths(boolean allowedPaths)
 	{
@@ -323,12 +463,23 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 		return (J)this;
 	}
 	
+	/**
+	 * Returns whether class visibility checks are ignored.
+	 *
+	 * @return {@code true} when class visibility is ignored
+	 */
 	@Override
 	public boolean isIgnoreClassVisibility()
 	{
 		return ignoreClassVisibility;
 	}
 	
+	/**
+	 * Enables or disables ignoring of class visibility during scanning.
+	 *
+	 * @param ignoreClassVisibility {@code true} to ignore class visibility
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public @org.jspecify.annotations.NonNull J setIgnoreClassVisibility(boolean ignoreClassVisibility)
@@ -337,23 +488,45 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 		return (J) this;
 	}
 	
+	/**
+	 * Returns whether module/jar inclusion lists are enabled.
+	 *
+	 * @return {@code true} when module/jar inclusion is enabled
+	 */
 	@Override
 	public boolean isIncludeModuleAndJars() {
 		return includeModuleAndJars;
 	}
 
+	/**
+	 * Enables or disables module/jar inclusion lists during scanning.
+	 *
+	 * @param includeModuleAndJars {@code true} to include only listed modules/jars
+	 * @return this config for chaining
+	 */
 	@Override
 	public @org.jspecify.annotations.NonNull J setIncludeModuleAndJars(boolean includeModuleAndJars) {
 		this.includeModuleAndJars = includeModuleAndJars;
 		return (J)this;
 	}
 
+	/**
+	 * Returns whether path scanning is enabled.
+	 *
+	 * @return {@code true} when path scanning is enabled
+	 */
 	@Override
 	public boolean isPathScanning()
 	{
 		return pathScanning;
 	}
 
+	/**
+	 * Enables or disables path scanning.
+	 *
+	 * @param pathScanning {@code true} to enable path scanning
+	 * @return this config for chaining
+	 */
 	@Override
 	public @org.jspecify.annotations.NonNull J setPathScanning(boolean pathScanning)
 	{
@@ -361,6 +534,11 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 		return (J)this;
 	}
 
+	/**
+	 * Returns whether parent modules are excluded from scanning.
+	 *
+	 * @return {@code true} when parent modules are excluded
+	 */
 	@Override
 	@SuppressWarnings("unused")
 	public boolean isExcludeParentModules()
@@ -368,6 +546,12 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 		return excludeParentModules;
 	}
 
+	/**
+	 * Enables or disables exclusion of parent modules from scanning.
+	 *
+	 * @param excludeParentModules {@code true} to exclude parent modules
+	 * @return this config for chaining
+	 */
 	@Override
 	@SuppressWarnings("unused")
 	public @org.jspecify.annotations.NonNull J setExcludeParentModules(boolean excludeParentModules)
@@ -376,12 +560,23 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 		return (J)this;
 	}
 
+	/**
+	 * Returns whether package rejection is enabled.
+	 *
+	 * @return {@code true} when package rejection is enabled
+	 */
 	@Override
 	public boolean isRejectPackages()
 	{
 		return excludePackages;
 	}
 
+	/**
+	 * Enables or disables package rejection during scanning.
+	 *
+	 * @param excludePackages {@code true} to reject packages
+	 * @return this config for chaining
+	 */
 	@Override
 	public @org.jspecify.annotations.NonNull J setExcludePackages(boolean excludePackages)
 	{

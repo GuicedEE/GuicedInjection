@@ -12,7 +12,10 @@ import java.util.concurrent.*;
 
 
 /**
- * Manages All Concurrent Threaded Jobs that execute asynchronously outside of the EE Context
+ * Manages concurrent job pools that execute outside of the EE context.
+ * <p>
+ * Pools can be registered, used for one-off tasks, or scheduled for polling tasks,
+ * and will be cleaned up on shutdown via {@link IGuicePreDestroy}.
  */
 
 @Singleton
@@ -47,9 +50,9 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Gets a list of all job pools currently registered
+	 * Returns the names of registered job pools.
 	 *
-	 * @return
+	 * @return the registered job pool names
 	 */
 	
 	public Set<String> getJobPools()
@@ -58,9 +61,9 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Returns the list of repeating task pools registered
+	 * Returns the names of registered polling pools.
 	 *
-	 * @return
+	 * @return the registered polling pool names
 	 */
 	
 	public Set<String> getPollingPools()
@@ -69,9 +72,10 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Completes and Removes all jobs running from the given pool
+	 * Completes and removes all jobs running in the given pool, waiting for completion.
 	 *
-	 * @param pool The pool to remove
+	 * @param pool The pool name to remove
+	 * @return the removed executor, or {@code null} if not registered
 	 */
 	
 	public ExecutorService removeJob(String pool)
@@ -88,9 +92,10 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Completes and Removes all jobs running from the given pool
+	 * Removes all jobs running in the given pool without waiting for completion.
 	 *
-	 * @param pool The pool to remove
+	 * @param pool The pool name to remove
+	 * @return the removed executor, or {@code null} if not registered
 	 */
 	public ExecutorService removeJobNoWait(String pool)
 	{
@@ -106,9 +111,10 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Completes and Removes all jobs running from the given pool
+	 * Completes and removes all scheduled jobs running in the given pool.
 	 *
 	 * @param pool The pool name to remove
+	 * @return the removed executor, or {@code null} if not registered
 	 */
 	
 	public ScheduledExecutorService removePollingJob(String pool)
@@ -125,10 +131,11 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Registers a new job pool with a specific service
+	 * Registers a new job pool, replacing any existing pool of the same name.
 	 *
-	 * @param name
-	 * @param executorService
+	 * @param name the pool name
+	 * @param executorService the executor service to register
+	 * @return the registered executor service
 	 */
 	
 	public ExecutorService registerJobPool(String name, ExecutorService executorService)
@@ -158,10 +165,11 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Registers a repeating task to be registered and monitored
+	 * Registers a polling pool for scheduled tasks, replacing any existing pool of the same name.
 	 *
-	 * @param name            The name of the pool
-	 * @param executorService The service executor
+	 * @param name the pool name
+	 * @param executorService the scheduled executor service to register
+	 * @return the registered scheduled executor service
 	 */
 	
 	public ScheduledExecutorService registerJobPollingPool(String name, ScheduledExecutorService executorService)
@@ -175,10 +183,11 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Adds a static run once job to the monitored collections
+	 * Adds a one-off runnable job to the named pool, creating the pool if needed.
 	 *
-	 * @param jobPoolName
-	 * @param thread
+	 * @param jobPoolName the pool name
+	 * @param thread the task to execute
+	 * @return the executor service used for execution
 	 */
 	
 	public ExecutorService addJob(String jobPoolName, Runnable thread)
@@ -204,10 +213,11 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Adds a static run once job to the monitored collections
+	 * Adds a one-off callable task to the named pool, creating the pool if needed.
 	 *
-	 * @param jobPoolName
-	 * @param thread
+	 * @param jobPoolName the pool name
+	 * @param thread the task to execute
+	 * @return a future representing task completion
 	 */
 	
 	public Future<?> addTask(String jobPoolName, Callable<?> thread)
@@ -232,12 +242,24 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	
+	/**
+	 * Shuts down the named pool and waits for completion using default timeout settings.
+	 *
+	 * @param jobName the pool name
+	 */
 	public void waitForJob(String jobName)
 	{
 		waitForJob(jobName, defaultWaitTime, defaultWaitUnit);
 	}
 
 	
+	/**
+	 * Shuts down the named pool and waits for completion.
+	 *
+	 * @param jobName the pool name
+	 * @param timeout the maximum time to wait
+	 * @param unit the time unit for the timeout
+	 */
 	public void waitForJob(String jobName, long timeout, TimeUnit unit)
 	{
 		if (!serviceMap.containsKey(jobName))
@@ -286,10 +308,13 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Adds a static run once job to the monitored collections
+	 * Registers a polling job that runs at a fixed rate after an initial delay of 1 unit.
 	 *
-	 * @param jobPoolName
-	 * @param thread
+	 * @param jobPoolName the pool name
+	 * @param thread the task to execute
+	 * @param delay the fixed delay between executions
+	 * @param unit the time unit for the delay
+	 * @return the scheduled executor service used for execution
 	 */
 	
 	public ScheduledExecutorService addPollingJob(String jobPoolName, Runnable thread, long delay, TimeUnit unit)
@@ -309,10 +334,14 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Adds a static run once job to the monitored collections
+	 * Registers a polling job that runs at a fixed rate with an explicit initial delay.
 	 *
-	 * @param jobPoolName
-	 * @param thread
+	 * @param jobPoolName the pool name
+	 * @param thread the task to execute
+	 * @param initialDelay the initial delay before first execution
+	 * @param delay the fixed delay between executions
+	 * @param unit the time unit for the delays
+	 * @return the scheduled executor service used for execution
 	 */
 	
 	public ScheduledExecutorService addPollingJob(String jobPoolName, Runnable thread, long initialDelay, long delay, TimeUnit unit)
@@ -332,7 +361,7 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Shutdowns
+	 * Shuts down all job and polling pools and waits for completion.
 	 */
 	
 	public void destroy()
@@ -364,18 +393,32 @@ public class JobService implements IGuicePreDestroy<JobService>
 		return 0;
 	}
 
+	/**
+	 * Sets the maximum queue count for a named pool.
+	 *
+	 * @param queueName the pool name
+	 * @param queueCount the maximum queued task count
+	 */
 	public void setMaxQueueCount(String queueName, int queueCount)
 	{
 		maxQueueCount.put(queueName, queueCount);
 	}
 
 	
+	/**
+	 * Lifecycle hook called during application shutdown.
+	 */
 	public void onDestroy()
 	{
 		destroy();
 	}
 
 	
+	/**
+	 * Returns the sort order for pre-destroy services.
+	 *
+	 * @return the sort order value
+	 */
 	public Integer sortOrder()
 	{
 		return Integer.MIN_VALUE + 8;
