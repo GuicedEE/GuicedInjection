@@ -1357,12 +1357,27 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             Stopwatch groupStopwatch = Stopwatch.createStarted();
 
             List<Future<Boolean>> groupFutures = new ArrayList<>();
+            // Track futures to their originating service for better diagnostics
+            Map<Future<?>, String> futureServiceNames = new IdentityHashMap<>();
             for (IGuicePreStartup<?> iGuicePreStartup : value) {
                 String serviceName = iGuicePreStartup.getClass().getSimpleName();
                 log.info("🚀 Starting pre-startup service [{}] with priority [{}]", serviceName, key);
 
                 try {
                     List<Future<Boolean>> serviceFutures = iGuicePreStartup.onStartup();
+                    // Remember each future's source service and attach completion logging
+                    for (Future<Boolean> f : serviceFutures) {
+                        futureServiceNames.put(f, serviceName);
+                        f.onComplete(ar -> {
+                            if (ar.succeeded()) {
+                                log.info("✅ Pre-startup future for service [{}] completed successfully", serviceName);
+                            } else {
+                                Throwable cause = ar.cause();
+                                String msg = (cause != null ? cause.getMessage() : "unknown error");
+                                log.error("❌ Pre-startup future for service [{}] failed: {}", serviceName, msg, cause);
+                            }
+                        });
+                    }
                     groupFutures.addAll(serviceFutures);
 
                     if (log.isTraceEnabled()) {
@@ -1396,6 +1411,18 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 failureCount += (groupFutures.size() - successCount);
                 log.error("⏱️ Timeout waiting for pre-startup group [{}] after 10 seconds: {}",
                         key, e.getMessage(), e);
+                // Log which futures are still pending to identify slow services
+                long pendingCount = groupFutures.stream().filter(f -> !f.isComplete()).count();
+                if (pendingCount > 0) {
+                    log.error("🐢 {} pre-startup futures still pending in group [{}] after timeout:", pendingCount, key);
+                    for (Future<Boolean> f : groupFutures) {
+                        if (!f.isComplete()) {
+                            String svc = futureServiceNames.getOrDefault(f, "<unknown-service>");
+                            log.error("   • Pending future from service [{}] -> {}", svc, f);
+                        }
+                    }
+                    log.error("💡 Tip: enable TRACE logging to see detailed start/completion of each future, or increase the timeout if expected.");
+                }
             }
         }
 
