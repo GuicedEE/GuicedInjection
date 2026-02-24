@@ -1370,7 +1370,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         futureServiceNames.put(f, serviceName);
                         f.onComplete(ar -> {
                             if (ar.succeeded()) {
-                                log.info("✅ Pre-startup future for service [{}] completed successfully", serviceName);
+                                log.debug("✅ Pre-startup future for service [{}] completed successfully", serviceName);
                             } else {
                                 Throwable cause = ar.cause();
                                 String msg = (cause != null ? cause.getMessage() : "unknown error");
