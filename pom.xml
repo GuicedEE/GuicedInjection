@@ -10,7 +10,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.guicedee</groupId>
-    <artifactId>guice-injection</artifactId>
+    <artifactId>inject</artifactId>
 
     <packaging>jar</packaging>
     <version>2.0.0-SNAPSHOT</version>
@@ -82,16 +82,16 @@
 
         <dependency>
             <groupId>com.guicedee</groupId>
-            <artifactId>guice-inject-client</artifactId>
+            <artifactId>client</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.guicedee</groupId>
-            <artifactId>guiced-vertx</artifactId>
+            <artifactId>vertx</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.guicedee.services</groupId>
+            <groupId>com.guicedee.modules.services</groupId>
             <artifactId>config-core</artifactId>
         </dependency>
 
@@ -107,7 +107,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.guicedee.services</groupId>
+            <groupId>com.guicedee.modules.services</groupId>
             <artifactId>guice</artifactId>
         </dependency>
 
@@ -132,7 +132,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.guicedee.services</groupId>
+            <groupId>com.guicedee.modules.services</groupId>
             <artifactId>aopalliance-core</artifactId>
         </dependency>
 

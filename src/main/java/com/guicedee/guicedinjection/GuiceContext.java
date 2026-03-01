@@ -1222,7 +1222,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     totalStopwatch.elapsed(TimeUnit.MILLISECONDS));
             return sequentialFuture;
             } finally {
-                if (started && callScoper != null) {
+                if (started) {
                     callScoper.exit();
                 }
             }

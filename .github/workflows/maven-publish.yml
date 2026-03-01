@@ -1,6 +1,11 @@
-name: Maven Package
+name: GuicedEE Inject
 on:
   workflow_dispatch:
+    inputs:
+      centralRelease:
+        type: boolean
+        description: Run a release to maven central
+        default: false
   push:
 jobs:
   GuicedInjection:
@@ -8,8 +13,6 @@ jobs:
     with:
       baseDir: ''
       name: 'Guiced Injection'
-    secrets:
-      USERNAME: ${{secrets.USERNAME}}
-      USER_TOKEN: ${{secrets.USER_TOKEN}}
-      SONA_USERNAME: ${{secrets.SONA_USERNAME}}
-      SONA_PASSWORD: ${{secrets.SONA_PASSWORD}}
+      sonarProjectName: 'GuicedEE_GuicedInjection'
+      sonarOrganization: 'guicedee'
+    secrets: inherit

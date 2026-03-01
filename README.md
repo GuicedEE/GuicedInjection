@@ -1,124 +1,242 @@
-# 💉 GuicedEE Inject
+# GuicedEE Inject
 
-[![JDK](https://img.shields.io/badge/JDK-25%2B-0A7?logo=java)](https://openjdk.org/projects/jdk/25/)
-[![Build](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven)](https://maven.apache.org/)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Build](https://github.com/GuicedEE/GuicedInjection/actions/workflows/maven-publish.yml/badge.svg)](https://github.com/GuicedEE/GuicedInjection/actions/workflows/maven-publish.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/com.guicedee/guice-injection)](https://central.sonatype.com/artifact/com.guicedee/guice-injection)
+[![Maven Snapshot](https://img.shields.io/nexus/s/com.guicedee/guice-injection?server=https%3A%2F%2Foss.sonatype.org&label=Maven%20Snapshot)](https://oss.sonatype.org/content/repositories/snapshots/com/guicedee/guice-injection/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 
-<!-- Tech icons row -->
-![Guice](https://img.shields.io/badge/Guice-Core-2F4F4F)
-![JSpecify](https://img.shields.io/badge/JSpecify-Nullness-4B9)
-![Log4j2](https://img.shields.io/badge/Log4j2-Logging-B318)
-![JPMS](https://img.shields.io/badge/JPMS-Modules-0A7)
-![Vert.x (optional)](https://img.shields.io/badge/Vert.x-Adapter_Optional-4B9)
+![Java 25+](https://img.shields.io/badge/Java-25%2B-green)
+![Guice 7](https://img.shields.io/badge/Guice-7%2B-green)
+![Vert.X 5](https://img.shields.io/badge/Vert.x-5%2B-green)
+![Maven 4](https://img.shields.io/badge/Maven-4%2B-green)
 
-GuicedEE Inject is a lightweight, JPMS-ready integration layer for Google Guice with classpath scanning + SPI discovery. It bootstraps logging (@InjectLogger), job services (virtual-thread executors), and includes a JRT URL StreamHandler. Adapters (e.g., Vert.x) are optional and stay out of the core classpath.
+The **runtime engine** for [GuicedEE](https://github.com/GuicedEE).
+This is the library you add to your application — it wires together the [Client SPI](https://github.com/GuicedEE/Client), performs classpath scanning, creates the Guice injector, and manages the full startup/shutdown lifecycle.
 
-## ✨ Features
-- SPI- and scanner-driven discovery of Guice Modules/Binders across archives
-- Logging bootstrap with `@InjectLogger` TypeListener and Log4j configurator SPI
-- Job service with virtual-thread executors and graceful shutdown hooks
-- JRT URL stream handler (java.net.spi.URLStreamHandlerProvider)
-- Optional Vert.x adapter for reactive runtimes (kept separate)
-- JPMS-ready module: `com.guicedee.guicedinjection` with dual ServiceLoader/JPMS registration
+Built on [Google Guice](https://github.com/google/guice) · JPMS module `com.guicedee.guicedinjection` · Java 25+
 
-## 📦 Install (Maven)
-Managed via the GuicedEE BOM/parent; add the dependency:
+## 📦 Installation
 
 ```xml
 <dependency>
   <groupId>com.guicedee</groupId>
-  <artifactId>guice-injection</artifactId>
+  <artifactId>inject</artifactId>
 </dependency>
 ```
 
+<details>
+<summary>Gradle (Kotlin DSL)</summary>
+
+```kotlin
+implementation("com.guicedee:guice-injection:2.0.0-SNAPSHOT")
+```
+</details>
+
 ## 🚀 Quick Start
-1) Initialize the Guice context and let Inject discover modules via SPI + scanning.
 
+```java
+// Register your module for classpath scanning
+IGuiceContext.registerModuleForScanning.add("my.app");
+
+// Bootstrap — scanning, SPI discovery, injector creation, lifecycle hooks
+IGuiceContext.instance();
+
+// Grab any managed instance
+MyService svc = IGuiceContext.get(MyService.class);
 ```
-import com.guicedee.client.IGuiceContext;
 
-public class Main {
-  public static void main(String[] args) {
-    // Bootstraps scanning → SPI discovery → injector creation → logging/job startup
-    IGuiceContext.instance();
-  }
+Provide a Guice module via JPMS + ServiceLoader:
+
+```java
+public class AppModule extends AbstractModule
+        implements IGuiceModule<AppModule> {
+
+    @Override
+    protected void configure() {
+        bind(Greeter.class).to(DefaultGreeter.class);
+    }
 }
 ```
 
-2) Provide a module and register it via ServiceLoader + JPMS.
+```java
+module my.app {
+    requires com.guicedee.guicedinjection;
 
-```
-// Module
-public final class MyModule extends com.google.inject.AbstractModule
-    implements com.guicedee.client.IGuiceModule<MyModule> {
-  @Override protected void configure() {
-    bind(Greeter.class).to(DefaultGreeter.class);
-  }
-}
-
-// META-INF/services/com.guicedee.client.IGuiceModule
-//   com.example.di.MyModule
-
-// module-info.java
-// module com.example.app {
-//   requires com.guicedee.guicedinjection;
-//   provides com.guicedee.client.IGuiceModule with com.example.di.MyModule;
-//   uses com.guicedee.client.IGuiceModule;
-// }
-```
-
-3) Use injected logging and services.
-
-```
-import com.guicedee.logger.annotations.InjectLogger;
-import org.apache.logging.log4j.Logger;
-
-public class DefaultGreeter implements Greeter {
-  @InjectLogger
-  Logger log;
-
-  @Override public void greet(String name) {
-    log.info("Hello, {}!", name);
-  }
+    provides com.guicedee.client.services.lifecycle.IGuiceModule
+        with my.app.AppModule;
 }
 ```
 
-## ⚙️ Configuration
-- Scanning: optionally narrow with `PackageContentsScanner` or customize with `FileContentsScanner`.
-- SPI: always dual-register — `META-INF/services/<fqcn>` and `module-info.java` (provides/uses).
-- Logging: provide a `Log4JConfigurator` SPI to customize appenders/patterns; defaults are sensible.
-- Jobs: virtual-thread executors are provided; hook shutdown via GuicedEE lifecycle.
-- URL Handler: JRT handler is installed via `URLStreamHandlerProvider` — e.g. `new URL("jrt:/java.base/module-info.class")`.
+## 📝 Logging — `@InjectLogger`
 
-Keep secrets and environment-specific settings in your host app; GuicedEE Inject itself carries no runtime secrets.
+Inject a named Log4j2 logger into any Guice-managed class — no boilerplate, no static fields:
 
-## 🧩 JPMS & SPI
-- Module name: `com.guicedee.guicedinjection`
-- Add `uses` for SPI you consume; add `provides ... with ...` for implementations you ship.
-- In non-JPMS environments, META-INF/services discovery still works.
+```java
+public class OrderService {
 
-## Optional adapter: Vert.x
-- If your app runs a reactive stack, use the Vert.x adapter documented under:
-  - `rules/generative/backend/guicedee/vertx/README.md`
-  - `rules/generative/backend/guicedee/functions/guiced-vertx-rules.md`
-- Keep Vert.x out of core DI modules to avoid unnecessary transitive dependencies.
+    @InjectLogger("orders")
+    Logger log;
 
-## 📚 Governance & Docs
-- Pact: `PACT.md`
-- Rules: `RULES.md`
-- Guides: `GUIDES.md`
-- Implementation notes: `IMPLEMENTATION.md`
-- Glossary (topic-first): `GLOSSARY.md`
-- Architecture index and diagrams: `docs/architecture/README.md`
-- Prompt reference for AI systems: `docs/PROMPT_REFERENCE.md`
-- Implementation plan (forward-only rollout): `IMPLEMENTATION_PLAN.md`
-- Inject rules index: `rules/generative/backend/guicedee/inject/README.md`
+    public void place(Order order) {
+        log.info("Placed order {}", order.id());
+    }
+}
+```
 
-## 📝 License & Contributions
-- License: Apache 2.0 (see `LICENSE`).
-- Contributions: open focused issues/PRs. Follow the forward-only, documentation-as-code policy. Update ServiceLoader and JPMS entries together when adding/changing SPIs.
+| Attribute | Default | Purpose |
+|---|---|---|
+| `value` | declaring class name | Logger name |
+| `level` | *(none)* | Optional level hint |
+| `rollingFileName` | *(none)* | File name hint for rolling appenders |
+| `fileName` | *(none)* | File name hint for file appenders |
 
-## 🧪 CI
-- CI typically runs Maven on JDK 25 (see `.github/workflows/maven-publish.yml` in host repos).
-- No `.env.example` is distributed here — host applications own environment templates and secrets.
+The `Log4JTypeListener` and `Log4JMembersInjector` handle the wiring — they're registered automatically by `ContextBinderGuice`.
 
+### Programmatic logging with `LogUtils`
+
+For setup outside of injection (e.g. `main()` or pre-startup hooks):
+
+```java
+// ANSI-highlighted console (local dev)
+LogUtils.addHighlightedConsoleLogger();
+
+// Plain console at a specific level
+LogUtils.addConsoleLogger(Level.INFO);
+
+// Rolling file logger (100 MB / daily rollover)
+LogUtils.addFileRollingLogger("my-app", "logs");
+
+// Isolated logger with its own file
+Logger auditLog = LogUtils.getSpecificRollingLogger(
+    "audit", "logs/audit", null, false
+);
+```
+
+> When the `CLOUD` environment variable is set, all layouts automatically switch to compact JSON for log aggregator ingestion.
+
+## ⚙️ Job Service
+
+`JobService` manages named virtual-thread executor pools with graceful shutdown:
+
+```java
+JobService jobs = JobService.INSTANCE;
+
+// Register and submit work
+jobs.registerJob("import", 100);
+jobs.addJob("import", () -> processFile(file));
+
+// Scheduled polling
+jobs.registerPollingJob("heartbeat", () -> ping(), 0, 30, TimeUnit.SECONDS);
+```
+
+All pools are shut down automatically via `IGuicePreDestroy` when the context tears down.
+
+## 🔍 Classpath Scanner Configuration
+
+`GuiceContext` uses [ClassGraph](https://github.com/classgraph/classgraph) under the hood.
+Control the scan scope with SPI interfaces — implement and register via `ServiceLoader` / JPMS `provides`:
+
+### Module & JAR filtering
+
+| SPI Interface | Method | Purpose |
+|---|---|---|
+| `IGuiceScanModuleInclusions` | `includeModules()` | Modules to **include** |
+| `IGuiceScanModuleExclusions` | `excludeModules()` | Modules to **exclude** |
+| `IGuiceScanJarInclusions` | `includeJars()` | JAR filenames to **include** |
+| `IGuiceScanJarExclusions` | `excludeJars()` | JAR filenames to **exclude** |
+
+```java
+public class MyExclusions
+        implements IGuiceScanModuleExclusions<MyExclusions> {
+
+    @Override
+    public Set<String> excludeModules() {
+        return Set.of("java.sql", "jdk.crypto.ec");
+    }
+}
+```
+
+### Package & path filtering
+
+| SPI Interface | Method | Purpose |
+|---|---|---|
+| `IPackageContentsScanner` | `searchFor()` | Packages to **include** |
+| `IPackageRejectListScanner` | `exclude()` | Packages to **exclude** |
+| `IPathContentsScanner` | `searchFor()` | Resource paths to **include** |
+| `IPathContentsRejectListScanner` | `searchFor()` | Resource paths to **exclude** |
+
+### File content scanners
+
+These fire during the ClassGraph scan and let you process matched resources inline:
+
+| SPI Interface | Method | Match by |
+|---|---|---|
+| `IFileContentsScanner` | `onMatch()` | Exact file name |
+| `IFileContentsPatternScanner` | `onMatch()` | Regex pattern |
+
+```java
+public class ChangelogScanner implements IFileContentsScanner {
+
+    @Override
+    public Map<String, ResourceList.ByteArrayConsumer> onMatch() {
+        return Map.of("changelog.xml", (resource, bytes) -> {
+            // process matched resource
+        });
+    }
+}
+```
+
+### `GuiceConfig` options
+
+| Setter | Default | Effect |
+|---|---|---|
+| `setFieldScanning(true)` | `false` | Enable field-level scanning |
+| `setAnnotationScanning(true)` | `false` | Enable annotation scanning |
+| `setMethodInfo(true)` | `false` | Include method metadata |
+| `setIgnoreFieldVisibility(true)` | `false` | Scan non-public fields |
+| `setIncludePackages(true)` | `false` | Whitelist-only package scanning |
+| `setVerbose(true)` | `false` | Verbose ClassGraph output |
+
+Configure via an `IGuiceConfigurator` SPI implementation.
+
+## 🔄 Lifecycle
+
+```
+IGuicePreStartup  →  ClassGraph scan  →  Injector created  →  IGuicePostStartup
+                                                                        ↓
+                                                               IGuicePreDestroy (shutdown)
+```
+
+| Hook | Purpose |
+|---|---|
+| `IGuicePreStartup` | Runs before scanning and injector creation |
+| `IGuicePostStartup` | Runs after the injector is ready |
+| `IGuicePreDestroy` | Cleanup on shutdown (e.g. `JobService`) |
+| `IGuiceConfigurator` | Configures `GuiceConfig` before scanning |
+| `Log4JConfigurator` | Customizes Log4j2 appenders/patterns at startup |
+
+## 🗺️ Module Graph
+
+```
+com.guicedee.guicedinjection
+ ├── com.guicedee.client          (SPI contracts)
+ ├── com.guicedee.vertx           (Vert.x integration)
+ ├── io.smallrye.config.core      (MicroProfile Config)
+ └── org.apache.commons.lang3
+```
+
+## 🧩 JPMS
+
+Module name: **`com.guicedee.guicedinjection`**
+
+The module declares `uses` for every scanner and lifecycle SPI, and provides default implementations for module/jar exclusions, the Guice context provider, and JRT URL handling.
+
+In non-JPMS environments, `META-INF/services` discovery still works.
+
+## 🤝 Contributing
+
+Issues and pull requests are welcome.
+
+## 📄 License
+
+[Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
