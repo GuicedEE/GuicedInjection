@@ -101,6 +101,36 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 	}
 
 	/**
+	 * Resets all configuration flags back to their default values ({@code false}).
+	 * Used during {@link GuiceContext#destroy()} to ensure a clean slate for re-initialization.
+	 *
+	 * @return this config for chaining
+	 */
+	@SuppressWarnings("unchecked")
+	public J reset()
+	{
+		this.excludeParentModules = false;
+		this.fieldInfo = false;
+		this.fieldScanning = false;
+		this.annotationScanning = false;
+		this.methodInfo = false;
+		this.ignoreFieldVisibility = false;
+		this.ignoreMethodVisibility = false;
+		this.ignoreClassVisibility = false;
+		this.includePackages = false;
+		this.verbose = false;
+		this.pathScanning = false;
+		this.classpathScanning = false;
+		this.excludeModulesAndJars = false;
+		this.includeModuleAndJars = false;
+		this.excludePackages = false;
+		this.excludePaths = false;
+		this.allowedPaths = false;
+		this.serviceLoadWithClassPath = false;
+		return (J) this;
+	}
+
+	/**
 	 * Returns whether service-loading should be performed using classpath scanning.
 	 *
 	 * @return {@code true} if classpath-backed service loading is enabled

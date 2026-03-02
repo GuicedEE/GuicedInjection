@@ -28,6 +28,8 @@ import com.guicedee.vertx.spi.VertXPreStartup;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -487,13 +489,14 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         .loadPreDestroyServices();
                 log.debug("🛡️ Pre-destroy services registered for shutdown handling");
                 GuiceContext.instance()
-                        .loadPostStartups().onComplete((handler) -> {
+                        .loadPostStartups().onItem().invoke((handler) -> {
                             LocalDateTime end = LocalDateTime.now();
                             log.info("🎉 Dependency injection system initialized successfully in {}ms - All services loaded and ready",
                                     ChronoUnit.MILLIS.between(start, end));
                             GuiceContext.instance()
                                     .loadPreDestroyServices();
-                            loadingFinished.complete(null);
+                        }).subscribe().with(a -> {
+                            log.trace("Subcription for post startups completed - " + a);
                         });
                 Runtime
                         .getRuntime()
@@ -559,6 +562,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
         GuiceContext.instance().scanResult = null;
         GuiceContext.instance().scanner = null;
         GuiceContext.instance().injector = null;
+        GuiceContext.configured = false;
+        GuiceContext.config.reset();
+        IGuiceContext.getAllLoadedServices().clear();
 
         shutdownStopwatch.stop();
         log.info("🎉 Guice Context shutdown completed in {}ms",
@@ -572,7 +578,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      * @since 12130
      */
     private static int getJavaVersion() {
-        String version = getSystemPropertyOrEnvironment("java.version", "21");
+        String version = getSystemPropertyOrEnvironment("java.version", "25");
         if (version.startsWith("1.")) {
             version = version.substring(2);
         }
@@ -1142,94 +1148,78 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      * Method loadPostStartups initializes and executes post-startup services
      * in order of their priority (sortOrder)
      */
-    private Future<CompositeFuture> loadPostStartups() {
-        var vertx = VertXPreStartup.getVertx();
+    private Uni<Boolean> loadPostStartups() {
         log.info("🚀 Initializing post-startup services");
         Stopwatch totalStopwatch = Stopwatch.createStarted();
+//        com.guicedee.client.scopes.CallScoper callScoper = null;
+        //       boolean started = false;
+        // try {
+/*            callScoper = IGuiceContext.get(com.guicedee.client.scopes.CallScoper.class);
+            if (!callScoper.isStartedScope()) {
+                callScoper.enter();
+                started = true;
+            }
+            com.guicedee.client.scopes.CallScopeProperties props = IGuiceContext.get(com.guicedee.client.scopes.CallScopeProperties.class);
+            if (props.getSource() == null || props.getSource() == com.guicedee.client.scopes.CallScopeSource.Unknown) {
+                props.setSource(com.guicedee.client.scopes.CallScopeSource.Startup);
+            }*/
+        io.vertx.core.Vertx vertx = IGuiceContext.get(io.vertx.core.Vertx.class);
+        Set<IGuicePostStartup<?>> startupSet = loadPostStartupServices().stream()
+                .map(a -> (IGuicePostStartup<?>) a)
+                .collect(Collectors.toSet());
 
-        return vertx.executeBlocking(() -> {
-            com.guicedee.client.scopes.CallScoper callScoper = null;
-            boolean started = false;
-            try {
-                callScoper = IGuiceContext.get(com.guicedee.client.scopes.CallScoper.class);
-                if (!callScoper.isStartedScope()) {
-                    callScoper.enter();
-                    started = true;
-                }
-                com.guicedee.client.scopes.CallScopeProperties props = IGuiceContext.get(com.guicedee.client.scopes.CallScopeProperties.class);
-                if (props.getSource() == null || props.getSource() == com.guicedee.client.scopes.CallScopeSource.Unknown) {
-                    props.setSource(com.guicedee.client.scopes.CallScopeSource.Startup);
-                }
-            Set<IGuicePostStartup<?>> startupSet = loadPostStartupServices().stream()
-                    .map(a -> (IGuicePostStartup<?>) a)
-                    .collect(Collectors.toSet());
+        TreeMap<Integer, List<IGuicePostStartup<?>>> groupedStartups = startupSet.stream()
+                .collect(Collectors.groupingBy(
+                        IGuicePostStartup::sortOrder,
+                        TreeMap::new,
+                        Collectors.toList()
+                ));
+        Set<IGuicePostStartup<?>> sortedStartups = new LinkedHashSet<>();
 
-            TreeMap<Integer, List<IGuicePostStartup<?>>> groupedStartups = startupSet.stream()
-                    .collect(Collectors.groupingBy(
-                            IGuicePostStartup::sortOrder,
-                            TreeMap::new,
-                            Collectors.toList()
-                    ));
-
-            Future<CompositeFuture> sequentialFuture = Future.succeededFuture();
-
-            for (var entry : groupedStartups.entrySet()) {
-                int sortOrder = entry.getKey();
-                List<IGuicePostStartup<?>> group = entry.getValue();
-
-                sequentialFuture = sequentialFuture.compose(ignored -> {
-                    Promise<CompositeFuture> promise = Promise.promise();
-
-                    vertx.runOnContext(v -> {
-                        log.debug("⏳ Executing post-startup group with priority [{}] - {} services", sortOrder, group.size());
-
-                        List<Future<Boolean>> groupFutures = group.stream()
-                                .flatMap(startup -> {
-                                    IGuiceContext.instance().inject().injectMembers(startup);
-                                    log.info("🚀 Starting Post Load [{}] - sortOrder [{}]",
-                                            startup.getClass().getSimpleName(),
-                                            sortOrder);
-                                    /*CallScoper callScoper = IGuiceContext.get(CallScoper.class);
-                                    try {
-                                        callScoper.enter();
-                                        CallScopeProperties csp = IGuiceContext.get(CallScopeProperties.class);
-                                        csp.setSource(CallScopeSource.Startup);*/
-                                    return startup.postLoad().stream();
-                                   /* }finally {
-                                        callScoper.exit();
-                                    }*/
-                                })
-                                .toList();
-
-                        Future.all(groupFutures)
-                                .onSuccess(res -> {
-                                    log.debug("✅ Post-startup group with priority [{}] completed successfully", sortOrder);
-                                    promise.complete(res);
-                                })
-                                .onFailure(err -> {
-                                    log.error("❌ Error in post-startup group with priority [{}]: {}", sortOrder, err.getMessage(), err);
-                                    promise.fail(err);
-                                });
-                    });
-
-                    return promise.future();
+        return Multi.createFrom().iterable(groupedStartups.entrySet())
+                .onItem()
+                .transformToUniAndConcatenate(entry -> {
+                    int sortOrder = entry.getKey();
+                    List<IGuicePostStartup<?>> group = entry.getValue();
+                    // group.sort(Comparator.comparing(IGuicePostStartup::sortOrder));
+                    List<Uni<Boolean>> startupsInGroup = new ArrayList<>();
+                    for (IGuicePostStartup<?> startup : group) {
+                        log.debug("🔄 Preparing post-startup service: {} with sort order: {}",
+                                startup.getClass().getCanonicalName(), sortOrder);
+                        IGuicePostStartup<?> instance = IGuiceContext.get(startup.getClass());
+                        if (sortedStartups.add(instance)) {
+                            List<Uni<Boolean>> postLoadResults = instance.postLoad();
+                            if (postLoadResults != null) {
+                                for (Uni<Boolean> postLoadResult : postLoadResults) {
+                                    Uni<Boolean> onContext = Uni.createFrom().<Boolean>emitter(em ->
+                                            vertx.runOnContext(v ->
+                                                    postLoadResult
+                                                            .invoke(a -> log.info("Completed postload : " + startup.getClass().getCanonicalName()))
+                                                            .onItem().transform(a -> true)
+                                                            .subscribe().with(em::complete, em::fail)
+                                            )
+                                    );
+                                    startupsInGroup.add(onContext);
+                                }
+                            }
+                        }
+                    }
+                    if (startupsInGroup.isEmpty()) {
+                        return Uni.createFrom().item(true);
+                    }
+                    log.info("⏳ Awaiting {} post-startup unis in group [{}]", startupsInGroup.size(), sortOrder);
+                    return Uni.join().all(startupsInGroup).andFailFast()
+                            .onItem().invoke(results -> log.info("✅ Post-startup group [{}] completed - {} services", sortOrder, results.size()))
+                            .onItem().transform(results -> true);
+                })
+                .collect().asList()
+                .replaceWith(true)
+                .eventually(() -> {
+                    totalStopwatch.stop();
+                    loadingFinished.complete(null);
+                    log.info("🎉 Post-startup initialization setup completed in {}ms",
+                            totalStopwatch.elapsed(TimeUnit.MILLISECONDS));
                 });
-            }
-
-            // Ensure the call scope is properly exited after all post-startups have completed
-            totalStopwatch.stop();
-            log.info("🎉 Post-startup initialization setup completed in {}ms",
-                    totalStopwatch.elapsed(TimeUnit.MILLISECONDS));
-            return sequentialFuture;
-            } finally {
-                if (started) {
-                    callScoper.exit();
-                }
-            }
-        }).compose(result -> {
-            log.info("🎉 All post-startup services completed execution");
-            return result;
-        }); // Flatten the nested Future
     }
 
     /**

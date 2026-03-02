@@ -6,6 +6,7 @@ import com.guicedee.guicedinjection.GuiceContext;
 import com.guicedee.client.services.IGuiceConfig;
 import com.guicedee.client.services.lifecycle.IGuiceConfigurator;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,6 +15,12 @@ import static org.junit.jupiter.api.Assertions.*;
 public class IGuiceConfigTest
 		implements IGuiceConfigurator
 {
+	@BeforeEach
+	public void setUp()
+	{
+		GuiceContext.instance().destroy();
+	}
+
 	@Test
 	public void testConfig()
 	{

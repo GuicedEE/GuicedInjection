@@ -1,4 +1,4 @@
-name: GuicedEE Inject
+name: Guiced Inject
 on:
   workflow_dispatch:
     inputs:
