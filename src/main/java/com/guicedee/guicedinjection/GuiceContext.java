@@ -355,6 +355,13 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
         return defaultLogLevel;
     }
 
+    /**
+     * Builds a Log4j2 console layout based on the given option.
+     *
+     * @param option the desired console layout option
+     * @param config the Log4j2 configuration
+     * @return the built layout
+     */
     private static org.apache.logging.log4j.core.Layout<?> buildConsoleLayout(ConsoleLayoutOption option, Configuration config) {
         switch (option) {
             case FIXED:
@@ -678,9 +685,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Returns a complete list of generic exclusions
+     * Returns a complete list of jar exclusions for scanning.
      *
-     * @return A string list of packages to be scanned
+     * @return an array of jar names to exclude
      */
     @SuppressWarnings("unchecked")
     private String[] getJarsExclusionList() {
@@ -699,9 +706,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Returns a complete list of generic exclusions
+     * Returns a complete list of jar inclusions for scanning.
      *
-     * @return A string list of packages to be scanned
+     * @return an array of jar names to include
      */
     @SuppressWarnings("unchecked")
     private String[] getJarsInclusionList() {
@@ -814,9 +821,10 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
     /**
      * Configures the scanner from its setup with all inclusion/exclusion rules
-     * and scanning options based on the GuiceContext configuration
+     * and scanning options based on the GuiceContext configuration.
      *
      * @param graph The ClassGraph to apply the configuration to
+     * @return the configured ClassGraph instance
      */
     private ClassGraph configureScanner(ClassGraph graph) {
         log.debug("🔧 Beginning ClassGraph scanner configuration");
@@ -921,9 +929,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Returns a complete list of generic exclusions
+     * Returns a complete list of packages to include in scanning.
      *
-     * @return A string list of packages to be scanned
+     * @return an array of package names to scan
      */
     private String[] getPackagesList() {
         Set<String> strings = new LinkedHashSet<>();
@@ -944,9 +952,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Returns a complete list of generic exclusions
+     * Returns a complete list of packages to reject from scanning.
      *
-     * @return A string list of packages to be scanned
+     * @return an array of package names to exclude
      */
     private String[] getRejectedPackages() {
         Set<String> strings = new LinkedHashSet<>();
@@ -966,10 +974,10 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
         return strings.toArray(new String[0]);
     }
 
-    /*
-     * Returns a complete list of generic exclusions
+    /**
+     * Returns a complete list of allowed paths for scanning.
      *
-     * @return A string list of packages to be scanned
+     * @return an array of path strings to include
      */
     private String[] getPathsList() {
         Set<String> strings = new TreeSet<>();
@@ -990,9 +998,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Returns a complete list of generic exclusions
+     * Returns a complete list of paths to reject from scanning.
      *
-     * @return A string list of packages to be scanned
+     * @return an array of path strings to exclude
      */
     private String[] getPathsBlacklistList() {
         Set<String> strings = new TreeSet<>();
@@ -1013,9 +1021,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Returns a complete list of generic exclusions
+     * Returns a complete list of module exclusions for scanning.
      *
-     * @return A string list of packages to be scanned
+     * @return an array of module names to exclude
      */
     @SuppressWarnings("unchecked")
     private String[] getModulesExclusionList() {
@@ -1034,9 +1042,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Returns a complete list of generic exclusions
+     * Returns a complete list of module inclusions for scanning.
      *
-     * @return A string list of packages to be scanned
+     * @return an array of module names to include
      */
     @SuppressWarnings("unchecked")
     private String[] getModulesInclusionsList() {
@@ -1056,7 +1064,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Registers the quick scan files
+     * Collects file-name-based resource scan handlers from registered scanners.
+     *
+     * @return a map of file names to byte-array consumers
      */
     private Map<String, ResourceList.ByteArrayConsumer> quickScanFiles() {
         Map<String, ResourceList.ByteArrayConsumer> fileScans = new HashMap<>();
@@ -1076,7 +1086,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Registers the quick scan files
+     * Collects pattern-based resource scan handlers from registered scanners.
+     *
+     * @return a map of patterns to byte-array consumers
      */
     private Map<Pattern, ResourceList.ByteArrayConsumer> quickScanFilesPattern() {
         Map<Pattern, ResourceList.ByteArrayConsumer> fileScans = new HashMap<>();
@@ -1091,12 +1103,13 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * A set
+     * Loads and caches a set of service implementations without injection.
      *
-     * @param loaderType The service type
-     * @param <T>        The type
-     * @param dontInject Don't inject
-     * @return A set of them
+     * @param loaderType    the service type class
+     * @param <T>           the service type
+     * @param dontInject    ignored, kept for API compatibility
+     * @param serviceLoader the service loader to use
+     * @return a cached set of service implementations
      */
     @SuppressWarnings("unchecked")
 
@@ -1145,8 +1158,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Method loadPostStartups initializes and executes post-startup services
-     * in order of their priority (sortOrder)
+     * Initializes and executes post-startup services in order of their priority (sortOrder).
+     *
+     * @return a {@link Uni} that completes when all post-startup services have finished
      */
     private Uni<Boolean> loadPostStartups() {
         log.info("🚀 Initializing post-startup services");
@@ -1241,9 +1255,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Loads the service lists of post startup's for manual additions
+     * Loads the service list of path reject scanners.
      *
-     * @return The list of guice post startups
+     * @return the set of path reject scanners
      */
     public Set<IPathContentsRejectListScanner> loadPathRejectScanners() {
         return getLoader(IPathContentsRejectListScanner.class, true, ServiceLoader.load(IPathContentsRejectListScanner.class));
@@ -1251,9 +1265,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
 
     /**
-     * Loads the service lists of post startup's for manual additions
+     * Loads the service list of jar reject scanners.
      *
-     * @return The list of guice post startups
+     * @return the set of jar exclusion scanners
      */
     public Set<IGuiceScanJarExclusions> loadJarRejectScanners() {
         return getLoader(IGuiceScanJarExclusions.class, true, ServiceLoader.load(IGuiceScanJarExclusions.class));
@@ -1261,9 +1275,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
 
     /**
-     * Loads the service lists of post startup's for manual additions
+     * Loads the service list of jar inclusion scanners.
      *
-     * @return The list of guice post startups
+     * @return the set of jar inclusion scanners
      */
     public Set<IGuiceScanJarInclusions> loadJarInclusionScanners() {
         return getLoader(IGuiceScanJarInclusions.class, true, ServiceLoader.load(IGuiceScanJarInclusions.class));
@@ -1271,9 +1285,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
 
     /**
-     * Returns the set of service lists of pre startup's for manual additions
+     * Loads the service list of pre-startup services.
      *
-     * @return The list of guice post startups
+     * @return the set of pre-startup services
      */
     public Set<IGuicePreStartup> loadPreStartupServices() {
         return new TreeSet<>(getLoader(IGuicePreStartup.class, true, ServiceLoader.load(IGuicePreStartup.class)));
@@ -1281,18 +1295,18 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
 
     /**
-     * Returns the set of service lists of pre startup's for manual additions
+     * Loads the service list of pre-destroy services.
      *
-     * @return The list of guice post startups
+     * @return the set of pre-destroy services
      */
     public Set<IGuicePreDestroy> loadPreDestroyServices() {
         return new LinkedHashSet<>(getLoader(IGuicePreDestroy.class, true, ServiceLoader.load(IGuicePreDestroy.class)));
     }
 
     /**
-     * Loads the service lists of post startup's for manual additions
+     * Loads the service list of Guice modules.
      *
-     * @return The list of guice post startups
+     * @return the set of Guice modules
      */
     public Set<IGuiceModule> loadIGuiceModules() {
         return new TreeSet<>(getLoader(IGuiceModule.class, true, ServiceLoader.load(IGuiceModule.class)));
@@ -1423,12 +1437,12 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Returns the loader for anything that is located locally in guice context
-     * replacing with set load methods instead for each type
+     * Loads and caches a sorted set of service implementations, using injection when available.
      *
-     * @param loaderType The service type
-     * @param <T>        The type
-     * @return A set of them
+     * @param loaderType    the service type class
+     * @param <T>           the service type (must be {@link Comparable})
+     * @param serviceLoader the service loader to use
+     * @return a cached set of service implementations
      */
     @SuppressWarnings("unchecked")
 

@@ -444,9 +444,9 @@ public class GuiceConfig<J extends GuiceConfig<J>> implements IGuiceConfig<J>
 	}
 
 	/**
-	 * Method toString ...
+	 * Returns a string representation of the current configuration state.
 	 *
-	 * @return String
+	 * @return a human-readable configuration summary
 	 */
 	@Override
 	public String toString()

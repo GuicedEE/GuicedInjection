@@ -1,12 +1,12 @@
 package com.guicedee.guicedinjection.representations; /**
  * Copyright 2015 Ertuğrul Çetin
- * <p/>
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p/>
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,7 +49,7 @@ import static java.lang.Math.min;
  * <br>
  * Adding and removing operations much faster than ArrayList and LinkedList.
  * Searching operations nearly same with ArrayList and way better than LinkedList.
- * <p/>
+ * <p>
  * Best Case<br>
  * Add O(1)<br>
  * Remove O(1)<br>
@@ -64,11 +64,11 @@ import static java.lang.Math.min;
  * Remove O(n*m)<br>
  * Search O(m)<br>
  * Access O(m)
- * <p/>
+ * <p>
  * version v1.0
- * <p/>
+ * <p>
  * Date: 03.11.2015
- * <p/>
+ * <p>
  *
  * @author Ertuğrul Çetin ~ ertu.ctn@gmail.com
  * @see Collection
