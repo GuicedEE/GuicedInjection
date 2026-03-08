@@ -669,7 +669,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
             // Performance warning for unrestricted scanning
             if (!GuiceContext.config.isIncludeModuleAndJars()) {
-                log.warn("⚠️ Scanning is not restricted to modules and may incur a performance impact. Consider registering your module with GuiceContext.registerModule() to auto enable, or SPI IGuiceConfiguration");
+                log.warn("⚠️ Scanning is not restricted to modules and may incur a performance impact. Consider registering your module with GuiceContext.registerModule() to auto enable, or SPI IGuiceModule");
             }
 
             // Log final configuration
