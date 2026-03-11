@@ -1208,7 +1208,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                                     Uni<Boolean> onContext = Uni.createFrom().<Boolean>emitter(em ->
                                             vertx.runOnContext(v ->
                                                     postLoadResult
-                                                            .invoke(a -> log.info("Completed postload : " + startup.getClass().getCanonicalName()))
+                                                            .invoke(a -> log.debug("Completed postload : " + startup.getClass().getCanonicalName()))
                                                             .onItem().transform(a -> true)
                                                             .subscribe().with(em::complete, em::fail)
                                             )
