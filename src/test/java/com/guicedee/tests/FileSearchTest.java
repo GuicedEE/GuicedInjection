@@ -1,6 +1,7 @@
 package com.guicedee.tests;
 
 import com.guicedee.client.IGuiceContext;
+import com.guicedee.client.services.config.IPathContentsRejectListScanner;
 import com.guicedee.guicedinjection.GuiceContext;
 import io.github.classgraph.ResourceList;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,16 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class FileSearchTest {
+
+    static class TestPathRejectScanner implements IPathContentsRejectListScanner<TestPathRejectScanner> {
+        @Override
+        public Set<String> searchFor() {
+            Set<String> output = new HashSet<>();
+            output.add("/META-INF/services/maven");
+            return output;
+        }
+    }
+
     @Test
     public void findJSFiles()
     {
@@ -20,13 +31,7 @@ public class FileSearchTest {
                 .setExcludePackages(true)
                 .setExcludeParentModules(true);
 
-        GuiceContext.instance().loadPathRejectScanners().add(
-                () -> {
-                    Set<String> output = new HashSet<>();
-                    output.add("/META-INF/services/maven");
-                    return output;
-                }
-        );
+        GuiceContext.instance().loadPathRejectScanners().add(new TestPathRejectScanner());
 	    
 	    IGuiceContext
 			    .getContext().inject();

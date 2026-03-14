@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CustomClassScannerI
-		implements IFileContentsScanner {
+		implements IFileContentsScanner<CustomClassScannerI> {
 	@Override
 	public Map<String, ResourceList.ByteArrayConsumer> onMatch() {
 		Map<String, ResourceList.ByteArrayConsumer> map = new HashMap<>();

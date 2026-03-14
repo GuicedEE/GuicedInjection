@@ -105,30 +105,26 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             Configurator.setLevel("org.apache.commons.beanutils", org.apache.logging.log4j.Level.ERROR);
 
             // Determine desired default/root logging level from system properties or environment before applying
-            try {
-                String lvl = getSystemPropertyOrEnvironment("guicedee.log.level",
-                        getSystemPropertyOrEnvironment("GUICEDEE_LOG_LEVEL",
-                                getSystemPropertyOrEnvironment("LOG_LEVEL", null)));
-                if (lvl == null) {
-                    // Fallback toggles
-                    String debugToggle = getSystemPropertyOrEnvironment("guicedee.debug",
-                            getSystemPropertyOrEnvironment("DEBUG", null));
-                    String traceToggle = getSystemPropertyOrEnvironment("guicedee.trace",
-                            getSystemPropertyOrEnvironment("TRACE", null));
-                    if (traceToggle != null && traceToggle.equalsIgnoreCase("true")) {
-                        defaultLogLevel = Level.TRACE;
-                    } else if (debugToggle != null && debugToggle.equalsIgnoreCase("true")) {
-                        defaultLogLevel = Level.DEBUG;
-                    }
-                } else {
-                    try {
-                        setDefaultLogLevel(lvl);
-                    } catch (IllegalArgumentException ignored) {
-                        // If invalid level provided, keep existing default
-                    }
+            String lvl = getSystemPropertyOrEnvironment("guicedee.log.level",
+                    getSystemPropertyOrEnvironment("GUICEDEE_LOG_LEVEL",
+                            getSystemPropertyOrEnvironment("LOG_LEVEL", null)));
+            if (lvl == null) {
+                // Fallback toggles
+                String debugToggle = getSystemPropertyOrEnvironment("guicedee.debug",
+                        getSystemPropertyOrEnvironment("DEBUG", null));
+                String traceToggle = getSystemPropertyOrEnvironment("guicedee.trace",
+                        getSystemPropertyOrEnvironment("TRACE", null));
+                if (traceToggle != null && traceToggle.equalsIgnoreCase("true")) {
+                    defaultLogLevel = Level.TRACE;
+                } else if (debugToggle != null && debugToggle.equalsIgnoreCase("true")) {
+                    defaultLogLevel = Level.DEBUG;
                 }
-            } catch (Throwable ignored) {
-                // Ignore any issues reading properties
+            } else {
+                try {
+                    setDefaultLogLevel(lvl);
+                } catch (IllegalArgumentException ignored) {
+                    // If invalid level provided, keep existing default
+                }
             }
 
             // Apply the configured default root logging level
@@ -1113,19 +1109,48 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      */
     @SuppressWarnings("unchecked")
 
-    public <T> Set<T> getLoader(Class<T> loaderType, @SuppressWarnings("unused") boolean dontInject, ServiceLoader<T> serviceLoader) {
+    public <T extends IDefaultService<T>> Set<T> getLoader(Class<T> loaderType, @SuppressWarnings("unused") boolean dontInject, ServiceLoader<T> serviceLoader) {
         if (!IGuiceContext
                 .getAllLoadedServices()
                 .containsKey(loaderType)) {
             Set<T> loader = IGuiceContext.loaderToSetNoInjection(serviceLoader);
             IGuiceContext
                     .getAllLoadedServices()
-                    .put(loaderType, loader);
+                    .put( loaderType, loader);
         }
-        return IGuiceContext
+        return (Set<T>) IGuiceContext
                 .getAllLoadedServices()
                 .get(loaderType);
     }
+
+    /**
+     * Loads and caches a sorted set of service implementations, using injection when available.
+     *
+     * @param loaderType    the service type class
+     * @param <T>           the service type (must be {@link Comparable})
+     * @param serviceLoader the service loader to use
+     * @return a cached set of service implementations
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends IDefaultService<T>> Set<T> getLoader(Class<T> loaderType, ServiceLoader<T> serviceLoader) {
+        if (!IGuiceContext
+                .getAllLoadedServices()
+                .containsKey(loaderType)) {
+            Set<T> loader;
+            if (GuiceContext.buildingInjector || injector == null) {
+                loader = IGuiceContext.loaderToSetNoInjection(serviceLoader);
+            } else {
+                loader = IGuiceContext.loaderToSet(serviceLoader);
+            }
+            IGuiceContext
+                    .getAllLoadedServices()
+                    .put(loaderType, loader);
+        }
+        return (Set<T>) IGuiceContext
+                .getAllLoadedServices()
+                .get(loaderType);
+    }
+
 
     /**
      * Indicates whether the injector is currently being constructed.
@@ -1434,35 +1459,6 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
         totalStopwatch.stop();
         log.info("🎉 Pre-startup initialization completed in {}ms - Success: {}, Failed: {}",
                 totalStopwatch.elapsed(TimeUnit.MILLISECONDS), successCount, failureCount);
-    }
-
-    /**
-     * Loads and caches a sorted set of service implementations, using injection when available.
-     *
-     * @param loaderType    the service type class
-     * @param <T>           the service type (must be {@link Comparable})
-     * @param serviceLoader the service loader to use
-     * @return a cached set of service implementations
-     */
-    @SuppressWarnings("unchecked")
-
-    public <T extends Comparable<T>> Set<T> getLoader(Class<T> loaderType, ServiceLoader<T> serviceLoader) {
-        if (!IGuiceContext
-                .getAllLoadedServices()
-                .containsKey(loaderType)) {
-            Set<T> loader;
-            if (GuiceContext.buildingInjector || injector == null) {
-                loader = IGuiceContext.loaderToSetNoInjection(serviceLoader);
-            } else {
-                loader = IGuiceContext.loaderToSet(serviceLoader);
-            }
-            IGuiceContext
-                    .getAllLoadedServices()
-                    .put(loaderType, loader);
-        }
-        return IGuiceContext
-                .getAllLoadedServices()
-                .get(loaderType);
     }
 
     /**

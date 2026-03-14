@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2
 public class IGuiceConfigTest
-		implements IGuiceConfigurator
+		implements IGuiceConfigurator<IGuiceConfigTest>
 {
 	@BeforeEach
 	public void setUp()

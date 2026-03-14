@@ -4,7 +4,7 @@ import com.guicedee.client.services.IGuiceConfig;
 import com.guicedee.client.services.lifecycle.IGuiceConfigurator;
 
 public class IGuiceContextTestConfigurator
-		implements IGuiceConfigurator {
+		implements IGuiceConfigurator<IGuiceContextTestConfigurator> {
 
 	@Override
 	public IGuiceConfig configure(IGuiceConfig config) {
