@@ -28,7 +28,7 @@ Built on [Google Guice](https://github.com/google/guice) · JPMS module `com.gui
 <summary>Gradle (Kotlin DSL)</summary>
 
 ```kotlin
-implementation("com.guicedee:guice-injection:2.0.0-SNAPSHOT")
+implementation("com.guicedee:guice-injection:2.0.0-RC1")
 ```
 </details>
 
