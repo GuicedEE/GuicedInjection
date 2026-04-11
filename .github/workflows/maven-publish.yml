@@ -7,6 +7,12 @@ on:
         description: Run a release to maven central
         default: false
   push:
+
+
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   GuicedInjection:
     uses: GuicedEE/Workflows/.github/workflows/projects.yml@master
