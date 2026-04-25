@@ -511,6 +511,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         });
 
             } catch (Throwable e) {
+                GuiceContext.buildingInjector = false;
                 log.error("💥 Critical failure during dependency injection system initialization: {}", e.getMessage(), e);
                 throw new RuntimeException("Unable to boot Guice Injector", e);
             }
