@@ -2,7 +2,7 @@
 
 [![Build](https://github.com/GuicedEE/GuicedInjection/actions/workflows/maven-publish.yml/badge.svg)](https://github.com/GuicedEE/GuicedInjection/actions/workflows/maven-publish.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/com.guicedee/guice-injection)](https://central.sonatype.com/artifact/com.guicedee/guice-injection)
-[![Maven Snapshot](https://img.shields.io/nexus/s/com.guicedee/guice-injection?server=https%3A%2F%2Foss.sonatype.org&label=Maven%20Snapshot)](https://oss.sonatype.org/content/repositories/snapshots/com/guicedee/guice-injection/)
+[![Snapshot](https://img.shields.io/badge/Snapshot-2.0.0-SNAPSHOT-orange)](https://github.com/GuicedEE/Packages/packages/maven/com.guicedee.inject)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ![Java 25+](https://img.shields.io/badge/Java-25%2B-green)
@@ -217,12 +217,13 @@ IGuicePreStartup  →  ClassGraph scan  →  Injector created  →  IGuicePostSt
 
 ## 🗺️ Module Graph
 
-```
-com.guicedee.guicedinjection
- ├── com.guicedee.client          (SPI contracts)
- ├── com.guicedee.vertx           (Vert.x integration)
- ├── io.smallrye.config.core      (MicroProfile Config)
- └── org.apache.commons.lang3
+```mermaid
+flowchart LR
+    com_guicedee_guicedinjection["com.guicedee.guicedinjection"]
+    com_guicedee_guicedinjection --> com_guicedee_client["com.guicedee.client<br/>SPI contracts"]
+    com_guicedee_guicedinjection --> com_guicedee_vertx["com.guicedee.vertx<br/>Vert.x integration"]
+    com_guicedee_guicedinjection --> io_smallrye_config_core["io.smallrye.config.core<br/>MicroProfile Config"]
+    com_guicedee_guicedinjection --> org_apache_commons_lang3["org.apache.commons.lang3"]
 ```
 
 ## 🧩 JPMS
