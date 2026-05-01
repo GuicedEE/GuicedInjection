@@ -2,47 +2,86 @@ package com.guicedee.guicedinjection;
 
 import com.google.inject.Singleton;
 import com.guicedee.client.services.lifecycle.IGuicePreDestroy;
+import com.guicedee.vertx.spi.VertXPreStartup;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.*;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * Manages concurrent job pools that execute outside of the EE context.
+ * Manages concurrent job pools running on the shared Vert.x instance.
  * <p>
- * Pools can be registered, used for one-off tasks, or scheduled for polling tasks,
- * and will be cleaned up on shutdown via {@link IGuicePreDestroy}.
+ * <b>One-off tasks</b> execute via {@code Vertx.executeBlocking()} on the Vert.x worker pool.
+ * <b>Periodic tasks</b> use {@code Vertx.setPeriodic()} with worker-thread execution.
+ * <b>Cron-scheduled tasks</b> use chained {@code Vertx.setTimer()} calls with a built-in
+ * {@link CronExpression} parser for next-fire-time calculation.
+ * <p>
+ * All pools are cleaned up on shutdown via {@link IGuicePreDestroy}.
+ *
+ * <h3>Usage</h3>
+ * <pre>{@code
+ * JobService jobs = JobService.INSTANCE;
+ *
+ * // One-off
+ * jobs.registerJob("import", 100);
+ * jobs.addJob("import", () -> processFile(file));
+ *
+ * // Periodic polling
+ * jobs.addPollingJob("heartbeat", () -> ping(), 0, 30, TimeUnit.SECONDS);
+ *
+ * // Cron
+ * jobs.addCronJob("nightly-report", "0 2 * * *", () -> generateReport());
+ *
+ * // Cleanup
+ * jobs.removeJob("import");
+ * }</pre>
  */
-
 @Singleton
 @Log4j2
 public class JobService implements IGuicePreDestroy<JobService>
 {
-	private final Map<String, ExecutorService> serviceMap = new ConcurrentHashMap<>();
-	private final Map<String, ScheduledExecutorService> pollingMap = new ConcurrentHashMap<>();
+	/**
+	 * Tracks periodic/cron timer IDs per pool name for cancellation.
+	 */
+	private final Map<String, List<Long>> timerIds = new ConcurrentHashMap<>();
+
+	/**
+	 * Maximum queued task count per named pool (advisory, used for executeBlocking overflow guard).
+	 */
 	private final Map<String, Integer> maxQueueCount = new ConcurrentHashMap<>();
 
-	private final ExecutorServiceSupplier executorServiceSupplier = new ExecutorServiceSupplier();
+	/**
+	 * Tracks active executeBlocking task count per pool for overflow guard.
+	 */
+	private final Map<String, AtomicInteger> activeTaskCount = new ConcurrentHashMap<>();
+
+	/**
+	 * Tracks parsed cron expressions for introspection/rescheduling.
+	 */
+	private final Map<String, CronExpression> cronJobs = new ConcurrentHashMap<>();
 
 	@Getter
 	@Setter
 	private static long defaultWaitTime = 120;
+
 	@Getter
 	@Setter
 	private static TimeUnit defaultWaitUnit = TimeUnit.SECONDS;
 
+	/**
+	 * Singleton instance for static access outside of Guice injection.
+	 */
 	public static final JobService INSTANCE = new JobService();
-
-	private static final ThreadFactory factory = Thread.ofVirtual().factory();
-
-	static
-	{
-		INSTANCE.jobCleanup();
-	}
 
 	public JobService()
 	{
@@ -50,379 +89,545 @@ public class JobService implements IGuicePreDestroy<JobService>
 	}
 
 	/**
-	 * Returns the names of registered job pools.
-	 *
-	 * @return the registered job pool names
+	 * Returns the Vert.x instance from the GuicedEE lifecycle.
 	 */
-	
+	private Vertx vertx()
+	{
+		return VertXPreStartup.getVertx();
+	}
+
+	// ────────────────────────────────────────────────────────────────────────
+	// Pool Registration
+	// ────────────────────────────────────────────────────────────────────────
+
+	/**
+	 * Pre-registers a named job pool with the given maximum concurrent task count.
+	 * If the pool already exists it is replaced after draining.
+	 *
+	 * @param name          the pool name
+	 * @param maxQueueCount the maximum number of concurrent tasks before overflow warnings
+	 */
+	public void registerJob(String name, int maxQueueCount)
+	{
+		if (timerIds.containsKey(name))
+		{
+			removeJob(name);
+		}
+		ensurePool(name);
+		this.maxQueueCount.put(name, maxQueueCount);
+		log.debug("Registered job pool [{}] with max queue {}", name, maxQueueCount);
+	}
+
+	/**
+	 * Pre-registers a named job pool with the default maximum queue count (20).
+	 *
+	 * @param name the pool name
+	 */
+	public void registerJob(String name)
+	{
+		registerJob(name, 20);
+	}
+
+	/**
+	 * Convenience method that registers a polling job pool and immediately schedules a task.
+	 *
+	 * @param name         the pool name
+	 * @param task         the task to execute
+	 * @param initialDelay the initial delay before first execution
+	 * @param delay        the fixed delay between executions
+	 * @param unit         the time unit for delays
+	 */
+	public void registerPollingJob(String name, Runnable task, long initialDelay, long delay, TimeUnit unit)
+	{
+		if (timerIds.containsKey(name))
+		{
+			removeJob(name);
+		}
+		addPollingJob(name, task, initialDelay, delay, unit);
+	}
+
+	// ────────────────────────────────────────────────────────────────────────
+	// Pool Queries
+	// ────────────────────────────────────────────────────────────────────────
+
+	/**
+	 * Returns the names of all registered job pools.
+	 *
+	 * @return an unmodifiable view of pool names
+	 */
 	public Set<String> getJobPools()
 	{
-		return serviceMap.keySet();
+		return Collections.unmodifiableSet(timerIds.keySet());
 	}
 
 	/**
-	 * Returns the names of registered polling pools.
+	 * Returns the names of all registered polling pools.
 	 *
-	 * @return the registered polling pool names
+	 * @return an unmodifiable view of polling pool names
 	 */
-	
 	public Set<String> getPollingPools()
 	{
-		return pollingMap.keySet();
+		return Collections.unmodifiableSet(timerIds.keySet());
 	}
 
 	/**
-	 * Completes and removes all jobs running in the given pool, waiting for completion.
+	 * Returns the names of all registered cron job pools.
 	 *
-	 * @param pool The pool name to remove
-	 * @return the removed executor, or {@code null} if not registered
+	 * @return an unmodifiable view of cron pool names
 	 */
-	
-	public ExecutorService removeJob(String pool)
+	public Set<String> getCronPools()
 	{
-		ExecutorService es = serviceMap.get(pool);
-		if (es == null)
-		{
-			log.warn("Pool " + pool + " was not registered");
-			return null;
-		}
-		waitForJob(pool);
-		serviceMap.remove(pool);
-		return es;
+		return Collections.unmodifiableSet(cronJobs.keySet());
 	}
 
 	/**
-	 * Removes all jobs running in the given pool without waiting for completion.
+	 * Returns the current active task count for a named pool.
 	 *
-	 * @param pool The pool name to remove
-	 * @return the removed executor, or {@code null} if not registered
+	 * @param poolName the pool name
+	 * @return the number of currently executing tasks, or 0 if the pool is not registered
 	 */
-	public ExecutorService removeJobNoWait(String pool)
+	public int getActiveTaskCount(String poolName)
 	{
-		ExecutorService es = serviceMap.get(pool);
-		if (es == null)
-		{
-			log.warn("Pool " + pool + " was not registered");
-			return null;
-		}
-		waitForJob(pool,1L,TimeUnit.MILLISECONDS);
-		serviceMap.remove(pool);
-		return es;
+		AtomicInteger count = activeTaskCount.get(poolName);
+		return count != null ? count.get() : 0;
 	}
 
 	/**
-	 * Completes and removes all scheduled jobs running in the given pool.
+	 * Returns the configured maximum queue count for a named pool.
 	 *
-	 * @param pool The pool name to remove
-	 * @return the removed executor, or {@code null} if not registered
+	 * @param poolName the pool name
+	 * @return the max queue count, or 20 (default) if not explicitly configured
 	 */
-	
-	public ScheduledExecutorService removePollingJob(String pool)
+	public int getMaxQueueCount(String poolName)
 	{
-		ScheduledExecutorService es = pollingMap.get(pool);
-		if (es == null)
-		{
-			log.warn("Repeating Pool " + pool + " was not registered");
-			return null;
-		}
-		waitForJob(pool);
-		pollingMap.remove(pool);
-		return es;
+		return maxQueueCount.getOrDefault(poolName, 20);
 	}
 
 	/**
-	 * Registers a new job pool, replacing any existing pool of the same name.
+	 * Checks whether a named pool is registered.
 	 *
-	 * @param name the pool name
-	 * @param executorService the executor service to register
-	 * @return the registered executor service
+	 * @param poolName the pool name
+	 * @return true if the pool exists
 	 */
-	
-	public ExecutorService registerJobPool(String name, ExecutorService executorService)
+	public boolean isRegistered(String poolName)
 	{
-		if (serviceMap.containsKey(name))
-		{
-			removeJob(name);
-		}
-		serviceMap.put(name, executorService);
-		if (!maxQueueCount.containsKey(name))
-		{
-			maxQueueCount.put(name, 20);
-		}
-		if (executorService instanceof ForkJoinPool)
-		{
-			ForkJoinPool pool = (ForkJoinPool) executorService;
-		}
-		else if (executorService instanceof ThreadPoolExecutor)
-		{
-			ThreadPoolExecutor executor = (ThreadPoolExecutor) executorService;
-			executor.setMaximumPoolSize(maxQueueCount.get(name));
-			executor.setKeepAliveTime(defaultWaitTime, defaultWaitUnit);
-			executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
-		}
-
-		return executorService;
+		return timerIds.containsKey(poolName);
 	}
 
-	/**
-	 * Registers a polling pool for scheduled tasks, replacing any existing pool of the same name.
-	 *
-	 * @param name the pool name
-	 * @param executorService the scheduled executor service to register
-	 * @return the registered scheduled executor service
-	 */
-	
-	public ScheduledExecutorService registerJobPollingPool(String name, ScheduledExecutorService executorService)
-	{
-		if (pollingMap.containsKey(name))
-		{
-			removeJob(name);
-		}
-		pollingMap.put(name, executorService);
-		return executorService;
-	}
+	// ────────────────────────────────────────────────────────────────────────
+	// Pool Removal
+	// ────────────────────────────────────────────────────────────────────────
 
 	/**
-	 * Adds a one-off runnable job to the named pool, creating the pool if needed.
+	 * Cancels and removes all timers and tracking for the given pool.
 	 *
-	 * @param jobPoolName the pool name
-	 * @param thread the task to execute
-	 * @return the executor service used for execution
+	 * @param pool the pool name to remove
 	 */
-	
-	public ExecutorService addJob(String jobPoolName, Runnable thread)
+	public void removeJob(String pool)
 	{
-		if (!serviceMap.containsKey(jobPoolName) || serviceMap
-				                                            .get(jobPoolName)
-				                                            .isTerminated() || serviceMap
-						                                                               .get(jobPoolName)
-						                                                               .isShutdown())
+		List<Long> ids = timerIds.remove(pool);
+		if (ids == null)
 		{
-			registerJobPool(jobPoolName, executorServiceSupplier.get());
-		}
-
-		ExecutorService service = serviceMap.get(jobPoolName);
-		if (getCurrentTaskCount(service) >= maxQueueCount.get(jobPoolName))
-		{
-			log.debug(maxQueueCount + " Hit - Finishing before next run");
-			removeJob(jobPoolName);
-			service = registerJobPool(jobPoolName, executorServiceSupplier.get());
-		}
-		service.execute(thread);
-		return service;
-	}
-
-	/**
-	 * Adds a one-off callable task to the named pool, creating the pool if needed.
-	 *
-	 * @param jobPoolName the pool name
-	 * @param thread the task to execute
-	 * @return a future representing task completion
-	 */
-	
-	public Future<?> addTask(String jobPoolName, Callable<?> thread)
-	{
-		if (!serviceMap.containsKey(jobPoolName) || serviceMap
-				                                            .get(jobPoolName)
-				                                            .isTerminated() || serviceMap
-						                                                               .get(jobPoolName)
-						                                                               .isShutdown())
-		{
-			registerJobPool(jobPoolName, executorServiceSupplier.get());
-		}
-
-		ExecutorService service = serviceMap.get(jobPoolName);
-		if (getCurrentTaskCount(service) >= maxQueueCount.get(jobPoolName))
-		{
-			log.debug(maxQueueCount + " Hit - Finishing before next run");
-			removeJob(jobPoolName);
-			service = registerJobPool(jobPoolName, executorServiceSupplier.get());
-		}
-		return service.submit(thread);
-	}
-
-	
-	/**
-	 * Shuts down the named pool and waits for completion using default timeout settings.
-	 *
-	 * @param jobName the pool name
-	 */
-	public void waitForJob(String jobName)
-	{
-		waitForJob(jobName, defaultWaitTime, defaultWaitUnit);
-	}
-
-	
-	/**
-	 * Shuts down the named pool and waits for completion.
-	 *
-	 * @param jobName the pool name
-	 * @param timeout the maximum time to wait
-	 * @param unit the time unit for the timeout
-	 */
-	public void waitForJob(String jobName, long timeout, TimeUnit unit)
-	{
-		if (!serviceMap.containsKey(jobName))
-		{
+			log.warn("Pool [{}] was not registered", pool);
 			return;
 		}
-		ExecutorService service = serviceMap.get(jobName);
-		service.shutdown();
-		try
-		{
-			service.awaitTermination(timeout, unit);
-		}
-		catch (InterruptedException e)
-		{
-			log.warn("Thread didn't close cleanly, make sure running times are acceptable", e);
-			service.shutdownNow();
-		}
-		if (!service.isTerminated())
-		{
-			service.shutdownNow();
-		}
-		service.close();
+		cancelTimers(ids);
+		activeTaskCount.remove(pool);
+		cronJobs.remove(pool);
+		maxQueueCount.remove(pool);
+		log.debug("Removed pool [{}]", pool);
 	}
 
-	private ExecutorService jobCleanup()
+	/**
+	 * Cancels and removes all timers for the given pool (alias for {@link #removeJob}).
+	 *
+	 * @param pool the pool name to remove
+	 */
+	public void removeJobNoWait(String pool)
 	{
-		ScheduledExecutorService jobsShutdownNotClosed = addPollingJob("JobsShutdownNotClosed", () -> {
-			for (String jobPool : getJobPools())
+		removeJob(pool);
+	}
+
+	/**
+	 * Cancels and removes a polling/cron pool (alias for {@link #removeJob}).
+	 *
+	 * @param pool the pool name to remove
+	 */
+	public void removePollingJob(String pool)
+	{
+		removeJob(pool);
+	}
+
+	// ────────────────────────────────────────────────────────────────────────
+	// One-off Jobs
+	// ────────────────────────────────────────────────────────────────────────
+
+	/**
+	 * Submits a one-off runnable to the named pool, executing on the Vert.x worker pool.
+	 * Auto-registers the pool if it does not exist.
+	 *
+	 * @param jobPoolName the pool name
+	 * @param task        the task to execute
+	 * @return a Vert.x Future that completes when the task finishes
+	 */
+	public Future<Void> addJob(String jobPoolName, Runnable task)
+	{
+		ensurePool(jobPoolName);
+		warnIfOverflow(jobPoolName);
+		AtomicInteger counter = activeTaskCount.get(jobPoolName);
+		counter.incrementAndGet();
+
+		return vertx().executeBlocking(() -> {
+			try
 			{
-				ExecutorService executorService = serviceMap.get(jobPool);
-				if (executorService.isShutdown() && !executorService.isTerminated())
-				{
-					log.debug("Closing unfinished job - " + jobPool);
-					removeJob(jobPool);
-				}
-				if (executorService.isShutdown() && executorService.isTerminated())
-				{
-					log.debug("Cleaning terminated job - " + jobPool);
-					executorService.close();
-					serviceMap.remove(jobPool);
-				}
+				task.run();
 			}
-		}, 2, TimeUnit.MINUTES);
-
-		return jobsShutdownNotClosed;
+			finally
+			{
+				counter.decrementAndGet();
+			}
+			return null;
+		});
 	}
 
 	/**
-	 * Registers a polling job that runs at a fixed rate after an initial delay of 1 unit.
+	 * Submits a one-off callable to the named pool, executing on the Vert.x worker pool.
+	 * Auto-registers the pool if it does not exist.
 	 *
 	 * @param jobPoolName the pool name
-	 * @param thread the task to execute
-	 * @param delay the fixed delay between executions
-	 * @param unit the time unit for the delay
-	 * @return the scheduled executor service used for execution
+	 * @param task        the callable to execute
+	 * @param <T>         the result type
+	 * @return a Vert.x Future representing the task result
 	 */
-	
-	public ScheduledExecutorService addPollingJob(String jobPoolName, Runnable thread, long delay, TimeUnit unit)
+	public <T> Future<T> addTask(String jobPoolName, Callable<T> task)
 	{
-		if (!pollingMap.containsKey(jobPoolName) || pollingMap
-				                                            .get(jobPoolName)
-				                                            .isTerminated() || pollingMap
-						                                                               .get(jobPoolName)
-						                                                               .isShutdown())
-		{
-			registerJobPollingPool(jobPoolName,
-			                       Executors.newSingleThreadScheduledExecutor(factory));
-		}
-		ScheduledExecutorService service = pollingMap.get(jobPoolName);
-		service.scheduleAtFixedRate(thread, 1L, delay, unit);
-		return service;
+		ensurePool(jobPoolName);
+		warnIfOverflow(jobPoolName);
+		AtomicInteger counter = activeTaskCount.get(jobPoolName);
+		counter.incrementAndGet();
+
+		return vertx().executeBlocking(() -> {
+			try
+			{
+				return task.call();
+			}
+			finally
+			{
+				counter.decrementAndGet();
+			}
+		});
 	}
 
 	/**
-	 * Registers a polling job that runs at a fixed rate with an explicit initial delay.
+	 * Submits a one-off runnable that will execute after the specified delay.
 	 *
 	 * @param jobPoolName the pool name
-	 * @param thread the task to execute
+	 * @param task        the task to execute
+	 * @param delay       the delay before execution
+	 * @param unit        the time unit for the delay
+	 */
+	public void addDelayedJob(String jobPoolName, Runnable task, long delay, TimeUnit unit)
+	{
+		ensurePool(jobPoolName);
+		long delayMs = unit.toMillis(delay);
+		long timerId = vertx().setTimer(delayMs, id -> {
+			List<Long> ids = timerIds.get(jobPoolName);
+			if (ids != null)
+			{
+				ids.remove(id);
+			}
+			vertx().executeBlocking(() -> {
+				task.run();
+				return null;
+			});
+		});
+		timerIds.get(jobPoolName).add(timerId);
+	}
+
+	// ────────────────────────────────────────────────────────────────────────
+	// Periodic Polling Jobs
+	// ────────────────────────────────────────────────────────────────────────
+
+	/**
+	 * Registers a periodic job that runs at a fixed rate after an initial delay of 1 unit.
+	 *
+	 * @param jobPoolName the pool name
+	 * @param task        the task to execute
+	 * @param delay       the fixed delay between executions
+	 * @param unit        the time unit for the delay
+	 */
+	public void addPollingJob(String jobPoolName, Runnable task, long delay, TimeUnit unit)
+	{
+		addPollingJob(jobPoolName, task, 1L, delay, unit);
+	}
+
+	/**
+	 * Registers a periodic job that runs at a fixed rate with an explicit initial delay.
+	 *
+	 * @param jobPoolName  the pool name
+	 * @param task         the task to execute
 	 * @param initialDelay the initial delay before first execution
-	 * @param delay the fixed delay between executions
-	 * @param unit the time unit for the delays
-	 * @return the scheduled executor service used for execution
+	 * @param delay        the fixed delay between executions
+	 * @param unit         the time unit for the delays
 	 */
-	
-	public ScheduledExecutorService addPollingJob(String jobPoolName, Runnable thread, long initialDelay, long delay, TimeUnit unit)
+	public void addPollingJob(String jobPoolName, Runnable task, long initialDelay, long delay, TimeUnit unit)
 	{
-		ScheduledExecutorService scheduledExecutorService = null;
-		if (!pollingMap.containsKey(jobPoolName) || pollingMap
-				                                            .get(jobPoolName)
-				                                            .isTerminated() || pollingMap
-						                                                               .get(jobPoolName)
-						                                                               .isShutdown())
-		{
-			scheduledExecutorService = registerJobPollingPool(jobPoolName,
-																					   Executors.newSingleThreadScheduledExecutor());
-		}
-		scheduledExecutorService.scheduleAtFixedRate(thread, initialDelay, delay, unit);
-		return scheduledExecutorService;
+		ensurePool(jobPoolName);
+		long delayMs = unit.toMillis(delay);
+		long initialMs = unit.toMillis(initialDelay);
+
+		long timerId = vertx().setPeriodic(initialMs, delayMs, id ->
+				vertx().executeBlocking(() -> {
+					task.run();
+					return null;
+				})
+		);
+
+		timerIds.get(jobPoolName).add(timerId);
+		log.debug("Registered periodic job [{}] delay={}ms initial={}ms timerId={}",
+				jobPoolName, delayMs, initialMs, timerId);
 	}
+
+	// ────────────────────────────────────────────────────────────────────────
+	// Cron Jobs
+	// ────────────────────────────────────────────────────────────────────────
 
 	/**
-	 * Shuts down all job and polling pools and waits for completion.
-	 */
-	
-	public void destroy()
-	{
-		log.info("Destroying all running jobs...");
-		serviceMap.forEach((key, value) -> {
-			log.info("Shutting Down [" + key + "]");
-			removeJob(key);
-		});
-		pollingMap.forEach((key, value) -> {
-			log.info("Shutting Down Poll Job [" + key + "]");
-			removePollingJob(key);
-		});
-		log.info("All jobs destroyed");
-	}
-
-	private int getCurrentTaskCount(ExecutorService service)
-	{
-		if (service instanceof ForkJoinPool)
-		{
-			ForkJoinPool pool = (ForkJoinPool) service;
-			return (int) pool.getQueuedTaskCount();
-		}
-		else if (service instanceof ThreadPoolExecutor)
-		{
-			ThreadPoolExecutor executor = (ThreadPoolExecutor) service;
-			return (int) executor.getTaskCount();
-		}
-		return 0;
-	}
-
-	/**
-	 * Sets the maximum queue count for a named pool.
+	 * Registers a cron-scheduled job using a standard 5-field UNIX cron expression.
+	 * <p>
+	 * The job fires at each matching time using chained Vert.x one-shot timers.
+	 * Supported syntax: values, ranges, steps, lists, wildcards, named days/months.
+	 * <p>
+	 * Examples:
+	 * <pre>
+	 * "0 * * * *"       - every hour at :00
+	 * "0/15 * * * *"    - every 15 minutes
+	 * "0 2 * * MON-FRI" - weekdays at 02:00
+	 * "30 4 1 * *"      - 1st of month at 04:30
+	 * "0 0 * * 0"       - every Sunday at midnight
+	 * </pre>
 	 *
-	 * @param queueName the pool name
-	 * @param queueCount the maximum queued task count
+	 * @param jobPoolName    the pool name (used for cancellation and lookup)
+	 * @param cronExpression a 5-field UNIX cron expression
+	 * @param task           the task to execute
+	 */
+	public void addCronJob(String jobPoolName, String cronExpression, Runnable task)
+	{
+		ensurePool(jobPoolName);
+		CronExpression cron = CronExpression.parse(cronExpression);
+		cronJobs.put(jobPoolName, cron);
+		scheduleCronExecution(jobPoolName, cron, task);
+		log.info("Registered cron job [{}] expression='{}'", jobPoolName, cronExpression);
+	}
+
+	/**
+	 * Returns the parsed cron expression for the given pool, if registered.
+	 *
+	 * @param jobPoolName the pool name
+	 * @return the cron expression, or empty if not a cron pool
+	 */
+	public Optional<CronExpression> getCronExpression(String jobPoolName)
+	{
+		return Optional.ofNullable(cronJobs.get(jobPoolName));
+	}
+
+	private void scheduleCronExecution(String jobPoolName, CronExpression cron, Runnable task)
+	{
+		Optional<Duration> nextDuration = cron.timeToNextExecution(ZonedDateTime.now());
+		if (nextDuration.isEmpty())
+		{
+			log.warn("Cron job [{}] has no future execution time - not scheduling", jobPoolName);
+			return;
+		}
+		long delayMs = Math.max(nextDuration.get().toMillis(), 1);
+		log.trace("Cron job [{}] next fire in {}ms", jobPoolName, delayMs);
+
+		long timerId = vertx().setTimer(delayMs, id -> {
+			// Remove this one-shot timer from tracking
+			List<Long> ids = timerIds.get(jobPoolName);
+			if (ids != null)
+			{
+				ids.remove(id);
+			}
+
+			// Execute the task on a worker thread, then reschedule
+			vertx().executeBlocking(() -> {
+				task.run();
+				return null;
+			}).onComplete(ar -> {
+				if (ar.failed())
+				{
+					log.error("Cron job [{}] execution failed", jobPoolName, ar.cause());
+				}
+				// Reschedule only if pool is still registered
+				if (timerIds.containsKey(jobPoolName))
+				{
+					scheduleCronExecution(jobPoolName, cron, task);
+				}
+			});
+		});
+
+		List<Long> ids = timerIds.get(jobPoolName);
+		if (ids != null)
+		{
+			ids.add(timerId);
+		}
+	}
+
+	// ────────────────────────────────────────────────────────────────────────
+	// Backward Compatibility
+	// ────────────────────────────────────────────────────────────────────────
+
+	/**
+	 * No-op kept for backward compatibility.
+	 * Vert.x manages its own thread pools; explicit waiting is not needed.
+	 *
+	 * @param jobName the pool name
+	 * @deprecated use {@link Future#toCompletionStage()} on the returned future instead
+	 */
+	@Deprecated(since = "2.1.0")
+	public void waitForJob(String jobName)
+	{
+		// No-op: Vert.x manages execution
+	}
+
+	/**
+	 * No-op kept for backward compatibility.
+	 * Vert.x manages its own thread pools; explicit waiting is not needed.
+	 *
+	 * @param jobName the pool name
+	 * @param timeout ignored
+	 * @param unit    ignored
+	 * @deprecated use {@link Future#toCompletionStage()} on the returned future instead
+	 */
+	@Deprecated(since = "2.1.0")
+	public void waitForJob(String jobName, long timeout, TimeUnit unit)
+	{
+		// No-op: Vert.x manages execution
+	}
+
+	/**
+	 * No-op kept for backward compatibility.
+	 * Pool registration is handled implicitly by {@link #addJob} or explicitly by {@link #registerJob(String, int)}.
+	 *
+	 * @param name            the pool name
+	 * @param executorService ignored
+	 * @return null
+	 * @deprecated use {@link #registerJob(String, int)} instead
+	 */
+	@Deprecated(since = "2.1.0")
+	public Object registerJobPool(String name, Object executorService)
+	{
+		ensurePool(name);
+		return null;
+	}
+
+	/**
+	 * No-op kept for backward compatibility.
+	 *
+	 * @param name            the pool name
+	 * @param executorService ignored
+	 * @return null
+	 * @deprecated use {@link #registerPollingJob} or {@link #addPollingJob} instead
+	 */
+	@Deprecated(since = "2.1.0")
+	public Object registerJobPollingPool(String name, Object executorService)
+	{
+		ensurePool(name);
+		return null;
+	}
+
+	// ────────────────────────────────────────────────────────────────────────
+	// Configuration
+	// ────────────────────────────────────────────────────────────────────────
+
+	/**
+	 * Sets the maximum concurrent task count for a named pool.
+	 * Tasks beyond this limit will still execute but a debug warning is logged.
+	 *
+	 * @param queueName  the pool name
+	 * @param queueCount the maximum concurrent task count
 	 */
 	public void setMaxQueueCount(String queueName, int queueCount)
 	{
 		maxQueueCount.put(queueName, queueCount);
 	}
 
-	
+	// ────────────────────────────────────────────────────────────────────────
+	// Lifecycle
+	// ────────────────────────────────────────────────────────────────────────
+
+	/**
+	 * Shuts down all job, polling, and cron pools by cancelling all Vert.x timers.
+	 */
+	public void destroy()
+	{
+		log.info("Destroying all running jobs...");
+		Set<String> pools = new HashSet<>(timerIds.keySet());
+		for (String pool : pools)
+		{
+			log.info("Shutting Down [{}]", pool);
+			List<Long> ids = timerIds.remove(pool);
+			if (ids != null)
+			{
+				cancelTimers(ids);
+			}
+		}
+		activeTaskCount.clear();
+		cronJobs.clear();
+		maxQueueCount.clear();
+		log.info("All jobs destroyed");
+	}
+
 	/**
 	 * Lifecycle hook called during application shutdown.
 	 */
+	@Override
 	public void onDestroy()
 	{
 		destroy();
 	}
 
-	
 	/**
 	 * Returns the sort order for pre-destroy services.
+	 * Runs very early to stop background work before other services shut down.
 	 *
 	 * @return the sort order value
 	 */
+	@Override
 	public Integer sortOrder()
 	{
 		return Integer.MIN_VALUE + 8;
 	}
 
+	// ────────────────────────────────────────────────────────────────────────
+	// Internal
+	// ────────────────────────────────────────────────────────────────────────
 
+	private void ensurePool(String name)
+	{
+		timerIds.computeIfAbsent(name, k -> Collections.synchronizedList(new ArrayList<>()));
+		maxQueueCount.putIfAbsent(name, 20);
+		activeTaskCount.computeIfAbsent(name, k -> new AtomicInteger(0));
+	}
+
+	private void warnIfOverflow(String jobPoolName)
+	{
+		int max = maxQueueCount.getOrDefault(jobPoolName, 20);
+		AtomicInteger counter = activeTaskCount.get(jobPoolName);
+		if (counter != null && counter.get() >= max)
+		{
+			log.debug("[{}] active tasks ({}) >= max ({}), new task will queue",
+					jobPoolName, counter.get(), max);
+		}
+	}
+
+	private void cancelTimers(List<Long> ids)
+	{
+		Vertx v = vertx();
+		for (Long id : ids)
+		{
+			v.cancelTimer(id);
+		}
+	}
 }
