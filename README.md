@@ -1,7 +1,7 @@
 # GuicedEE Inject
 
 [![Build](https://github.com/GuicedEE/GuicedInjection/actions/workflows/maven-publish.yml/badge.svg)](https://github.com/GuicedEE/GuicedInjection/actions/workflows/maven-publish.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/com.guicedee/guice-injection)](https://central.sonatype.com/artifact/com.guicedee/guice-injection)
+[![Maven Central](https://img.shields.io/maven-central/v/com.guicedee/inject)](https://github.com/GuicedEE/GuicedInjection)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 
 ![Java 25+](https://img.shields.io/badge/Java-25%2B-green)
@@ -26,7 +26,7 @@ Built on [Google Guice](https://github.com/google/guice) · JPMS module `com.gui
 <summary>Gradle (Kotlin DSL)</summary>
 
 ```kotlin
-implementation("com.guicedee:guice-injection:2.0.1-SNAPSHOT")
+implementation("com.guicedee:inject:2.0.1-SNAPSHOT")
 ```
 </details>
 
