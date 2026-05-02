@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * All pools are cleaned up on shutdown via {@link IGuicePreDestroy}.
  *
- * <h3>Usage</h3>
+ * <h2>Usage</h2>
  * <pre>{@code
  * JobService jobs = JobService.INSTANCE;
  *
@@ -83,6 +83,9 @@ public class JobService implements IGuicePreDestroy<JobService>
 	 */
 	public static final JobService INSTANCE = new JobService();
 
+	/**
+	 * Default Constructor for JobService
+	 */
 	public JobService()
 	{
 		//No config required

@@ -68,7 +68,6 @@ import static java.lang.Math.min;
  * version v1.0
  * <p>
  * Date: 03.11.2015
- * <p>
  *
  * @author Ertuğrul Çetin ~ ertu.ctn@gmail.com
  * @see Collection
@@ -82,8 +81,14 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
     transient Node<T> first;
     transient Node<T> last;
 
+    /**
+     * The size of the list
+     */
     int size;
 
+    /**
+     * The initial capacity of the list
+     */
     int initialCapacity;
 
     private static final int DEFAULT_CAPACITY = 10;
@@ -1098,6 +1103,12 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
         }
     }
 
+    /**
+     * Save the state of the GlueList instance to a stream (that is, serialize it).
+     *
+     * @param s the stream
+     * @throws IOException if an I/O error occurs
+     */
     private void writeObject(ObjectOutputStream s) throws IOException {
 
         int expectedModCount = modCount;
@@ -1118,6 +1129,13 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
     }
 
 
+    /**
+     * Reconstitute the GlueList instance from a stream (that is, deserialize it).
+     *
+     * @param s the stream
+     * @throws IOException if an I/O error occurs
+     * @throws ClassNotFoundException if the class of a serialized object could not be found
+     */
     @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
 

@@ -62,6 +62,7 @@ import static com.guicedee.client.Environment.getSystemPropertyOrEnvironment;
  * <p>
  * Use reflect() to access the class library, or inject() to get the injector for any instance
  *
+ * @param <J> The type of the GuiceContext
  * @author GedMarc
  * @version 1.0
  * @since Nov 14, 2016
@@ -246,9 +247,21 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      * Console layout options for the default console appenders.
      */
     public enum ConsoleLayoutOption {
+        /**
+         * The current layout
+         */
         CURRENT,
+        /**
+         * Fixed layout
+         */
         FIXED,
+        /**
+         * Highlighted layout
+         */
         HIGHLIGHT,
+        /**
+         * JSON layout
+         */
         JSON
     }
 
