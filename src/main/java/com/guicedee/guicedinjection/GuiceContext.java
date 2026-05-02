@@ -647,7 +647,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      */
     private void loadConfiguration() {
         if (!configured) {
-            log.info("🚀 Initializing Guice configuration");
+            log.debug("🚀 Initializing Guice configuration");
             Stopwatch configStopwatch = Stopwatch.createStarted();
 
             // Load all configurators
@@ -1262,7 +1262,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     }
                     log.info("⏳ Awaiting {} post-startup unis in group [{}]", startupsInGroup.size(), sortOrder);
                     return Uni.join().all(startupsInGroup).andFailFast()
-                            .onItem().invoke(results -> log.info("✅ Post-startup group [{}] completed - {} services", sortOrder, results.size()))
+                            .onItem().invoke(results -> log.debug("✅ Post-startup group [{}] completed - {} services", sortOrder, results.size()))
                             .onItem().transform(results -> true);
                 })
                 .collect().asList()
@@ -1396,7 +1396,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             Integer key = entry.getKey();
             List<IGuicePreStartup<?>> value = entry.getValue();
 
-            log.info("🔄 Executing pre-startup group with priority [{}] - {} services", key, value.size());
+            log.debug("🔄 Executing pre-startup group with priority [{}] - {} services", key, value.size());
             Stopwatch groupStopwatch = Stopwatch.createStarted();
 
             List<Future<Boolean>> groupFutures = new ArrayList<>();
@@ -1404,7 +1404,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             Map<Future<?>, String> futureServiceNames = new IdentityHashMap<>();
             for (IGuicePreStartup<?> iGuicePreStartup : value) {
                 String serviceName = iGuicePreStartup.getClass().getSimpleName();
-                log.info("🚀 Starting pre-startup service [{}] with priority [{}]", serviceName, key);
+                log.debug("🚀 Starting pre-startup service [{}] with priority [{}]", serviceName, key);
 
                 try {
                     List<Future<Boolean>> serviceFutures = iGuicePreStartup.onStartup();
@@ -1443,7 +1443,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 if (compositeFuture.succeeded()) {
                     successCount += groupFutures.size();
                     groupStopwatch.stop();
-                    log.info("✅ Pre-startup group [{}] completed successfully in {}ms",
+                    log.debug("✅ Pre-startup group [{}] completed successfully in {}ms",
                             key, groupStopwatch.elapsed(TimeUnit.MILLISECONDS));
                 } else {
                     failureCount += (groupFutures.size() - successCount);
