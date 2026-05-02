@@ -24,7 +24,6 @@ public class GuiceDefaultModuleExclusions
 		Set<String> strings = new HashSet<>();
 		strings.add("aopalliance");
 		strings.add("btm");
-		strings.add("c3p0");
 		strings.add("cache.annotations.ri.guice");
 		strings.add("cache.api");
 		strings.add("com.fasterxml.jackson.annotation");
@@ -38,7 +37,6 @@ public class GuiceDefaultModuleExclusions
 		strings.add("com.guicedee.guicedhazelcast");
 		strings.add("com.guicedee.guicedinjection");
 		strings.add("com.guicedee.guicedpersistence");
-		strings.add("com.guicedee.guicedpersistence.c3p0");
 		strings.add("com.guicedee.guicedservlets");
 		strings.add("com.guicedee.guicedservlets.requestscoped");
 		strings.add("com.guicedee.logmaster");
