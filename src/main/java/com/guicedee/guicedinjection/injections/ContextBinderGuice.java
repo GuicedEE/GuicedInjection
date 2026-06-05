@@ -30,15 +30,15 @@ public class ContextBinderGuice
      */
     @Override
     public void configure() {
-        ContextBinderGuice.log.debug("Bound GuiceConfig.class");
+        ContextBinderGuice.log.trace("🔗 Bound GuiceConfig.class");
         bind(GuiceConfig.class)
                 .toProvider(() -> GuiceContext.instance().getConfig());
 
-        ContextBinderGuice.log.debug("Bound GlobalProperties.class");
+        ContextBinderGuice.log.trace("🔗 Bound GlobalProperties.class");
         bind(GlobalProperties.class)
                 .asEagerSingleton();
 
-        ContextBinderGuice.log.debug("Bound ScanResult.class");
+        ContextBinderGuice.log.trace("🔗 Bound ScanResult.class");
         bind(ScanResult.class)
                 .toProvider(() -> GuiceContext.instance()
                         .getScanResult())

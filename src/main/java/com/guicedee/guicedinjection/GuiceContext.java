@@ -973,7 +973,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 .iterator()
                 .hasNext()) {
             for (IPackageRejectListScanner exclusion : exclusions) {
-                log.debug("Loading IPackageContentsScanner - {}", exclusion
+                log.debug("📦 Loading IPackageContentsScanner - {}", exclusion
                         .getClass()
                         .getCanonicalName());
                 Set<String> searches = exclusion.exclude();
@@ -1202,20 +1202,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      * @return a {@link Uni} that completes when all post-startup services have finished
      */
     private Uni<Boolean> loadPostStartups() {
-        log.info("🚀 Initializing post-startup services");
+        log.debug("🚀 Initializing post-startup services");
         Stopwatch totalStopwatch = Stopwatch.createStarted();
-//        com.guicedee.client.scopes.CallScoper callScoper = null;
-        //       boolean started = false;
-        // try {
-/*            callScoper = IGuiceContext.get(com.guicedee.client.scopes.CallScoper.class);
-            if (!callScoper.isStartedScope()) {
-                callScoper.enter();
-                started = true;
-            }
-            com.guicedee.client.scopes.CallScopeProperties props = IGuiceContext.get(com.guicedee.client.scopes.CallScopeProperties.class);
-            if (props.getSource() == null || props.getSource() == com.guicedee.client.scopes.CallScopeSource.Unknown) {
-                props.setSource(com.guicedee.client.scopes.CallScopeSource.Startup);
-            }*/
+
         io.vertx.core.Vertx vertx = IGuiceContext.get(io.vertx.core.Vertx.class);
         Set<IGuicePostStartup<?>> startupSet = loadPostStartupServices().stream()
                 .map(a -> (IGuicePostStartup<?>) a)
@@ -1238,7 +1227,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     List<Uni<Boolean>> startupsInGroup = new ArrayList<>();
                     for (IGuicePostStartup<?> startup : group) {
                         log.debug("🔄 Preparing post-startup service: {} with sort order: {}",
-                                startup.getClass().getCanonicalName(), sortOrder);
+                                startup.getClass().getSimpleName(), sortOrder);
                         IGuicePostStartup<?> instance = IGuiceContext.get(startup.getClass());
                         if (sortedStartups.add(instance)) {
                             List<Uni<Boolean>> postLoadResults = instance.postLoad();
@@ -1247,7 +1236,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                                     Uni<Boolean> onContext = Uni.createFrom().<Boolean>emitter(em ->
                                             vertx.runOnContext(v ->
                                                     postLoadResult
-                                                            .invoke(a -> log.debug("Completed postload : " + startup.getClass().getCanonicalName()))
+                                                            .invoke(a -> log.trace("✅ Completed postload : " + startup.getClass().getCanonicalName()))
                                                             .onItem().transform(a -> true)
                                                             .subscribe().with(em::complete, em::fail)
                                             )
@@ -1260,7 +1249,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     if (startupsInGroup.isEmpty()) {
                         return Uni.createFrom().item(true);
                     }
-                    log.info("⏳ Awaiting {} post-startup unis in group [{}]", startupsInGroup.size(), sortOrder);
+                    log.debug("⏳ Awaiting {} post-startup unis in group [{}]", startupsInGroup.size(), sortOrder);
                     return Uni.join().all(startupsInGroup).andFailFast()
                             .onItem().invoke(results -> log.debug("✅ Post-startup group [{}] completed - {} services", sortOrder, results.size()))
                             .onItem().transform(results -> true);
