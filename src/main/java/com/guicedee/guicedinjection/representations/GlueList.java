@@ -500,7 +500,6 @@ public class GlueList<T> extends AbstractList<T> implements List<T>, Cloneable, 
      * @param index the index of the element to remove
      * @return the element previously at the specified position
      */
-    @SuppressWarnings("unchecked")
     @Override
     public T remove(int index) {
 

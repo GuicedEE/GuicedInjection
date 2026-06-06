@@ -489,7 +489,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 Set<? extends IGuiceModule> iGuiceModules = GuiceContext
                         .instance()
                         .loadIGuiceModules();
-                cModules.addAll(iGuiceModules.stream().filter(a -> a.enabled()).toList());
+                cModules.addAll(iGuiceModules.stream().filter(IGuiceModule::enabled).toList());
 
                 //cModules.add(new GuiceInjectorModule());
                 log.debug("📋 Dependency injection modules prepared for initialization: {} modules", cModules.size());
