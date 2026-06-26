@@ -1,13 +1,13 @@
 package com.guicedee.guicedinjection.representations;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.*;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import com.guicedee.client.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -91,7 +91,7 @@ public interface ICopyable<J>
 			String jsonFromSource = om.writeValueAsString(source);
 			ObjectReader objectReader = om.readerForUpdating(this);
 			objectReader.readValue(jsonFromSource);
-		} catch (IOException e)
+		} catch (JacksonException e)
 		{
 			log.error("Cannot write or read source/destination", e);
 		}

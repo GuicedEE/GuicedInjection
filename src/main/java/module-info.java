@@ -56,5 +56,5 @@ module com.guicedee.guicedinjection {
 	
 	provides java.net.spi.URLStreamHandlerProvider with com.guicedee.guicedinjection.urls.JrtUrlHandler;
 	
-	opens com.guicedee.guicedinjection to com.fasterxml.jackson.databind;
+	opens com.guicedee.guicedinjection to tools.jackson.databind;
 }

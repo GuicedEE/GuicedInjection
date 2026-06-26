@@ -27,8 +27,8 @@ public class GuiceDefaultModuleExclusions
 		strings.add("cache.annotations.ri.guice");
 		strings.add("cache.api");
 		strings.add("com.fasterxml.jackson.annotation");
-		strings.add("com.fasterxml.jackson.core");
-		strings.add("com.fasterxml.jackson.databind");
+		strings.add("tools.jackson.core");
+		strings.add("tools.jackson.databind");
 		strings.add("com.fasterxml.jackson.datatype.jdk8");
 		strings.add("com.google.common");
 		strings.add("com.google.guice");
