@@ -93,15 +93,24 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             Configurator.setLevel("org.apache.logging.log4j.jul", Level.ERROR);
             Configurator.setLevel("org.apache.logging.log4j", Level.ERROR);
             Configurator.setLevel("io.vertx.ext.web.handler.sockjs.impl", Level.ERROR);
+            Configurator.setLevel("io.swagger.v3.core", Level.ERROR);
+            Configurator.setLevel("io.swagger.v3.jaxrs2", Level.ERROR);
+            Configurator.setLevel("org.ehcache.core", Level.ERROR);
+            Configurator.setLevel("org.ehcache", Level.ERROR);
             Configurator.setLevel("org.hibernate", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("com.hazelcast", org.apache.logging.log4j.Level.INFO);
-            Configurator.setLevel("com.hazelcast.cache.impl ", org.apache.logging.log4j.Level.DEBUG);
+            Configurator.setLevel("com.hazelcast.cache.impl ", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("com.hazelcast.system.logo", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("com.hazelcast.internal.server.tcp.TcpServerConnection", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("io.netty", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("com.mchange", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("com.zandero", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("com.google", org.apache.logging.log4j.Level.ERROR);
+            Configurator.setLevel("org.mongodb.driver", Level.ERROR);
+            Configurator.setLevel("com.mongodb.reactivestreams.client", Level.ERROR);
+            Configurator.setLevel("com.mongodb.reactivestreams", Level.ERROR);
+            Configurator.setLevel("jakarta.xml.bind", Level.ERROR);
+            Configurator.setLevel("org.glassfish.jaxb.runtime.v2", Level.ERROR);
             Configurator.setLevel("jdk.event.security", org.apache.logging.log4j.Level.ERROR);
             Configurator.setLevel("org.apache.commons.beanutils", org.apache.logging.log4j.Level.ERROR);
 
@@ -379,7 +388,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         .withDisableAnsi(false)
                         .withNoConsoleNoAnsi(true)
                         .withConfiguration(config)
-                        .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-40.40c] [%-20.20t] [%-5level] - %msg%n")
+                        .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-40.40c{1.}] [%-20.20t] [%-5level] - %msg%n")
                         .build();
             case HIGHLIGHT:
                 // Highlight level and add some subtle coloring to logger/thread
@@ -387,7 +396,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         .withDisableAnsi(false)
                         .withNoConsoleNoAnsi(true)
                         .withConfiguration(config)
-                        .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%style{%-40.40c}{cyan}] [%style{%-20.20t}{magenta}] [%highlight{%-5level}] - %msg%n")
+                        .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%style{%-40.40c{1.}}{cyan}] [%style{%-20.20t}{magenta}] [%highlight{%-5level}] - %msg%n")
                         .build();
             case JSON:
                 // JSON formatted logs
@@ -403,7 +412,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         .withDisableAnsi(false)
                         .withNoConsoleNoAnsi(true)
                         .withConfiguration(config)
-                        .withPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-40.40c] [%-20.20t] [%-5level] - [%msg]%n")
+                        .withPattern(com.guicedee.client.utils.LogUtils.getPattern())
                         .build();
         }
     }
@@ -663,7 +672,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             int configCount = 0;
             for (IGuiceConfigurator guiceConfigurator : guiceConfigurators) {
                 String configuratorName = guiceConfigurator.getClass().getCanonicalName();
-                log.debug("🔧 Applying configurator [{}]", configuratorName);
+                log.trace("🔧 Applying configurator [{}]", configuratorName);
 
                 try {
                     guiceConfigurator.configure(GuiceContext.config);
@@ -686,11 +695,11 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             configStopwatch.stop();
             log.info("✅ Guice configuration completed in {}ms with {} configurators applied",
                     configStopwatch.elapsed(TimeUnit.MILLISECONDS), configCount);
-            log.debug("📝 Final configuration: {}", GuiceContext.config.toString());
+            log.trace("📝 Final configuration: {}", GuiceContext.config.toString());
 
             configured = true;
         } else {
-            log.debug("📋 Using existing Guice configuration");
+            log.trace("📋 Using existing Guice configuration");
         }
     }
 
@@ -753,11 +762,11 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             log.info("🚀 Initializing ClassGraph scanner for dependency discovery");
             scanner = new ClassGraph();
             Stopwatch stopwatch = Stopwatch.createStarted();
-            log.debug("📋 Loading classpath scanner configuration");
+            log.trace("📋 Loading classpath scanner configuration");
             loadConfiguration();
 
             // Configure the scanner with appropriate settings
-            log.debug("🔧 Configuring scanner with inclusion/exclusion rules");
+            log.trace("🔧 Configuring scanner with inclusion/exclusion rules");
             scanner = configureScanner(scanner);
 
             try {
@@ -837,12 +846,12 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      * @return the configured ClassGraph instance
      */
     private ClassGraph configureScanner(ClassGraph graph) {
-        log.debug("🔧 Beginning ClassGraph scanner configuration");
+        log.trace("🔧 Beginning ClassGraph scanner configuration");
         int configurationCount = 0;
         if (config.isAllowPaths()) {
             String[] paths = getPathsList();
             if (paths.length != 0) {
-                log.debug("🔍 Configuring accepted paths: {} paths", paths.length);
+                log.trace("🔍 Configuring accepted paths: {} paths", paths.length);
                 graph = graph.acceptPaths(paths);
                 configurationCount++;
                 if (log.isTraceEnabled()) {
@@ -876,7 +885,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
         if (GuiceContext.config.isIncludeModuleAndJars()) {
             if (getJavaVersion() < 9) {
                 String[] jarRejections = getJarsInclusionList();
-                log.debug("Accepted Jars for Scanning : {}", Arrays.toString(jarRejections));
+                log.trace("Accepted Jars for Scanning : {}", Arrays.toString(jarRejections));
                 if (jarRejections.length != 0) {
                     graph = graph.acceptJars(jarRejections);
                 }
@@ -950,7 +959,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 .iterator()
                 .hasNext()) {
             for (IPackageContentsScanner exclusion : exclusions) {
-                log.debug("Loading IPackageContentsScanner - {}", exclusion
+                log.trace("Loading IPackageContentsScanner - {}", exclusion
                         .getClass()
                         .getCanonicalName());
                 Set<String> searches = exclusion.searchFor();
