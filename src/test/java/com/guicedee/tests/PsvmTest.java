@@ -5,9 +5,14 @@ import com.guicedee.client.*;
 import com.guicedee.client.scopes.CallScoper;
 import com.guicedee.guicedinjection.GuiceContext;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.Vertx;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PsvmTest
 {
@@ -22,23 +27,33 @@ public class PsvmTest
 	}
 
 	@Test
-	public void testContextPropagation() {
-		// Set some value in call scope
-		CallScoper callScoper = IGuiceContext.get(CallScoper.class);
-		callScoper.enter();
-		Key<String> key = Key.get(String.class);
-		callScoper.getValues().put(key, "testValue");
-
-		// Create a Uni that should use the custom executor
-		Uni.createFrom().item("test")
-				.onItem().delayIt().by(Duration.ofMillis(100))
-				.subscribe().with(
-						item -> {
-							// Check if the call scope value is available here
-							CallScoper newCallScoper = IGuiceContext.get(CallScoper.class);
-							Object value = newCallScoper.getValues().get(key);
-							System.out.println("Call scope value in new thread: " + value);
-						}
-				);
+	public void testContextPropagation() throws Exception {
+		Vertx vertx = Vertx.vertx();
+		CompletableFuture<Object> propagated = new CompletableFuture<>();
+		try {
+			vertx.getOrCreateContext().runOnContext(ignored -> {
+				var context = Vertx.currentContext();
+				CallScoper callScoper = IGuiceContext.get(CallScoper.class);
+				try {
+					callScoper.enter();
+					Key<String> key = Key.get(String.class);
+					callScoper.getValues().put(key, "testValue");
+					Uni.createFrom().item("test")
+							.onItem().delayIt().by(Duration.ofMillis(100))
+							.emitOn(command -> context.runOnContext(event -> command.run()))
+							.map(item -> IGuiceContext.get(CallScoper.class).getValues().get(key))
+							.onTermination().invoke(callScoper::exit)
+							.subscribe().with(propagated::complete, propagated::completeExceptionally);
+				} catch (Throwable failure) {
+					propagated.completeExceptionally(failure);
+					if (callScoper.isStartedScope()) {
+						callScoper.exit();
+					}
+				}
+			});
+			assertEquals("testValue", propagated.get(5, TimeUnit.SECONDS));
+		} finally {
+			vertx.close().toCompletionStage().toCompletableFuture().get(5, TimeUnit.SECONDS);
+		}
 	}
 }
