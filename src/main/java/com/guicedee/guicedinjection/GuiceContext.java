@@ -432,7 +432,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     /**
      * The physical injector for the JVM container
      */
-    private Injector injector;
+    private volatile Injector injector;
     /**
      * The actual scanner
      */
@@ -451,6 +451,15 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     private static boolean configured;
 
     private final CompletableFuture<Void> loadingFinished = new CompletableFuture<>();
+    private final java.util.concurrent.atomic.AtomicBoolean shutdownStarted = new java.util.concurrent.atomic.AtomicBoolean();
+    private final CompletableFuture<Void> shutdownFinished = new CompletableFuture<>();
+    private volatile Thread shutdownOwner;
+    private volatile boolean processLifecycle;
+
+    /** Opts a process launcher into terminal, exactly-once shutdown. Embedded callers retain their lifecycle. */
+    void manageProcessLifecycle() {
+        processLifecycle = true;
+    }
 
     /**
      * Creates a new Guice context. Not necessary
@@ -459,13 +468,18 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
 
     }
 
-    /**
-     * Reference the Injector Directly
-     *
-     * @return The global Guice Injector Object, Never Null, Instantiates the Injector if not configured
-     */
+    /** Returns the already-created injector without starting application services. */
+    @Override
+    public Optional<Injector> existingInjector() {
+        return Optional.ofNullable(injector);
+    }
 
+    /**
+     * Returns the global injector, creating it and starting lifecycle work when needed.
+     * Await {@link #getLoadingFinished()} to observe asynchronous startup success or failure.
+     */
     public Injector inject() {
+        if (processLifecycle && shutdownStarted.get() && injector == null) throw new IllegalStateException("Guice context is stopped");
         if (GuiceContext.buildingInjector) {
             log.error("💥 The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.");
             new IllegalStateException("The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.").printStackTrace();
@@ -521,7 +535,10 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                             GuiceContext.instance()
                                     .loadPreDestroyServices();
                         }).subscribe().with(a -> {
-                            log.trace("Subcription for post startups completed - " + a);
+                            log.trace("Subscription for post startups completed - " + a);
+                        }, failure -> {
+                            loadingFinished.completeExceptionally(failure);
+                            log.error("Post-startup initialization failed", failure);
                         });
                 Runtime
                         .getRuntime()
@@ -535,6 +552,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             } catch (Throwable e) {
                 GuiceContext.buildingInjector = false;
                 log.error("💥 Critical failure during dependency injection system initialization: {}", e.getMessage(), e);
+                loadingFinished.completeExceptionally(e);
                 throw new RuntimeException("Unable to boot Guice Injector", e);
             }
         }
@@ -547,54 +565,62 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      */
     @SuppressWarnings("unused")
     public void destroy() {
-        log.info("🛑 Starting Guice Context shutdown and resource cleanup");
-        Stopwatch shutdownStopwatch = Stopwatch.createStarted();
-
+        if (processLifecycle && !shutdownStarted.compareAndSet(false, true)) {
+            if (shutdownOwner != Thread.currentThread()) shutdownFinished.join();
+            return;
+        }
+        shutdownOwner = Thread.currentThread();
+        if (processLifecycle) loadingFinished.completeExceptionally(new IllegalStateException("Guice context is stopping"));
         try {
-            Set<IGuicePreDestroy> destroyers = loadPreDestroyServices();
-            log.debug("🗑️ Executing {} pre-destroy services for cleanup", destroyers.size());
+            log.info("🛑 Starting Guice Context shutdown and resource cleanup");
+            Stopwatch shutdownStopwatch = Stopwatch.createStarted();
 
-            int successCount = 0;
-            int failureCount = 0;
+            try {
+                Set<IGuicePreDestroy> destroyers = loadPreDestroyServices();
+                log.debug("🗑️ Executing {} pre-destroy services for cleanup", destroyers.size());
 
-            for (IGuicePreDestroy destroyer : destroyers) {
-                String destroyerName = destroyer.getClass().getCanonicalName();
-                log.debug("🗑️ Running pre-destroy service: {}", destroyerName);
+                int successCount = 0;
+                int failureCount = 0;
 
-                try {
-                    destroyer.onDestroy();
-                    successCount++;
-                    log.debug("✅ Successfully executed pre-destroy service: {}", destroyerName);
-                } catch (Throwable T) {
-                    failureCount++;
-                    log.error("❌ Failed to run destroyer '{}': {}", destroyerName, T.getMessage(), T);
+                for (IGuicePreDestroy destroyer : destroyers) {
+                    String destroyerName = destroyer.getClass().getCanonicalName();
+                    log.debug("🗑️ Running pre-destroy service: {}", destroyerName);
+
+                    try {
+                        destroyer.onDestroy();
+                        successCount++;
+                        log.debug("✅ Successfully executed pre-destroy service: {}", destroyerName);
+                    } catch (Throwable T) {
+                        failureCount++;
+                        log.error("❌ Failed to run destroyer '{}': {}", destroyerName, T.getMessage(), T);
+                    }
                 }
+
+                log.info("📊 Pre-destroy services execution completed - Success: {}, Failed: {}",
+                        successCount, failureCount);
+
+            } catch (Throwable T) {
+                log.error("💥 Failed to run destroyers: {}", T.getMessage(), T);
             }
 
-            log.info("📊 Pre-destroy services execution completed - Success: {}, Failed: {}",
-                    successCount, failureCount);
+            log.debug("🧹 Cleaning up scanner resources");
+            if (GuiceContext.instance().scanResult != null) {
+                GuiceContext.instance().scanResult.close();
+                log.debug("✅ Scan result resources released");
+            }
 
-        } catch (Throwable T) {
-            log.error("💥 Failed to run destroyers: {}", T.getMessage(), T);
-        }
+            // Clear all references
+            GuiceContext.instance().scanResult = null;
+            GuiceContext.instance().scanner = null;
+            GuiceContext.instance().injector = null;
+            GuiceContext.configured = false;
+            GuiceContext.config.reset();
+            IGuiceContext.getAllLoadedServices().clear();
 
-        log.debug("🧹 Cleaning up scanner resources");
-        if (GuiceContext.instance().scanResult != null) {
-            GuiceContext.instance().scanResult.close();
-            log.debug("✅ Scan result resources released");
-        }
-
-        // Clear all references
-        GuiceContext.instance().scanResult = null;
-        GuiceContext.instance().scanner = null;
-        GuiceContext.instance().injector = null;
-        GuiceContext.configured = false;
-        GuiceContext.config.reset();
-        IGuiceContext.getAllLoadedServices().clear();
-
-        shutdownStopwatch.stop();
-        log.info("🎉 Guice Context shutdown completed in {}ms",
-                shutdownStopwatch.elapsed(TimeUnit.MILLISECONDS));
+            shutdownStopwatch.stop();
+            log.info("🎉 Guice Context shutdown completed in {}ms",
+                    shutdownStopwatch.elapsed(TimeUnit.MILLISECONDS));
+        } finally { shutdownFinished.complete(null); }
     }
 
     /**
@@ -1230,6 +1256,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
         return Multi.createFrom().iterable(groupedStartups.entrySet())
                 .onItem()
                 .transformToUniAndConcatenate(entry -> {
+                    if (shutdownStarted.get()) return Uni.createFrom().failure(new IllegalStateException("Guice context is stopping"));
                     int sortOrder = entry.getKey();
                     List<IGuicePostStartup<?>> group = entry.getValue();
                     // group.sort(Comparator.comparing(IGuicePostStartup::sortOrder));
@@ -1243,12 +1270,14 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                             if (postLoadResults != null) {
                                 for (Uni<Boolean> postLoadResult : postLoadResults) {
                                     Uni<Boolean> onContext = Uni.createFrom().<Boolean>emitter(em ->
-                                            vertx.runOnContext(v ->
+                                            vertx.runOnContext(v -> {
+                                                try {
                                                     postLoadResult
                                                             .invoke(a -> log.trace("✅ Completed postload : " + startup.getClass().getCanonicalName()))
                                                             .onItem().transform(a -> true)
-                                                            .subscribe().with(em::complete, em::fail)
-                                            )
+                                                            .subscribe().with(em::complete, em::fail);
+                                                } catch (Throwable failure) { em.fail(failure); }
+                                            })
                                     );
                                     startupsInGroup.add(onContext);
                                 }
@@ -1265,9 +1294,13 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 })
                 .collect().asList()
                 .replaceWith(true)
+                .onItem().invoke(ignored -> {
+                    if (shutdownStarted.get()) throw new IllegalStateException("Guice context is stopping");
+                    loadingFinished.complete(null);
+                })
+                .onFailure().invoke(loadingFinished::completeExceptionally)
                 .eventually(() -> {
                     totalStopwatch.stop();
-                    loadingFinished.complete(null);
                     log.info("🎉 Post-startup initialization setup completed in {}ms",
                             totalStopwatch.elapsed(TimeUnit.MILLISECONDS));
                 });
@@ -1337,7 +1370,13 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      * @return the set of pre-destroy services
      */
     public Set<IGuicePreDestroy> loadPreDestroyServices() {
-        return new LinkedHashSet<>(getLoader(IGuicePreDestroy.class, true, ServiceLoader.load(IGuicePreDestroy.class)));
+        // IDefaultService.compareTo is not a valid equality comparator for equal priorities.
+        // Use an explicit total ordering and retain every distinct provider.
+        Set<IGuicePreDestroy> hooks = getLoader(IGuicePreDestroy.class, true, ServiceLoader.load(IGuicePreDestroy.class));
+        return hooks.stream()
+                .sorted(Comparator.comparingInt((IGuicePreDestroy hook) -> hook.shutdownSortOrder())
+                        .thenComparing(hook -> hook.getClass().getName()))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
