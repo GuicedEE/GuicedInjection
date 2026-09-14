@@ -7,6 +7,6 @@ module guice.injection.tests {
 	//requires org.slf4j;
 	//requires org.apache.logging.log4j.slf4j2.impl;
 	
-	opens com.guicedee.tests to org.junit.platform.commons;
+	opens com.guicedee.tests to org.junit.platform.commons, com.google.guice;
 	
 }
