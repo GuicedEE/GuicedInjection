@@ -98,10 +98,6 @@
     <dependencies>
         <dependency>
             <groupId>com.guicedee</groupId>
-            <artifactId>client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.guicedee</groupId>
             <artifactId>vertx</artifactId>
         </dependency>
         <dependency>
@@ -114,24 +110,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.classgraph</groupId>
-            <artifactId>classgraph</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.guicedee.modules.services</groupId>
-            <artifactId>guice</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-        <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>tools.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
             <groupId>com.guicedee.modules.services</groupId>
@@ -140,16 +120,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j2-impl</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jul</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
