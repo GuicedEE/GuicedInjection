@@ -33,6 +33,9 @@ flowchart LR
 ```
 
 Interaction/data flow notes
+- Process launchers keep a 300-second default startup budget. Explicit
+  `GUICEDEE_STARTUP_TIMEOUT_SECONDS` values from 1 through 7200 support installation
+  jobs such as complete reference-data imports; failed-startup cleanup remains bounded.
 - Runtime injector assembly: Scanner → SPI discovery → registry → Guice injector (see docs/architecture/sequence-runtime-injection.md).
 - SPI loading path: ServiceLoader providers (modules/binders/scanners/configurators) contribute to registry (see docs/architecture/sequence-spi-discovery.md).
 - Logging bootstrap and @InjectLogger wiring: Log4JConfigurator SPI prepares appenders/layouts; TypeListener injects loggers post-construction (see docs/architecture/sequence-logger-injection.md).

@@ -28,7 +28,7 @@ public final class GuiceApplication {
         boolean interrupted = false;
         try {
             cleanupSeconds = seconds("GUICEDEE_FAILED_STARTUP_CLEANUP_SECONDS", 45, 120);
-            int startupSeconds = seconds("GUICEDEE_STARTUP_TIMEOUT_SECONDS", 300, 1800);
+            int startupSeconds = seconds("GUICEDEE_STARTUP_TIMEOUT_SECONDS", 300, 7200);
             var ready = new CompletableFuture<Void>();
             // Preserve normal non-daemon inheritance for resources created by startup hooks.
             startup = Thread.ofPlatform().daemon(false).name("guicedee-application-startup").start(() -> {
