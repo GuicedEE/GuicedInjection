@@ -22,6 +22,10 @@ public final class FrameworkLifecycleProbe {
         context.getConfig().setClasspathScanning(false).setServiceLoadWithClassPath(false);
         var cache=IGuiceContext.getAllLoadedServices();
         cache.put(IGuiceConfigurator.class,Set.of());cache.put(IGuicePreStartup.class,Set.of());
+        if(mode.startsWith("pre-")) {
+            System.setProperty("GUICEDEE_STARTUP_TIMEOUT_SECONDS", "1");
+            cache.put(IGuicePreStartup.class, Set.of(new Pre()));
+        }
         cache.put(IGuiceModule.class,Set.of());
         cache.put(IGuicePostStartup.class,Set.of(new Startup()));
         cache.put(IGuicePreDestroy.class,new LinkedHashSet<>(List.of(new Late(),new SameB(),new Early(),new SameA())));
@@ -30,6 +34,14 @@ public final class FrameworkLifecycleProbe {
             if(mode.equals("module-failure"))addError("fixture-module-failure");
         }});
         try {
+            if(mode.startsWith("pre-")) {
+                try { context.inject(); throw new AssertionError("Pre-startup failure was accepted"); }
+                catch(RuntimeException expected) { }
+                if(!stopped.equals(List.of("early","same-a","same-b","late"))) throw new AssertionError("Failed startup leaked resource: " + stopped);
+                if(!context.getLoadingFinished().failed()) throw new AssertionError("Failed pre-startup reported ready");
+                cache.put(IGuicePreDestroy.class,Set.of());
+                System.out.println("PROBE_OK " + mode); return;
+            }
             if(mode.equals("module-failure")) {
                 try {context.inject();throw new AssertionError("Failed module was accepted");}catch(RuntimeException expected){}
                 requireFailed(context.getLoadingFinished());System.out.println("PROBE_OK module-failure");return;
@@ -60,6 +72,13 @@ public final class FrameworkLifecycleProbe {
             var trace = new java.io.StringWriter();
             expected.printStackTrace(new java.io.PrintWriter(trace));
             if(!trace.toString().contains(required))throw new AssertionError("Wrong startup failure",expected);
+        }
+    }
+    public static final class Pre implements IGuicePreStartup<Pre> {
+        public List<io.vertx.core.Future<Boolean>> onStartup() {
+            if(mode.equals("pre-sync")) throw new IllegalStateException("fixture-pre-sync");
+            if(mode.equals("pre-async")) return List.of(io.vertx.core.Future.failedFuture("fixture-pre-async"));
+            return List.of(Promise.<Boolean>promise().future());
         }
     }
     public static final class Startup implements IGuicePostStartup<Startup> {

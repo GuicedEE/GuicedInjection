@@ -553,6 +553,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 GuiceContext.buildingInjector = false;
                 log.error("💥 Critical failure during dependency injection system initialization: {}", e.getMessage(), e);
                 loadingFinished.completeExceptionally(e);
+                for (IGuicePreDestroy destroyer : loadPreDestroyServices()) {
+                    try { destroyer.onDestroy(); } catch (Throwable cleanup) { e.addSuppressed(cleanup); }
+                }
                 throw new RuntimeException("Unable to boot Guice Injector", e);
             }
         }
@@ -1467,7 +1470,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 } catch (Exception e) {
                     log.error("❌ Failed to execute pre-startup service [{}]: {}",
                             serviceName, e.getMessage(), e);
-                    failureCount++;
+                    throw new IllegalStateException("Pre-startup service failed: " + serviceName, e);
                 }
             }
 
@@ -1475,7 +1478,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             try {
                 log.debug("⏳ Waiting for {} futures in priority group [{}]", groupFutures.size(), key);
                 Future<CompositeFuture> compositeFuture = Future.all(groupFutures);
-                compositeFuture.await(10, TimeUnit.SECONDS);
+                compositeFuture.await(Long.parseLong(com.guicedee.client.Environment.getSystemPropertyOrEnvironment("GUICEDEE_STARTUP_TIMEOUT_SECONDS", "60")), TimeUnit.SECONDS);
 
                 if (compositeFuture.succeeded()) {
                     successCount += groupFutures.size();
@@ -1486,6 +1489,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     failureCount += (groupFutures.size() - successCount);
                     log.warn("⚠️ Some pre-startup operations in group [{}] failed: {}",
                             key, compositeFuture.cause().getMessage());
+                    throw new IllegalStateException("Pre-startup group failed: " + key, compositeFuture.cause());
                 }
             } catch (TimeoutException e) {
                 failureCount += (groupFutures.size() - successCount);
@@ -1503,6 +1507,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     }
                     log.error("💡 Tip: enable TRACE logging to see detailed start/completion of each future, or increase the timeout if expected.");
                 }
+                throw new IllegalStateException("Pre-startup group timed out: " + key, e);
             }
         }
 

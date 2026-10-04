@@ -15,6 +15,10 @@ class FrameworkLifecycleTest {
     @Test void moduleFailureRejectsReadiness() throws Exception {probe("module-failure");}
     @Test void synchronousSubscriptionFailureRejectsReadiness() throws Exception {probe("subscription-failure");}
 
+    @Test void preStartupSynchronousFailureCleansResources() throws Exception { probe("pre-sync"); }
+    @Test void preStartupAsynchronousFailureCleansResources() throws Exception { probe("pre-async"); }
+    @Test void preStartupTimeoutCleansResources() throws Exception { probe("pre-timeout"); }
+
     void probe(String mode) throws Exception {
         Path output=Path.of("target/framework-lifecycle-"+mode+".log").toAbsolutePath();
         Files.writeString(temporary.resolve(".env"),"GUICEDEE_LIFECYCLE_FIXTURE=true\n");
