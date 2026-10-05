@@ -454,12 +454,6 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     private final java.util.concurrent.atomic.AtomicBoolean shutdownStarted = new java.util.concurrent.atomic.AtomicBoolean();
     private final CompletableFuture<Void> shutdownFinished = new CompletableFuture<>();
     private volatile Thread shutdownOwner;
-    private volatile boolean processLifecycle;
-
-    /** Opts a process launcher into terminal, exactly-once shutdown. Embedded callers retain their lifecycle. */
-    void manageProcessLifecycle() {
-        processLifecycle = true;
-    }
 
     /**
      * Creates a new Guice context. Not necessary
@@ -479,7 +473,9 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
      * Await {@link #getLoadingFinished()} to observe asynchronous startup success or failure.
      */
     public Injector inject() {
-        if (processLifecycle && shutdownStarted.get() && injector == null) throw new IllegalStateException("Guice context is stopped");
+        // Cleanup hooks may resolve the running injector, but no caller may
+        // recreate it after terminal cleanup has cleared its resources.
+        if (shutdownStarted.get() && injector == null) throw new IllegalStateException("Guice context is stopped");
         if (GuiceContext.buildingInjector) {
             log.error("💥 The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.");
             new IllegalStateException("The injector is being called recursively during build. Place such actions in a IGuicePostStartup or use the IGuicePreStartup Service Loader.").printStackTrace();
@@ -553,9 +549,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 GuiceContext.buildingInjector = false;
                 log.error("💥 Critical failure during dependency injection system initialization: {}", e.getMessage(), e);
                 loadingFinished.completeExceptionally(e);
-                for (IGuicePreDestroy destroyer : loadPreDestroyServices()) {
-                    try { destroyer.onDestroy(); } catch (Throwable cleanup) { e.addSuppressed(cleanup); }
-                }
+                try { destroy(); } catch (Throwable cleanup) { e.addSuppressed(cleanup); }
                 throw new RuntimeException("Unable to boot Guice Injector", e);
             }
         }
@@ -564,16 +558,17 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     }
 
     /**
-     * Execute on Destroy - Performs cleanup operations when the application is shutting down
+     * Terminal, exactly-once cleanup for direct injection and process launchers alike.
+     * Concurrent callers await cleanup; cleanup reentering on its owning thread returns.
      */
     @SuppressWarnings("unused")
     public void destroy() {
-        if (processLifecycle && !shutdownStarted.compareAndSet(false, true)) {
+        if (!shutdownStarted.compareAndSet(false, true)) {
             if (shutdownOwner != Thread.currentThread()) shutdownFinished.join();
             return;
         }
         shutdownOwner = Thread.currentThread();
-        if (processLifecycle) loadingFinished.completeExceptionally(new IllegalStateException("Guice context is stopping"));
+        loadingFinished.completeExceptionally(new IllegalStateException("Guice context is stopping"));
         try {
             log.info("🛑 Starting Guice Context shutdown and resource cleanup");
             Stopwatch shutdownStopwatch = Stopwatch.createStarted();

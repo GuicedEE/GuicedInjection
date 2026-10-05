@@ -35,7 +35,6 @@ public final class GuiceApplication {
                 try {
                     phase.set("context discovery");
                     var active = IGuiceContext.instance();
-                    if (active instanceof GuiceContext guice) guice.manageProcessLifecycle();
                     context.set(active);
                     phase.set("application preparation");
                     preparation.run();

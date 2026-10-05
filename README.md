@@ -210,6 +210,13 @@ IGuicePreStartup  →  ClassGraph scan  →  Injector created  →  IGuicePostSt
 | `IGuicePreStartup` | Runs before scanning and injector creation |
 | `IGuicePostStartup` | Runs after the injector is ready |
 | `IGuicePreDestroy` | Cleanup on shutdown (e.g. `JobService`) |
+
+`GuiceContext.destroy()` stops the context exactly once for both direct injection
+and `GuiceApplication` entry points. Concurrent callers wait for that cleanup;
+same-thread reentrant calls return. The existing injector remains available to
+cleanup hooks until they finish. Subsequent shutdown calls are harmless, and
+injection after shutdown is rejected instead of restarting closed services.
+Failed synchronous startup uses the same ordered, terminal cleanup path.
 | `IGuiceConfigurator` | Configures `GuiceConfig` before scanning |
 | `Log4JConfigurator` | Customizes Log4j2 appenders/patterns at startup |
 
