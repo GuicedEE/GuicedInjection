@@ -784,7 +784,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
     private void loadScanner() {
         if (scanner == null) {
             log.info("🚀 Initializing ClassGraph scanner for dependency discovery");
-            scanner = new ClassGraph();
+            scanner = new ClassGraph().enableClasspath().enableNonSystemModules();
             Stopwatch stopwatch = Stopwatch.createStarted();
             log.trace("📋 Loading classpath scanner configuration");
             loadConfiguration();
@@ -953,10 +953,12 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
         }
         if (GuiceContext.config.isIgnoreFieldVisibility()) {
             graph = graph.enableClassInfo();
+            graph = graph.enableFieldInfo();
             graph = graph.ignoreFieldVisibility();
         }
         if (GuiceContext.config.isIgnoreMethodVisibility()) {
             graph = graph.enableClassInfo();
+            graph = graph.enableMethodInfo();
             graph = graph.ignoreMethodVisibility();
         }
         if (GuiceContext.config.isClasspathScanning()) {
@@ -966,6 +968,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             graph = graph.verbose();
         }
         if (GuiceContext.config.isIgnoreClassVisibility()) {
+            graph = graph.enableClassInfo();
             graph = graph.ignoreClassVisibility();
         }
         return graph;

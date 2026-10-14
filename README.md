@@ -131,7 +131,20 @@ All pools are shut down automatically via `IGuicePreDestroy` when the context te
 
 ## 🔍 Classpath Scanner Configuration
 
-`GuiceContext` uses [ClassGraph](https://github.com/classgraph/classgraph) under the hood.
+`GuiceContext` uses [ClassGraph 6.0.0](https://github.com/classgraph/classgraph/releases/tag/classgraph-6.0.0), requiring Java 25 or newer.
+The scanner explicitly enables the classpath and non-system modules. Metadata collection remains controlled by `GuiceConfig`;
+visibility options also enable the metadata they require. Package configuration reads directly declared annotations, while
+implementation and subclass discovery uses the transitive `getAll...` queries.
+
+ClassGraph 6 does not load classes. Use `com.guicedee.client.utils.ClassLoading.loadClass(classInfo)` to resolve a boot-layer
+module or the thread context classloader without running static initializers. For a custom classloader or module layer, pass
+the application-owned loader to `ClassLoading.loadClass(classInfo, loader)`. Keep that loader alive while using the discovered
+classes. Metadata queries should use class names directly when no runtime `Class` is needed.
+
+This is a source and binary API migration: rebuild libraries that expose or consume ClassGraph types together. The scanning
+artifact brings `classgraph-classpath`, `classgraph-vfs` and `classgraph-base` transitively, with their own JPMS modules.
+See the [upstream porting guide](https://github.com/classgraph/classgraph/wiki/Porting-ClassGraph-4.x-code-to-ClassGraph-6.x)
+for the renamed metadata APIs and behavior changes.
 Control the scan scope with SPI interfaces — implement and register via `ServiceLoader` / JPMS `provides`:
 
 ### Module & JAR filtering

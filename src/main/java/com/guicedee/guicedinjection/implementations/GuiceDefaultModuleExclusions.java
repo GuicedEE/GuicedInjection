@@ -46,6 +46,9 @@ public class GuiceDefaultModuleExclusions
 		strings.add("dom4j");
 		strings.add("hazelcast.all");
 		strings.add("io.github.classgraph");
+		strings.add("io.github.classgraph.classpath");
+		strings.add("io.github.classgraph.vfs");
+		strings.add("io.github.classgraph.base");
 		strings.add("io.undertow.parser.generator");
 		strings.add("jakarta.activation");
 		strings.add("jandex");

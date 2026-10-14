@@ -11,7 +11,7 @@ public class CustomClassScannerI
 	@Override
 	public Map<String, ResourceList.ByteArrayConsumer> onMatch() {
 		Map<String, ResourceList.ByteArrayConsumer> map = new HashMap<>();
-		map.put("customfile.sql", (resource, byteArray) -> System.out.println("Found custom sql in test... - " + resource.getPathRelativeToClasspathElement()));
+		map.put("customfile.sql", (resource, byteArray) -> System.out.println("Found custom sql in test... - " + resource.getPath()));
 		return map;
 	}
 }
