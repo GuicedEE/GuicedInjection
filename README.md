@@ -26,7 +26,7 @@ Built on [Google Guice](https://github.com/google/guice) · JPMS module `com.gui
 <summary>Gradle (Kotlin DSL)</summary>
 
 ```kotlin
-implementation("com.guicedee:inject:2.4.0")
+implementation("com.guicedee:inject:2.4.1")
 ```
 </details>
 
@@ -111,6 +111,11 @@ Logger auditLog = LogUtils.getSpecificRollingLogger(
 ```
 
 > When the `CLOUD` environment variable is set, all layouts automatically switch to compact JSON for log aggregator ingestion.
+
+Cloud JSON uses Log4j JSON Template Layout (`JsonLayout.json`), without Jackson 2 core/databind.
+The shared client dependency supplies the template layout module. `mvn verify` runs a fresh-JVM
+regression against the packaged Inject JAR with `CLOUD=true` and Jackson 2 absent, checking
+startup plus INFO/WARN JSON output and exception serialization.
 
 ## ⚙️ Job Service
 

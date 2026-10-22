@@ -44,7 +44,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.filter.LevelRangeFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.apache.logging.log4j.core.layout.JsonLayout;
+
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -152,7 +152,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     .setName("Stdout")
                     .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
                     .setLayout((org.apache.logging.log4j.core.Layout<?>) layout)
-                    .setFilter(LevelRangeFilter.createFilter(Level.DEBUG, Level.INFO, Filter.Result.ACCEPT, Filter.Result.DENY))
+                    .setFilter(LevelRangeFilter.createFilter(Level.INFO, Level.DEBUG, Filter.Result.ACCEPT, Filter.Result.DENY))
                     .build();
             stdoutAppender.start();
 
@@ -161,7 +161,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                     .setName("Stderr")
                     .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
                     .setLayout((org.apache.logging.log4j.core.Layout<?>) layout)
-                    .setFilter(LevelRangeFilter.createFilter(Level.WARN, Level.FATAL, Filter.Result.ACCEPT, Filter.Result.DENY))
+                    .setFilter(LevelRangeFilter.createFilter(Level.FATAL, Level.WARN, Filter.Result.ACCEPT, Filter.Result.DENY))
                     .build();
             stderrAppender.start();
 
@@ -182,7 +182,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         .setName("StdoutHighlight")
                         .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
                         .setLayout(highlightLayout)
-                        .setFilter(LevelRangeFilter.createFilter(Level.DEBUG, Level.INFO, Filter.Result.ACCEPT, Filter.Result.DENY))
+                        .setFilter(LevelRangeFilter.createFilter(Level.INFO, Level.DEBUG, Filter.Result.ACCEPT, Filter.Result.DENY))
                         .build();
                 stdoutHighlight.start();
                 config.addAppender(stdoutHighlight);
@@ -192,7 +192,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         .setName("StderrHighlight")
                         .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
                         .setLayout(highlightLayout)
-                        .setFilter(LevelRangeFilter.createFilter(Level.WARN, Level.FATAL, Filter.Result.ACCEPT, Filter.Result.DENY))
+                        .setFilter(LevelRangeFilter.createFilter(Level.FATAL, Level.WARN, Filter.Result.ACCEPT, Filter.Result.DENY))
                         .build();
                 stderrHighlight.start();
                 config.addAppender(stderrHighlight);
@@ -216,7 +216,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         .setName("Stdout")
                         .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
                         .setLayout((org.apache.logging.log4j.core.Layout<?>) layout)
-                        .setFilter(LevelRangeFilter.createFilter(Level.TRACE, Level.INFO, Filter.Result.ACCEPT, Filter.Result.DENY))
+                        .setFilter(LevelRangeFilter.createFilter(Level.INFO, Level.TRACE, Filter.Result.ACCEPT, Filter.Result.DENY))
                         .build();
                 newStdout.start();
                 config.addAppender(newStdout);
@@ -229,7 +229,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         .setName("Stderr")
                         .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
                         .setLayout((org.apache.logging.log4j.core.Layout<?>) layout)
-                        .setFilter(LevelRangeFilter.createFilter(Level.WARN, Level.FATAL, Filter.Result.ACCEPT, Filter.Result.DENY))
+                        .setFilter(LevelRangeFilter.createFilter(Level.FATAL, Level.WARN, Filter.Result.ACCEPT, Filter.Result.DENY))
                         .build();
                 newStderr.start();
                 config.addAppender(newStderr);
@@ -307,7 +307,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 .setName("Stdout")
                 .setTarget(ConsoleAppender.Target.SYSTEM_OUT)
                 .setLayout(layout)
-                .setFilter(LevelRangeFilter.createFilter(Level.DEBUG, Level.INFO, Filter.Result.ACCEPT, Filter.Result.DENY))
+                .setFilter(LevelRangeFilter.createFilter(Level.INFO, Level.DEBUG, Filter.Result.ACCEPT, Filter.Result.DENY))
                 .build();
         stdoutAppender.start();
 
@@ -315,7 +315,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                 .setName("Stderr")
                 .setTarget(ConsoleAppender.Target.SYSTEM_ERR)
                 .setLayout(layout)
-                .setFilter(LevelRangeFilter.createFilter(Level.WARN, Level.FATAL, Filter.Result.ACCEPT, Filter.Result.DENY))
+                .setFilter(LevelRangeFilter.createFilter(Level.FATAL, Level.WARN, Filter.Result.ACCEPT, Filter.Result.DENY))
                 .build();
         stderrAppender.start();
 
@@ -400,12 +400,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
                         .build();
             case JSON:
                 // JSON formatted logs
-                return JsonLayout.newBuilder()
-                        .setConfiguration(config)
-                        .setEventEol(true)
-                        .setCompact(false)
-                        .setStacktraceAsString(true)
-                        .build();
+                return com.guicedee.client.utils.LogUtils.jsonLayout(config);
             case CURRENT:
             default:
                 return PatternLayout.newBuilder()
