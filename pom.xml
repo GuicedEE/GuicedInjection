@@ -6,7 +6,7 @@
         <artifactId>parent</artifactId>
         <version>2.4.1</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.1.0</modelVersion>
     <groupId>com.guicedee</groupId>
     <artifactId>inject</artifactId>
     <packaging>jar</packaging>
@@ -145,7 +145,7 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>com.guicedee.maven</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
             </plugin>
             <plugin>
