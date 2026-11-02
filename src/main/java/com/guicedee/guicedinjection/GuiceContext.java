@@ -93,6 +93,7 @@ public class GuiceContext<J extends GuiceContext<J>> implements IGuiceContext {
             Configurator.setLevel("org.apache.logging.log4j.jul", Level.ERROR);
             Configurator.setLevel("org.apache.logging.log4j", Level.ERROR);
             Configurator.setLevel("io.vertx.ext.web.handler.sockjs.impl", Level.ERROR);
+            Configurator.setLevel("io.vertx.core.net.impl.VertxConnection", Level.ERROR);
             Configurator.setLevel("io.swagger.v3.core", Level.ERROR);
             Configurator.setLevel("io.swagger.v3.rest", Level.ERROR);
             Configurator.setLevel("org.ehcache.core", Level.ERROR);
